@@ -26,6 +26,7 @@ $operations = new RevSliderOperations();
 $glob_vals = $operations->getGeneralSettingsValues();
 $pack_page_creation = RevSliderFunctions::getVal($glob_vals, "pack_page_creation", "on");
 $single_page_creation = RevSliderFunctions::getVal($glob_vals, "single_page_creation", "off");
+$tp_color_picker_presets = TPColorpicker::get_color_presets();
 ?>
 
 <div id="waitaminute" style="<?php echo $waitstyle; ?>">
@@ -43,6 +44,7 @@ $single_page_creation = RevSliderFunctions::getVal($glob_vals, "single_page_crea
 	var g_settingsObj = {};
 	var rs_pack_page_creation = <?php echo ($pack_page_creation == 'on') ? 'true' : 'false'; ?>;
 	var rs_single_page_creation = <?php echo ($single_page_creation == 'on') ? 'true' : 'false'; ?>;
+	var tp_color_picker_presets = jQuery.parseJSON(<?php echo RevSliderFunctions::jsonEncodeForClientSide($tp_color_picker_presets); ?>);
 	
 	var global_grid_sizes = {
 		'desktop': '<?php echo RevSliderBase::getVar($glval, 'width', 1230); ?>',
@@ -67,7 +69,6 @@ $single_page_creation = RevSliderFunctions::getVal($glob_vals, "single_page_crea
 <div id="divColorPicker" style="display:none;"></div>
 
 <?php self::requireView("system/dialog-video"); ?>
-<?php self::requireView("system/dialog-global-settings"); ?>
 
 <div class="tp-plugin-version">
 	<span style="margin-right:15px">&copy; All rights reserved, <a href="http://www.themepunch.com" target="_blank">ThemePunch</a>  ver. <?php echo $revSliderVersion; ?></span>
@@ -201,7 +202,7 @@ $single_page_creation = RevSliderFunctions::getVal($glob_vals, "single_page_crea
 				<li><a target="_blank" href="https://www.themepunch.com/faq/updating-make-sure-clear-caches#hosting"><?php _e('Hosting Cache', 'revslider'); ?></a></li>
 				<li><a target="_blank" href="https://www.themepunch.com/faq/updating-make-sure-clear-caches#plugins"><?php _e('Caching Plugins', 'revslider'); ?></a></li>
 				<li><a target="_blank" href="https://www.themepunch.com/faq/updating-make-sure-clear-caches#cdn"><?php _e('CDNs (Content Delivery Networks)', 'revslider'); ?></a></li>
-				<li><a target="_blank" href="https://www.themepunch.com/faq/updating-make-sure-clear-caches#browser"><?php _e('Browser Cache', 'revslider'); ?></li>
+				<li><a target="_blank" href="https://www.themepunch.com/faq/updating-make-sure-clear-caches#browser"><?php _e('Browser Cache', 'revslider'); ?></a></li>
 			</ul>
 		</div>
 		<div class="rs-premium-benefits-block" style="border:none;">
@@ -261,7 +262,7 @@ $single_page_creation = RevSliderFunctions::getVal($glob_vals, "single_page_crea
 			<ul>
 				<li><?php _e('Usage only allowed within Slider Revolution Plugin', 'revslider'); ?></li>
 				<li><?php _e('Licenses via extended license and cooperation with<br>author <a target="_blank" class="rspb_darklink" href="https://creativemarket.com/Qeaql">Qeaql</a>', 'revslider'); ?></li>
-				<li><?php _e('If you need .psd files for objects, you can purchase it freom the original<br>author <a target="_blank" class="rspb_darklink" href="https://creativemarket.com/Qeaql/126175-Scene-creator-Top-view">here</a>', 'revslider'); ?></li>
+				<li><?php _e('If you need .psd files for objects, you can purchase it from the original<br>author <a target="_blank" class="rspb_darklink" href="https://creativemarket.com/Qeaql/126175-Scene-creator-Top-view">here</a>', 'revslider'); ?></li>
 			</ul>
 		</div>
 

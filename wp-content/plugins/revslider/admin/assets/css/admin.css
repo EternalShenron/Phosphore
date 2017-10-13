@@ -420,6 +420,25 @@ input[type=text].ads-input		{	background: #e5e5e5;color: #777;font-size: 13px;pa
 input[type=text].adb-input:focus,
 input[type=text].ads-input:focus	{	background:#ccc;}
 
+
+
+/****************************
+* Custom Dialog Styles
+****************************/
+
+#form_general_settings input[type=text] { width: 80% ;margin-bottom: 10px; }
+#rs-global-settings-dialog-wrap {padding: 20px 30px !important;background: #fff;}
+#rs-global-settings-dialog-wrap label {min-width: 350px;font-weight: 600;font-size: 14px;display: inline-block;height: 30px;line-height: 30px;}
+#rs-global-settings-dialog-wrap .button-primary {text-shadow: none !important;border: none !important;outline: none !important;box-shadow: none !important;line-height: 26px !important;height: 27px !important;margin: 2px 3px 2px 0px!important;color: #FFF !important;}
+#rs-global-settings-dialog-wrap .rs-global-setting {margin-bottom: 20px;border-bottom: 1px dashed #ddd;padding-bottom: 20px;display: table;width: 100%;}
+#rs-global-settings-dialog-wrap .rs-global-setting.last-egs {padding-bottom: 0px;border-bottom: none;margin-bottom: 0px}
+#rs-global-settings-dialog-wrap .rs-gs-tc {display: table-cell;vertical-align: top}
+#rs-global-settings-dialog-wrap .rs-gs-tc:first-child {width: 350px;}
+#rs-global-settings-dialog-wrap .rs-gs-tc:nth-child(2) {width: 250px;}
+#rs-global-settings-dialog-wrap i {display: block;font-size: 11px;line-height: 14px;color: #aaa;}
+#rs-global-settings-dialog-wrap #ess-grid-delete-cache {display: inline-block;vertical-align: top;margin-left: 10px !important;}
+
+
 #viewWrapper input[disabled],
 #viewWrapper select[disabled]		{ 	opacity: 0.5;	}
 .spanSettingsStaticText				{	font-size:11px; color:#555; margin-top:15px; margin-bottom:15px;font-weight: 600; line-height: 13px; display: block;border-bottom: 1px solid #ddd}
@@ -482,7 +501,7 @@ input[type=text].ads-input:focus	{	background:#ccc;}
 
 .toggle-custom-navigation-style {	display: none}
 .toggle-custom-navigation-style.visible { display: inline-block;}
-#viewWrapper .toggle-custom-navigation-style-wrapper .wp-picker-container { margin-top:4px;}
+
 
 .toggle-custom-navigation-styletarget { 	
     background: #f1f1f1;
@@ -508,18 +527,15 @@ span.description 					{	font-size: 13px;font-style: italic;color: #999;font-weig
 
 
 /* COLOR PICKER STYLING */
-.wp-picker-container						{	position:relative; z-index:900; vertical-align: top; margin-top:1px}
-.wp-color-result							{	margin: 0px !important; display:inline-block; width:74px; height:26px;border:1px solid #ddd; box-shadow: none;-webkit-box-shadow: none; -moz-box-shadow:none; outline:none; border-radius: 5px;-moz-border-radius: 5px;-webkit-border-radius: 5px;box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;}
-.wp-color-result:after						{	content:"Color"; line-height: 26px; background:#eee; border:1px solid #ddd !important; height:26px; top:-1px; right:-1px; border-radius:0px 5px 5px 0px;-moz-border-radius:0px 5px 5px 0px;; -webkit-border-radius:0px 5px 5px 0px;box-shadow: none;-webkit-box-shadow: none; -moz-box-shadow:none; outline:none; box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;}
-.wp-color-result.wp-picker-open:after 		{ 	content:"Set"}
-.wp-picker-input-wrap						{	position: absolute; top:225px; left:0px; width:245px; background:#eee; height:30px;padding:5px; display:none;}
-.pickerisopen .wp-picker-input-wrap			{	display: block; text-align: right}
-.pickerisopen .my-color-field				{	margin-right:7px; width:185px; }
-.pickerisopen  .wp-picker-clear 			{	height: 24px;line-height: 22px;padding: 0 8px 1px;font-size: 11px;border: none;box-shadow: none;-moz-box-shadow: none;; -webkit-box-shadow: none;border-radius: 0px;-moz-border-radius: 0px;; -webkit-border-radius: 0px;background: #3498DB;color: #FFF;}
-.wp-picker-holder							{	position: absolute; top:30px;left:0px;}
-.iris-picker 								{	background:#eee !important; border:none !important; margin:0px ;}
-#form_slider_params_wrap .wp-picker-holder,
-#form_slider_params_wrap .wp-picker-input-wrap	{	left:auto; right:0px}
+.rev-colorpickerspan {	vertical-align: top; line-height: 26px; display: inline-block}
+.rev-colorpickerspan .rev-colorpicker { vertical-align: top ; line-height: 26px;height:26px;}
+
+#tp-bgcolorsrc .rev-colorpickerspan { line-height: 30px; vertical-align: middle }
+
+
+.rev-m-colorpickerspan {	vertical-align: top; line-height: 35px; display: inline-block}
+.rev-m-colorpickerspan .rev-colorpicker { vertical-align: middle ; line-height: 26px;height:26px;}
+
 
 
 
@@ -771,7 +787,7 @@ span.description 					{	font-size: 13px;font-style: italic;color: #999;font-weig
 	-	MINI TOOLBAR	-
 ********************************/
 
-#viewWrapper .rs-mini-toolbar						{	position:absolute;right:0px;top:0px; z-index:150000; padding:0px;margin:0px;}
+#viewWrapper .rs-mini-toolbar						{	position:absolute;right:0px;top:0px; z-index:99999; padding:0px;margin:0px;}
 
 #viewWrapper .rs-mini-toolbar .rs-mini-toolbar-button {	display:inline-block; margin-left:-4px;}
 #viewWrapper .rs-mini-toolbar .button-primary		{	display:inline-block; height:55px !important; line-height:55px !important; margin:0;padding-left:19px !important;}
@@ -1011,15 +1027,15 @@ div.star_red:before { content: '\f155'; font-family: "dashicons"; color:#e03301;
 
 
 /* COLOR PICKER STYLING */
-#viewWrapper .wp-picker-container	{	position:relative; z-index:900; vertical-align: top; margin-top:1px}
-#viewWrapper .wp-picker-container.wp-picker-active {	z-index:950;}
+#viewWrapper .wp-picker_notused_anymore-container	{	position:relative; z-index:900; vertical-align: top; margin-top:1px}
+#viewWrapper .wp-picker_notused_anymore-container.wp-picker_notused_anymore-active {	z-index:950;}
 #viewWrapper .wp-color-result		{	margin: 0px !important; display:inline-block; width:74px; height:26px;border:1px solid #ddd; box-shadow: none;-webkit-box-shadow: none; -moz-box-shadow:none; outline:none; border-radius: 5px;-moz-border-radius: 5px;-webkit-border-radius: 5px;box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;}
 #viewWrapper .wp-color-result:after	{	content:"Color"; line-height: 26px; background:#eee; border:1px solid #ddd !important; height:26px; top:-1px; right:-1px; border-radius:0px 5px 5px 0px;-moz-border-radius:0px 5px 5px 0px;; -webkit-border-radius:0px 5px 5px 0px;box-shadow: none;-webkit-box-shadow: none; -moz-box-shadow:none; outline:none; box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;}
-#viewWrapper .wp-color-result.wp-picker-open:after { content:"Set"}
-#viewWrapper .wp-picker-input-wrap					{	z-index:10;position: absolute; top:227px; left:-61px; width:245px; background:#eee; height:30px;padding:5px; display:none; border:1px solid #f5f5f5 !important; border-top:none !important;}
-#viewWrapper .pickerisopen .wp-picker-input-wrap	{	display: block; text-align: right}
+#viewWrapper .wp-color-result.wp-picker_notused_anymore-open:after { content:"Set"}
+#viewWrapper .wp-picker_notused_anymore-input-wrap					{	z-index:10;position: absolute; top:227px; left:-61px; width:245px; background:#eee; height:30px;padding:5px; display:none; border:1px solid #f5f5f5 !important; border-top:none !important;}
+#viewWrapper .pickerisopen .wp-picker_notused_anymore-input-wrap	{	display: block; text-align: right}
 #viewWrapper .pickerisopen .my-color-field			{	margin-right:7px; width:185px; }
-#viewWrapper .pickerisopen  .wp-picker-clear {
+#viewWrapper .pickerisopen  .wp-picker_notused_anymore-clear {
 																height: 24px;
 																line-height: 22px;
 																padding: 0 8px 1px;
@@ -1030,12 +1046,12 @@ div.star_red:before { content: '\f155'; font-family: "dashicons"; color:#e03301;
 																background: #3498DB;
 																color: #FFF;
 																}
-#viewWrapper .wp-picker-holder		{	position: absolute; top:30px;left:-61px;}
+#viewWrapper .wp-picker_notused_anymore-holder		{	position: absolute; top:30px;left:-61px;}
 
 #viewWrapper .iris-picker 			{	background:#eee !important; border:1px solid #f5f5f5 !important; border-bottom:none !important;  margin:0px;box-shadow: 0px 10px 40px 0px rgba(0,0,0,0.25); z-index:5;}
 
 
-#viewWrapper .placeholder-single-wrapper .wp-picker-holder {	left:auto !important; right:0px !important;}
+#viewWrapper .placeholder-single-wrapper .wp-picker_notused_anymore-holder {	left:auto !important; right:0px !important;}
 #viewWrapper .placeholder-single-wrapper .iris-picker {	background: #ddd !important; left:auto !important; right:0px;}
 
 /*************************************
@@ -2279,9 +2295,9 @@ input[name="rs-css-include[]"]											{	margin-right:17px;}
 
 
 /* COLOR PICKER IN PREVIEW BUILDER */
-#viewWrapper .rs-editing-preview-wrap .wp-picker-container							{	position:absolute;right:15px;top:12px;z-index:1000;}
-#viewWrapper .rs-editing-preview-wrap .wp-picker-container .wp-color-result			{	width:135px;}
-#viewWrapper .rs-editing-preview-wrap .wp-picker-container .wp-color-result:after	{	content:"Preview BG Color"; white-space: nowrap;}
+#viewWrapper .rs-editing-preview-wrap .wp-picker_notused_anymore-container							{	position:absolute;right:15px;top:12px;z-index:1000;}
+#viewWrapper .rs-editing-preview-wrap .wp-picker_notused_anymore-container .wp-color-result			{	width:135px;}
+#viewWrapper .rs-editing-preview-wrap .wp-picker_notused_anymore-container .wp-color-result:after	{	content:"Preview BG Color"; white-space: nowrap;}
 
 
 .rs-editing-preview-overlay					{	position:absolute; opacity:0.25; width:100%;height:100%; background:#000;}
@@ -2972,186 +2988,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00252525', e
 	height:80px !important;
 	width:80px !important;
 }
-/*************************************
-	- 	ALPHA COLOR PICKER 	-
-**************************************/
-/**
- * Alpha Color Picker CSS
- */
-
-.alpha-color-picker-wrap {	display: inline-block;}
-
-
-.alpha-color-picker-wrap .wp-picker-container .iris-picker {
-	border-bottom: none;
-}
-
-.alpha-color-picker-wrap .wp-picker-input-wrap {
-	position:relative;
-	background:transparent;
-	left:auto;
-	top:auto;
-	height:auto;
-	padding: 0;
-	width: auto;
-	display: block;
-}
-.alpha-color-picker-wrap  .wp-picker-container input[type=text].wp-color-picker.wp-color-picker {
-	display: inline-block;
-    width: 75px !important;
-    min-width: 0px !important;
-    max-height: none;
-    float: none;
-    margin: 5px 0px;
-}
-
-.alpha-color-picker-wrap .wp-picker-clear {
-	display: inline-block;
-    margin: 0px 5px;
-    width: 75px !important;
-    height: 30px !important;
-}
-
-
-.alpha-color-picker-wrap .wp-picker-container input[type=text].wp-color-picker {
-	width: 195px;
-}
-
-.wp-picker-container .wp-picker-open ~ .wp-picker-holder .alpha-color-picker-container {
-	display: block;
-}
-
-.alpha-color-picker-container {
-	border: 1px solid #f5f5f5;
-	border-top: none;
-	border-bottom: none;
-	display: none;
-	background: #ddd;
-	padding: 5px 11px 10px;
-	position: relative;
-	z-index: 10;
-}
-
-.alpha-color-picker-container .ui-widget-content,
-.alpha-color-picker-container .ui-widget-header,
-.alpha-color-picker-wrap .ui-state-focus {
-	background: transparent;
-	border: none;
-}
-
-.alpha-color-picker-wrap a.iris-square-value:focus {
-	-webkit-box-shadow: none;
-	box-shadow: none;
-}
-
-.alpha-color-picker-container .ui-slider {
-	position: relative;
-	z-index: 1;
-	height: 24px;
-	text-align: center;
-	margin: 0 auto;
-	width: 88%;
-	width: calc( 100% - 28px );
-}
-
-.alpha-color-picker-container .ui-slider-handle,
-.alpha-color-picker-container .ui-widget-content .ui-state-default {
-	color: #777;
-	background: #FFF;
-	text-shadow: 0 1px 0 #FFF;
-	text-decoration: none;
-	position: absolute;
-	z-index: 2;
-	box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-	border: 1px solid #aaa;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	margin-top: -2px;
-	top: 0;
-	height: 26px;
-	width: 26px;
-	cursor: ew-resize;
-	font-size: 0;
-	padding: 0;
-	line-height: 27px;
-	margin-left: -14px;
-}
-
-.alpha-color-picker-container .ui-slider-handle.show-opacity {
-	font-size: 12px;
-}
-
-.alpha-color-picker-container .click-zone {
-	width: 14px;
-	height: 24px;
-	display: block;
-	position: absolute;
-	left: 10px;
-}
-
-.alpha-color-picker-container .max-click-zone {
-	right: 10px;
-	left: auto;
-}
-
-.alpha-color-picker-container .transparency {
-	height: 24px;
-	width: 100%;
-	background-color: #FFF;
-	background-image: url(../images/transparency-grid.png);
-	box-shadow: 0 0 5px rgba(0,0,0,0.4) inset;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	padding: 0;
-	margin-top: -24px;
-}
-
-@media (max-width: 782px) {
-
-	#viewWrapper .alpha-color-picker-wrap .wp-picker-container input[type=text].wp-color-picker {
-		width: 173px;
-	}
-}	
-
-
-#add-placeholder-dialog .wp-picker-holder {
-	position: absolute;
-    top: -160px;
-    left: 170px;
-}
-
-
-#form_slide_params .alpha-color-picker-wrap .wp-picker-active .wp-picker-input-wrap,
-#form_slider_params .alpha-color-picker-wrap .wp-picker-active .wp-picker-input-wrap {
-	right:0px;
-	top:285px;
-	left:auto;	
-	display:block;
-	background:#ddd;
-}
-
-#form_slide_params .alpha-color-picker-wrap .wp-picker-active .alpha-color-field,
-#form_slider_params .alpha-color-picker-wrap .wp-picker-active .alpha-color-field {
-	width:100% !important;
-}
-
-#form_slide_params .alpha-color-picker-wrap .wp-picker-active .wp-picker-clear,
-#form_slider_params .alpha-color-picker-wrap .wp-picker-active .wp-picker-clear { 
-	display:none; 
-}
 
 
 
-#slide-nav-settings-content .wp-picker-container { margin-top:-4px !important; }
-
-#viewWrapper #slide-nav-settings-content .wp-picker-holder 	{	left:0px !important; right: auto;}
-
-#viewWrapper #slide-nav-settings-content .wp-picker-input-wrap	{	left:0px !important; right:auto; background:#eee;}
-#viewWrapper #slide-nav-settings-content .alpha-color-picker-container	{	 background:#eee;}
-
-#viewWrapper #slide-nav-settings-content .wp-color-picker			{	width:100% !important; left:0px;right:auto;}
 
 
 /*********** IMPORTSLIDER STYLE **************/
@@ -3182,7 +3021,6 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00252525', e
  animation: cyclerotate 1.5s linear infinite;
 }
  
-}
 
 @-webkit-keyframes cyclerotate {
   100% { -webkit-transform: rotate(360deg); }
@@ -3223,8 +3061,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00252525', e
 .rtl #tp-thelistoffonts .ui-autocomplete li 		{	text-align:left !important;}	
 .rtl #css_fonts_down, .rtl #layer_captions_down {	margin-left:0px;}
 
-.rtl .wp-picker-holder {left: -200px !important;}
-.rtl .pickerisopen .wp-picker-input-wrap {left: -200px !important;}
+
+
 
 .rtl #eg-toolbox-wrapper	{	right:auto !important; left:15px !important;}
 

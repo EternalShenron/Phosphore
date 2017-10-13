@@ -11,6 +11,7 @@ LS_activeLayerPageIndex = 0,
 LS_activeLayerTransitionTab = 0,
 LS_activeScreenType = 'desktop',
 
+LS_lastSelectedLayerIndex = 0,
 
 // Stores all preview items using an object
 // to easily add and modify items.
@@ -47,6 +48,18 @@ LS_editorSessions = [],
 LS_editorIsDirty = false,
 
 
+// Flag for transformed layers due to
+// combo box preview, which needs to
+// be updated after closing the combo box.
+LS_comboBoxIsDirty = false,
+
+
+// Flag for dragging operations to better
+// handle layer selection in a group-select
+// scenario.
+LS_layerWasDragged = false,
+
+
 // Stores default UI settings of
 // editing sessions.
 LS_defaultEditorSession = {
@@ -67,7 +80,6 @@ LS_previewZoom = 1,
 LS_previewArea,
 LS_previewHolder,
 LS_previewWrapper,
-LS_previewStatic,
 
 
 LS_transformStyles = [
@@ -187,13 +199,91 @@ var LS_Utils = {
 			  return n1
 		  }
 		});
+	},
+
+
+	// credits: http://locutus.io/php/parse_url/
+	parse_url: function(str, component) {
+		var query;
+
+		var mode = (typeof require !== 'undefined' ? require('../info/ini_get')('locutus.parse_url.mode') : undefined) || 'php';
+
+		var key = [
+			'source',
+			'scheme',
+			'authority',
+			'userInfo',
+			'user',
+			'pass',
+			'host',
+			'port',
+			'relative',
+			'path',
+			'directory',
+			'file',
+			'query',
+			'fragment'
+		];
+
+		// For loose we added one optional slash to post-scheme to catch file:/// (should restrict this)
+		var parser = {
+			php: new RegExp([
+				'(?:([^:\\/?#]+):)?',
+				'(?:\\/\\/()(?:(?:()(?:([^:@\\/]*):?([^:@\\/]*))?@)?([^:\\/?#]*)(?::(\\d*))?))?',
+				'()',
+				'(?:(()(?:(?:[^?#\\/]*\\/)*)()(?:[^?#]*))(?:\\?([^#]*))?(?:#(.*))?)'
+			].join('')),
+			strict: new RegExp([
+				'(?:([^:\\/?#]+):)?',
+				'(?:\\/\\/((?:(([^:@\\/]*):?([^:@\\/]*))?@)?([^:\\/?#]*)(?::(\\d*))?))?',
+				'((((?:[^?#\\/]*\\/)*)([^?#]*))(?:\\?([^#]*))?(?:#(.*))?)'
+			].join('')),
+			loose: new RegExp([
+				'(?:(?![^:@]+:[^:@\\/]*@)([^:\\/?#.]+):)?',
+				'(?:\\/\\/\\/?)?',
+				'((?:(([^:@\\/]*):?([^:@\\/]*))?@)?([^:\\/?#]*)(?::(\\d*))?)',
+				'(((\\/(?:[^?#](?![^?#\\/]*\\.[^?#\\/.]+(?:[?#]|$)))*\\/?)?([^?#\\/]*))',
+				'(?:\\?([^#]*))?(?:#(.*))?)'
+			].join(''))
+		};
+
+		var m = parser[mode].exec(str);
+		var uri = {};
+		var i = 14;
+
+		while (i--) {
+			if (m[i]) {
+				uri[key[i]] = m[i];
+			}
+		}
+
+		if (component) {
+			return uri[component.replace('PHP_URL_', '').toLowerCase()];
+		}
+
+		if (mode !== 'php') {
+			var name = (typeof require !== 'undefined' ? require('../info/ini_get')('locutus.parse_url.queryKey') : undefined) || 'queryKey';
+			parser = /(?:^|&)([^&=]*)=?([^&]*)/g;
+			uri[name] = {};
+			query = uri[key[12]] || '';
+			query.replace(parser, function ($0, $1, $2) {
+				if ($1) {
+					uri[name][$1] = $2;
+				}
+			});
+		}
+
+		delete uri.source;
+		return uri;
 	}
 };
 
 
 var LS_GUI = {
 
-	updateImagePicker: function( $picker, image ) {
+	updateImagePicker: function( $picker, image, updateProperties ) {
+
+		updateProperties = updateProperties || {};
 
 		if( typeof $picker === 'string' ) {
 			$picker = jQuery('input[name="'+$picker+'"]').next();
@@ -204,13 +294,54 @@ var LS_GUI = {
 		}
 
 		if( image && image.indexOf('blank.gif') !== -1 ) {
-			image = false;
+			if( ! updateProperties.fromPost ) {
+				image = false;
+			}
 		}
 
 		$picker
 			.removeClass('has-image not-set')
 			.addClass( image ? 'has-image' : 'not-set' )
 			.find('img').attr('src', image ||  lsTrImgPath+'/blank.gif' );
+	},
+
+
+	updateLinkPicker: function( $input, data ) {
+		return;
+
+		var $holder = $input.closest('.ls-slide-link'),
+			postId, postName, postType, l10nKey;
+
+		if( ! data ) {
+
+			postId 		= $holder.find('input[name="linkId"]').val();
+			postName 	= $holder.find('input[name="linkName"]').val();
+			postType 	= $holder.find('input[name="linkType"]').val();
+		}
+
+		if( ( postId && '[post-url]' === postId ) || '[post-url]' === $input.val() ) {
+			$holder.addClass('has-link');
+			$input.val( LS_l10n.SBLinkPostDynURL ).prop('disabled', true);
+			$holder.find('input[name="linkId"]').val('[post-url]');
+
+		} else if( postId && postName && postType ) {
+
+			l10nKey = 'SBLinkText'+ucFirst( postType );
+
+			$holder.addClass('has-link');
+			$input.val( LS_l10n[l10nKey].replace('%s', postName) ).prop('disabled', true);
+		}
+
+		$holder.find('input').trigger('input');
+	},
+
+	deeplinkSection: function() {
+		var hash 		= document.location.hash.replace('#', ''),
+			$target 	= jQuery('[data-deeplink="'+hash+'"]');
+
+		if( $target.length ) {
+			$target.click();
+		}
 	}
 };
 
@@ -290,9 +421,22 @@ var LS_UndoManager = {
 	},
 
 
+	// Empties the current slide's history and reset
+	// every UndoManager-related properties
+	empty: function() {
+		LS_activeSlideData.history = [];
+
+		if( LS_activeSlideData.meta && LS_activeSlideData.meta.undoStackIndex ) {
+			LS_activeSlideData.meta.undoStackIndex = -1;
+		}
+
+		this.update();
+	},
+
+
 	undo: function() {
 		if(this.stack[this.index]) {
-			this.execute('undo', this.stack[this.index]);
+			this.execute('undo', this.stack[this.index], this.stack[this.index-1]);
 			this.index--;
 			this.maintainButtons();
 		}
@@ -302,10 +446,11 @@ var LS_UndoManager = {
 	redo: function() {
 		if(this.stack[this.index+1]) {
 			this.index++;
-			this.execute('redo', this.stack[this.index]);
+			this.execute('redo', this.stack[this.index], this.stack[this.index+1]);
 			this.maintainButtons();
 		}
 	},
+
 
 	prepareUpdateInfo: function( updateInfo ) {
 
@@ -338,7 +483,9 @@ var LS_UndoManager = {
 			else { redoButton.addClass('disabled'); }
 	},
 
-	execute: function(action, item) {
+	execute: function(action, item, followingItem) {
+
+		var layerIndexSet = [];
 
 		// Convert object to array to easily
 		// handle multi-action steps.
@@ -355,8 +502,39 @@ var LS_UndoManager = {
 				item.updateInfo[c][action],
 				item.updateInfo[c]
 			);
+
+			layerIndexSet.push( item.updateInfo[c].itemIndex );
+		}
+
+		this.restoreSelection( action, layerIndexSet, followingItem );
+	},
+
+
+	restoreSelection: function(action, layerIndexSet, followingItem) {
+
+		if( followingItem && action === 'undo'  ) {
+
+			var followingIndexSet = [];
+
+			if( jQuery.type(followingItem.updateInfo) === 'object' ) {
+				followingItem.updateInfo = [followingItem.updateInfo];
+			}
+
+			for(var c = 0; c < followingItem.updateInfo.length; c++) {
+				followingIndexSet.push( followingItem.updateInfo[c].itemIndex );
+			}
+		}
+
+		// Re-select affected layers if the selection has changed
+		if( JSON.stringify( followingIndexSet || layerIndexSet) !== JSON.stringify(LS_activeLayerIndexSet)  ) {
+			if( LS_activeSlideData.sublayers.length-1 < Math.max.apply(Math, followingIndexSet || layerIndexSet) ) {
+				LayerSlider.selectLayer( [ LS_activeSlideData.sublayers.length-1] );
+			} else {
+				LayerSlider.selectLayer( followingIndexSet || layerIndexSet );
+			}
 		}
 	},
+
 
 	executeItem: function(command, itemIndex, updateInfo, item) {
 
@@ -437,11 +615,18 @@ var LS_UndoManager = {
 					var $target = jQuery(parent+' '+'[name="'+key+'"]'),
 						eventType = 'input';
 
-					$target.val(val).trigger('input').trigger('keyup');
+					if( ! $target.is(':checkbox') ) {
+						$target.val(val).trigger('input').trigger('keyup');
+					}
 
 					if($target.is(':checkbox')) {
-						if(val) { $target.next().addClass('on').removeClass('off'); }
-							else { $target.next().addClass('off').removeClass('on'); }
+						if(val) {
+							$target.prop('checked', true);
+							$target.next().addClass('on').removeClass('off');
+						} else {
+							$target.prop('checked', false);
+							$target.next().addClass('off').removeClass('on');
+						}
 						return;
 
 					} else if($target.is('select')) {
@@ -453,6 +638,34 @@ var LS_UndoManager = {
 
 			//}
 		});
+	},
+
+
+	saveOriginalInputValues: function( $input ) {
+
+		var prevVals 	= [],
+			type 		= null,
+			optionName 	= $input.attr('name'),
+			optionValue = $input.is(':checkbox') ? ! $input.prop('checked') : $input.val();
+
+		// Save input value as a generic solution
+		$input.data('prevVal', optionValue );
+
+		// Override saved data if it's a layer option
+		if( $input.closest('.ls-sublayer-pages').length ) {
+
+			if( $input.hasClass('sublayerprop') ) { type = 'transition'; }
+				else if( $input.hasClass('auto') ) { type = 'styles'; }
+
+			jQuery.each(LS_activeLayerDataSet, function(item, layerData) {
+				var area = layerData;
+				if( type ) { area = area[type]; }
+
+				prevVals.push( area[optionName] );
+			});
+
+			$input.data('prevVal', prevVals );
+		}
 	},
 
 
@@ -470,8 +683,10 @@ var LS_UndoManager = {
 		}
 
 		if( event.type.toLowerCase() !== 'change' ) {
-			$input.data('prevVal', $input.val() );
+			this.saveOriginalInputValues( $input );
 			return;
+		} else if( event.type.toLowerCase() === 'change' && $input.is(':checkbox') ) {
+			this.saveOriginalInputValues( $input );
 		}
 
 		// Skip colorpickers, as they rapidly send change events
@@ -481,7 +696,7 @@ var LS_UndoManager = {
 
 		if( $input.closest('.ls-sublayer-pages').length ) {
 			cmd = 'layer.general';
-			name = 'Layer settings';
+			name = LS_l10n.SBUndoLayer;
 			index = LS_activeLayerIndexSet[0];
 
 			if($input.hasClass('sublayerprop')) { cmd = 'layer.transition'; }
@@ -489,34 +704,59 @@ var LS_UndoManager = {
 
 		} else if( $input.closest('.ls-slide-options').length ) {
 			cmd = 'slide.general';
-			name = 'Slide settings';
+			name = LS_l10n.SBUndoSlide;
 			index = LS_activeSlideIndex;
 
 		} else {
 			return true;
 		}
 
-		var optionName 	= $input.attr('name'),
-			optionValue = $input.is(':checkbox') ?   $input.prop('checked') : $input.val(),
-			prevValue 	= $input.is(':checkbox') ? ! $input.prop('checked') : $input.data('prevVal'),
+		var updateInfo 	= [],
+			optionName 	= $input.attr('name'),
+			optionValue = $input.is(':checkbox') ? $input.prop('checked') : $input.val(),
+			prevValue 	= $input.data('prevVal'),
 			action 		= $input.hasClass('undomanager-merge') ? 'merge': 'add';
 
 		if( ! optionName ) {
 			return false;
 		}
 
-		var undo = {}, redo = {};
-			undo[ optionName ] = prevValue;
-			redo[ optionName ] = optionValue;
+		// Layer option change, handle multiple
+		// selection (if any).
+		if( typeof prevValue === 'object' ) {
 
-		if( prevValue !== optionValue ) {
+			jQuery.each(LS_activeLayerIndexSet, function( index, layerIndex ) {
+				var undo = {}, redo = {};
+					undo[ optionName ] = prevValue[ index ];
+					redo[ optionName ] = optionValue;
 
-			LS_UndoManager[action](cmd, name, {
-				itemIndex: index,
-				undo: undo,
-				redo: redo
+				if( prevValue[ index ] !== optionValue ) {
+					updateInfo.push({
+						itemIndex: layerIndex,
+						undo: undo,
+						redo: redo
+					});
+				}
 			});
+
+		// Slide option change
+		} else {
+
+			if( prevValue !== optionValue ) {
+
+				var undo = {}, redo = {};
+					undo[ optionName ] = prevValue;
+					redo[ optionName ] = optionValue;
+
+				updateInfo.push({
+					itemIndex: index,
+					undo: undo,
+					redo: redo
+				});
+			}
 		}
+
+		LS_UndoManager[action](cmd, name, updateInfo);
 	}
 };
 
@@ -531,18 +771,85 @@ var LayerSlider = {
 	isLayerPreviewActive: false,
 	selectableTimeout: 0,
 
+	getSliderSize: function() {
+
+		var sliderProps = window.lsSliderData.properties, width, height;
+
+		if( sliderProps.type && sliderProps.type === 'popup' ) {
+			width 	= sliderProps.popupWidth  || 640;
+			height 	= sliderProps.popupHeight || 360;
+		} else {
+			width 	= parseInt(sliderProps.sublayercontainer) || sliderProps.width || 1280;
+			height 	= sliderProps.height || 720;
+		}
+
+		return {
+			width: parseInt(width),
+			height: parseInt(height)
+		};
+	},
+
+	sliderIsEmpty: function( length ) {
+
+		var isEmpty = true;
+
+		jQuery.each(window.lsSliderData.layers, function(slideKey, slide) {
+
+			if( jQuery.trim( slide.properties.background ) ) {
+				isEmpty = false; return false;
+			}
+
+			jQuery.each(slide.sublayers, function(layerKey, layer) {
+
+				// Has image
+				if( layer.media === 'img' ) {
+					if( layer.image ) {
+						isEmpty = false; return false;
+					}
+
+				// Has textual content
+				} else if( layer.html ) {
+					isEmpty = false; return false;
+
+				// Has visual content
+				} else if( layer.styles.width || layer.styles.height ) {
+
+					if( layer.html || layer.styles.background ) {
+						isEmpty = false; return false;
+
+					} else if( layer.styles['border-top'] || layer.styles['border-right'] || layer.styles['border-bottom'] || layer.styles['border-left'] ) {
+						isEmpty = false; return false;
+					}
+				}
+			});
+
+			if( length && length === slideKey+1 ) {
+				return false;
+			}
+		});
+
+		return isEmpty;
+	},
+
 
 	selectMainTab: function(el) {
 
+		var $tab = jQuery(el);
+
 		// Select new tab
-		jQuery(el).addClass('active').siblings().removeClass('active');
+		$tab.addClass('active').siblings().removeClass('active');
 
 		// Show new tab contents
 		jQuery('#ls-pages .ls-page').removeClass('active');
-		jQuery('#ls-pages .ls-page').eq( jQuery(el).index() ).addClass('active');
+		jQuery('#ls-pages .ls-page').eq( $tab.index() ).addClass('active');
+
+		// Make sure to properly resize the transition options
+		if( $tab.hasClass('layers') ) {
+			kmUI.smartResize.set();
+		}
 
 		// Init CodeMirror
-		if(jQuery(el).hasClass('callbacks')) {
+		if($tab.hasClass('callbacks')) {
 			if(jQuery('.ls-callback-page .CodeMirror-code').length === 0) {
 				LS_CodeMirror.init({ mode: 'javascript', autofocus : false, styleActiveLine : false });
 				jQuery(window).scrollTop(0);
@@ -554,8 +861,14 @@ var LayerSlider = {
 	selectSettingsTab: function(li) {
 		var index = jQuery(li).index();
 		jQuery(li).addClass('active').siblings().removeClass('active');
-		jQuery('div.ls-settings-contents tbody.active').removeClass('active');
-		jQuery('div.ls-settings-contents tbody').eq(index).addClass('active');
+		jQuery('div.ls-settings-contents > table > tbody.active').removeClass('active');
+		jQuery('div.ls-settings-contents > table > tbody').eq(index).addClass('active');
+
+		// Make sure that the Slider Settings section is selected
+		jQuery('#ls-main-nav-bar .settings').click();
+
+		// Update hash for deeplinking
+		document.location.hash = jQuery(li).data('deeplink');
 	},
 
 
@@ -564,7 +877,7 @@ var LayerSlider = {
 		// Get default data objects for slides and layers
 		var newSlideData = jQuery.extend(true, {}, LS_DataSource.getDefaultSlideData()),
 			newLayerData = jQuery.extend(true, {}, LS_DataSource.getDefaultLayerData());
-			newLayerData.subtitle = 'Layer #1';
+			newLayerData.subtitle = LS_l10n.SBLayerTitle.replace('%d', '1');
 
 		// Add new slide data to data source
 		window.lsSliderData.layers.push({
@@ -574,7 +887,8 @@ var LayerSlider = {
 
 		// Add new slide tab
 		var newIndex 	= window.lsSliderData.layers.length + 1,
-			tab 		= jQuery('<a href="#"><span>Slide #'+newIndex+'</span><img src="'+(pluginPath+'admin/img/blank.gif')+'"><span class="dashicons dashicons-dismiss"></span>').insertBefore('#ls-add-layer');
+			title 		= LS_l10n.SBSlideTitle.replace('%d', newIndex),
+			tab 		= jQuery('<a href="#"><span>'+title+'</span><img src="'+(pluginPath+'admin/img/blank.gif')+'"><span class="dashicons dashicons-dismiss"></span>').insertBefore('#ls-add-layer');
 
 		// Name new slide properly
 		LayerSlider.reindexSlides();
@@ -590,7 +904,7 @@ var LayerSlider = {
 
 	removeSlide: function(el) {
 
-		if(confirm('Are you sure you want to remove this slide?')) {
+		if(confirm(LS_l10n.SBRemoveSlide)) {
 
 			// Get tab and menu item index
 			var index = LS_activeSlideIndex;
@@ -661,6 +975,7 @@ var LayerSlider = {
 
 		// Set active layer index set
 		LS_activeLayerIndexSet = LS_activeSlideData.meta.activeLayers || [0];
+		LS_lastSelectedLayerIndex = LS_activeLayerIndexSet[0];
 
 		// Add static layers
 		LS_activeStaticLayersDataSet = LayerSlider.staticLayersForSlide( slideIndex );
@@ -675,6 +990,11 @@ var LayerSlider = {
 
 
 	renameSlide: function(el) {
+
+		if( document.location.href.indexOf('ls-revisions') !== -1 ) {
+			return;
+		}
+
 		var $el = jQuery(el);
 		var name = jQuery('span:first-child', el).text();
 
@@ -728,7 +1048,7 @@ var LayerSlider = {
 		if(!!newSlideData.properties.title) {
 			newSlideData.properties.title += ' copy';
 		} else {
-			newSlideData.properties.title = 'Slide #'+(LS_activeSlideIndex+1)+' copy';
+			newSlideData.properties.title = LS_l10n.SBSlideCopyTitle.replace('%d', LS_activeSlideIndex+1);
 		}
 
 		// Duplicate slide by using jQuery.extend()
@@ -772,13 +1092,11 @@ var LayerSlider = {
 			transform: 'scale('+value+')'
 		}).parent().trigger('zoom');
 
-		var sliderProps = window.lsSliderData.properties,
-			width 		= parseInt(sliderProps.sublayercontainer) || sliderProps.width || 1280,
-			height 		= sliderProps.height || 720;
+		var sliderSize = LayerSlider.getSliderSize();
 
 		jQuery( '.ls-preview-size' ).css({
-			width: parseInt(width)* value,
-			height: parseInt(height) * value
+			width: sliderSize.width * value,
+			height: sliderSize.height * value
 		});
 
 		LayerSlider.updatePreviewSelection();
@@ -838,6 +1156,11 @@ var LayerSlider = {
 				LayerSlider.autoFitPreview(target);
 			}
 		});
+
+
+		jQuery('#collapse-menu').click(function() {
+			LayerSlider.autoFitPreview(target);
+		});
 	},
 
 
@@ -845,12 +1168,14 @@ var LayerSlider = {
 
 		if( jQuery('#zoom-fit').prop('checked') ){
 
-			var sliderProps = window.lsSliderData.properties,
-				width 		= parseInt(sliderProps.sublayercontainer) || parseInt(sliderProps.width) || 1280,
-				height 		= parseInt(sliderProps.height) || 720,
+			var sliderSize 	= LayerSlider.getSliderSize(),
+				width 		= sliderSize.width,
+				height 		= sliderSize.height,
 				// 905(px) is the minimum width to keep the slider settings table organized
 				smallestRatio = 916 / width > 0.5 ? 916 / width : 0.5,
-				ratio = ( jQuery('#ls-main-nav-bar').outerWidth() - 32 ) / width;
+				padding = (document.location.href.indexOf('ls-revisions') !== -1) ? 0 : 32,
+				ratio = ( jQuery('.wrap').eq(0).outerWidth() - padding ) / width;
+
 
 			if( ratio < smallestRatio ){
 				ratio = smallestRatio;
@@ -939,7 +1264,7 @@ var LayerSlider = {
 		if( ! addProperties.histroyEvent) {
 			LS_UndoManager.add(
 				'slide.layers',
-				updateInfo.length > 1 ? 'New layers' : 'New layer',
+				updateInfo.length > 1 ? LS_l10n.SBUndoNewLayers : LS_l10n.SBUndoNewLayer,
 				updateInfo
 			);
 		}
@@ -967,7 +1292,7 @@ var LayerSlider = {
 	selectLayer: function(layerIndexSet, selectProperties) {
 
 		// Bail out early if the current slide has no layers
-		if( ! LS_activeSlideData.sublayers.length) {
+		if( ! LS_activeSlideData.sublayers.length ) {
 			jQuery('.ls-timeline-switch, .ls-sublayer-nav').hide();
 			jQuery('.ls-sublayer-pages').empty();
 			return false;
@@ -977,7 +1302,12 @@ var LayerSlider = {
 		}
 
 		// Bail out early if there's no active layer selection
-		if( ! layerIndexSet || ! layerIndexSet.length) { return false; }
+		if( ! layerIndexSet || ! layerIndexSet.length ) { return false; }
+
+		// Bail out if the new selection exceeds array range
+		if( LS_activeSlideData.sublayers.length-1 < Math.max.apply(Math, layerIndexSet) ) {
+			return;
+		}
 
 		// Bail out early if the current selection is the same
 		// if( layerIndexSet.length == LS_activeLayerIndexSet.length ) {
@@ -1016,21 +1346,24 @@ var LayerSlider = {
 			$layersList.eq(layerIndex).addClass('active');
 		});
 
-		if(!LS_activeLayerDataSet[0].meta) {
-			LS_activeLayerDataSet[0].meta = {};
-		}
+		jQuery.each(LS_activeLayerDataSet, function(index, layerData) {
+			if( ! layerData.meta) {
+				layerData.meta = {};
+			}
+		});
 
 		// Show/Hide layer options depending on
 		// the number of selected layers
 		if(LS_activeLayerIndexSet.length > 1) {
-			$layerOptions.hide().prev().removeClass('ls-hidden');
+			LayerSlider.startMultipleSelection();
 		} else {
-			$layerOptions.show().prev().addClass('ls-hidden');
+			LayerSlider.stopMultipleSelection();
 		}
 
 		// Build new layer ...
 		if(LS_activeLayerIndexSet.length === 1) {
 			LS_DataSource.buildLayer();
+			LS_lastSelectedLayerIndex = LS_activeLayerIndexSet[0];
 		}
 
 		// Store selection
@@ -1041,6 +1374,67 @@ var LayerSlider = {
 
 		// Create layer transition preview animations
 		layerTransitionPreview.create();
+	},
+
+
+	startMultipleSelection: function() {
+
+		var $layerOptions 	= jQuery('.ls-sublayer-pages-wrapper'),
+			$layerNav 		= jQuery('.ls-sublayer-nav'),
+			$contentTab 	= $layerNav.children().eq(0);
+
+		// Hide 'Content' and select the 'Transitions'
+		// layer tab if needed.
+		$contentTab.hide();
+		if( $contentTab.hasClass('active') ) {
+			$contentTab.next().click();
+		}
+
+
+		jQuery('#ls-layers-settings-popout').addClass('ls-multiple-selection');
+
+		// Reset input field
+		jQuery('input,textarea', $layerOptions).filter('.sublayerprop,.auto').val('');
+		jQuery('.ls-sublayer-pages .minicolors-swatch-color').css('background', 'transparent');
+
+
+		// Prepend empty option to select fields
+		jQuery('select:not(.ls-multi-selected)', $layerOptions)
+			.filter('.sublayerprop,.auto')
+			.add('.ls-slide-link select')
+			.addClass('ls-multi-selected')
+			.prepend('<option></option>');
+
+		// Select the empty option in select fields
+		jQuery('select', $layerOptions)
+			.filter('.sublayerprop,.auto')
+			.add('.ls-slide-link select')
+			.children().prop('selected', false)
+			.eq(0).prop('selected', true);
+
+		// Reset checkboxes
+		jQuery('.ls-checkbox', $layerOptions)
+			.removeClass('on off')
+			.addClass('indeterminate');
+
+		// Reset transition selection
+		jQuery('#ls-transition-selector-table .active').removeClass('active');
+		jQuery('#ls-layer-transitions .ls-h-button .ls-checkbox').removeClass('on');
+
+		// Reset custom attributes field
+		jQuery('.ls-sublayer-custom-attributes tr:not(:last-child)').remove();
+	},
+
+
+	stopMultipleSelection: function() {
+
+		var $layerOptions 	= jQuery('.ls-sublayer-pages-wrapper'),
+			$layerNav 		= jQuery('.ls-sublayer-nav');
+
+		// Show the Content layer tab
+		$layerNav.children().eq(0).show();
+
+		jQuery('#ls-layers-settings-popout').removeClass('ls-multiple-selection');
 	},
 
 
@@ -1087,10 +1481,30 @@ var LayerSlider = {
 			jQuery( input ).closest('section').index()
 		);
 
+		LayerSlider.checkForOpeningTransition();
+
+ 	},
+
+
+ 	checkForOpeningTransition: function() {
+
+ 		// Don't show the warning in multi-select
+ 		if( LS_activeLayerIndexSet.length === 1 ) {
+
+	 		$table 			= jQuery('#ls-transition-selector-table');
+	 		$transitions 	= jQuery('.ls-opening-transition.active', $table);
+	 		$warning 		= jQuery('#ls-transition-warning');
+
+			$warning[ $transitions.length ? 'removeClass' : 'addClass' ]('visible');
+		}
  	},
 
 
  	reorderTransitionProperties: function( sectionIndex ) {
+
+ 		// if( LS_activeLayerIndexSet.length > 1) {
+ 		// 	return;
+ 		// }
 
  		var media 		= LS_activeLayerDataSet[0].media || '',
  			index,
@@ -1099,9 +1513,10 @@ var LayerSlider = {
  			$input,
  			$td;
 
- 		if( sectionIndex ) {
+ 		if( typeof sectionIndex !== 'undefined' ) {
  			$sections = $sections.eq( sectionIndex );
  		}
+
 
  		$sections.each(function() {
 
@@ -1152,7 +1567,7 @@ var LayerSlider = {
 		// Require confirmation from user
 		// if it's not a history event.
 		if( removeProperties.requireConfirmation ) {
-			if( !confirm('Are you sure you want to remove this layer?') ) {
+			if( !confirm( LS_l10n.SBRemoveLayer ) ) {
 				return false;
 			}
 		}
@@ -1174,7 +1589,6 @@ var LayerSlider = {
 		// Don't use .revert() on a LS_activeLayerIndexSet reference, as it will
 		// change the original set as well.
 		while(c--) {
-			// console.log(c);
 			layerIndex 	= layerIndexSet[c];
 			$layer 		= $layers.eq(layerIndex);
 			layerData 	= jQuery.extend(true, {}, LS_activeSlideData.sublayers[layerIndex]);
@@ -1196,17 +1610,18 @@ var LayerSlider = {
 		}
 
 		// Empty slide, hide UI items
-		if(!LS_activeSlideData.sublayers.length) {
+		if( ! LS_activeSlideData.sublayers.length ) {
 			jQuery('.ls-timeline-switch, .ls-sublayer-nav').hide();
 			jQuery('.ls-sublayer-pages').empty();
 
 		// Update UI otherwise
 		// Select new layer. The .click() event will
 		// maintain the active layer index and data.
-		} else if($newLayer) {
-			$newLayer.click();
+		} else if( $newLayer ) {
+			LayerSlider.selectLayer( [ $newLayer.index() ] );
 			LayerSlider.reindexLayers();
 		}
+
 
 		// Update preview
 		LayerSlider.generatePreview();
@@ -1215,7 +1630,7 @@ var LayerSlider = {
 		// Maintain undoManager only if
 		// it wasn't a history action
 		if( !removeProperties.histroyEvent && updateInfo.length) {
-			LS_UndoManager.add('slide.layers', 'Remove layer(s)', updateInfo);
+			LS_UndoManager.add('slide.layers', LS_l10n.SBUndoRemoveLayer, updateInfo);
 		}
 	},
 
@@ -1227,7 +1642,7 @@ var LayerSlider = {
 		var layerData = LS_activeSlideData.sublayers[layerIndex];
 
 		// Maintain history
-		LS_UndoManager.add('layer.general', 'Hide layer', {
+		LS_UndoManager.add('layer.general', LS_l10n.SBUndoHideLayer, {
 			itemIndex: layerIndex,
 			undo: { skip: !!layerData.skip },
 			redo: { skip: !layerData.skip }
@@ -1251,7 +1666,7 @@ var LayerSlider = {
 			$previewItem = LayerSlider.previewItemAtIndex(layerIndex);
 
 		// Maintain history
-		LS_UndoManager.add('layer.general', 'Lock layer', {
+		LS_UndoManager.add('layer.general', LS_l10n.SBUndoLockLayer, {
 			itemIndex: layerIndex,
 			undo: { locked: !!layerData.locked },
 			redo: { locked: !layerData.locked }
@@ -1310,36 +1725,39 @@ var LayerSlider = {
 		}
 
 		var $tr = jQuery(element).closest('tr'),
-			$inputs = jQuery('input', $tr ),
-
-			innerAttrs = LS_activeLayerDataSet[0].innerAttributes = {},
-			outerAttrs = LS_activeLayerDataSet[0].outerAttributes = {};
+			$inputs = jQuery('input', $tr );
 
 		if( ! $inputs.eq(0).val() && ! $inputs.eq(1).val() ) {
 			$tr.remove();
-			return;
 		}
 
-		jQuery('.ls-sublayer-custom-attributes tr:not(:last-child)').each(function() {
+		jQuery.each(LS_activeLayerDataSet, function(index, layerData) {
 
-			var $key = jQuery('td.first input', this),
-				$val = jQuery('td.second input', this),
-				$chb = jQuery('td.third input', this),
-				key  = $key.val(),
-				val  = $val.val();
+			var innerAttrs = layerData.innerAttributes = {},
+				outerAttrs = layerData.outerAttributes = {};
 
-			if( key && /^[a-zA-Z]([a-zA-Z0-9_-]+)$/.test( key ) ) {
-				$key.removeClass('error');
+			jQuery('.ls-sublayer-custom-attributes tr:not(:last-child)').each(function() {
 
-				if( $chb.prop('checked') ) {
-					outerAttrs[ key ] = val;
+				var $key = jQuery('td.first input', this),
+					$val = jQuery('td.second input', this),
+					$chb = jQuery('td.third input', this),
+					key  = $key.val(),
+					val  = $val.val();
+
+				if( key && /^[a-zA-Z]([a-zA-Z0-9_-]+)$/.test( key ) ) {
+					$key.removeClass('error');
+
+					if( $chb.prop('checked') ) {
+
+						outerAttrs[ key ] = val;
+					} else {
+						innerAttrs[ key ] = val;
+					}
+
 				} else {
-					innerAttrs[ key ] = val;
+					$key.addClass('error');
 				}
-
-			} else {
-				$key.addClass('error');
-			}
+			});
 		});
 	},
 
@@ -1438,7 +1856,7 @@ var LayerSlider = {
 			for( var s = 0; s < slideCount; s++) {
 				slideName 	= sliderData.layers[s].properties.title;
 				slideName 	= slideName ? ' ('+slideName+')' : '';
-				markup += '<option value="'+(s+1)+'">Until the end of Slide #'+(s+1)+''+slideName+'</option>';
+				markup += '<option value="'+(s+1)+'">'+LS_l10n.SBStaticUntil.replace('%d', (s+1))+' '+slideName+'</option>';
 			}
 
 			// Append select options
@@ -1518,8 +1936,8 @@ var LayerSlider = {
 		// Build clipboard data
 		clipboardData = {
 			layers: clipboardData,
-			sliderID: LS_sliderID,
-			slideIndex: LS_activeSlideIndex,
+			sliderID: copyProperties.sliderID || LS_sliderID,
+			slideIndex: copyProperties.slideIndex || LS_activeSlideIndex,
 			layerIndexSet: layerIndexSet
 		};
 
@@ -1536,13 +1954,18 @@ var LayerSlider = {
 			clipboardData 	= localStorage.getObject('ls-layer-clipboard'),
 			addIndexSet;
 
+		if( ! clipboardData ) {
+			alert(LS_l10n.SBPasteLayerError);
+			return;
+		}
+
 		layerDataSet 		= layerDataSet 	|| clipboardData.layers;
 		layerIndexSet 		= layerIndexSet || clipboardData.layerIndexSet;
 
 		// Warn users when there's nothing on the clipboard
 		// and halt execution.
 		if( ! layerDataSet ) {
-			alert('There\'s nothing to paste. Copy a layer first!');
+			alert(LS_l10n.SBPasteLayerError);
 			return;
 		}
 
@@ -1563,12 +1986,23 @@ var LayerSlider = {
 			addIndexSet = [].fill( Math.min.apply(Math, layerIndexSet), layerIndexSet.length);
 		}
 
+
+		// Generate UUIDs for the new layers
+		jQuery.each( layerDataSet, function( index, layerData ) {
+			layerData.uuid = LS_DataSource.generateUUID();
+		});
+
 		// Insert new layers
 		LayerSlider.addLayer(layerDataSet, addIndexSet, { selectLayer: true } );
 
 		// Copy pasted layer to make a new reference
 		// and update settings like position and name
-		if(!isDataProvided) { this.copyLayer(true, layerDataSet, layerIndexSet); }
+		if( ! isDataProvided) {
+			this.copyLayer(true, layerDataSet, layerIndexSet, {
+				sliderID: clipboardData.sliderID,
+				slideIndex: clipboardData.slideIndex
+			});
+		}
 	},
 
 
@@ -1588,7 +2022,9 @@ var LayerSlider = {
 		jQuery(el).attr('class', 'active').siblings().removeAttr('class');
 
 		// Store selection
-		layerData.media = section;
+		if( section ) {
+			layerData.media = section;
+		}
 
 		// Show the corresponding sections
 		sections.hide().removeClass('ls-hidden');
@@ -1656,7 +2092,10 @@ var LayerSlider = {
 		jQuery(el).addClass('active');
 
 		// Store selection
-		layerData.type = element;
+		if( element ) {
+			layerData.type = element;
+		}
+
 	},
 
 
@@ -1698,9 +2137,9 @@ var LayerSlider = {
 		var $el 		= jQuery(el),
 			$wrapper 	= $el.closest('[data-storage]'),
 			storage 	= $wrapper.attr('data-storage'),
-			undoObj 	= {},
-			redoObj 	= {},
-			undoArea;
+			updateInfo 	= [];
+
+
 
 		// Don't allow pasting options when the corresponding
 		// transition sections is disabled
@@ -1718,52 +2157,66 @@ var LayerSlider = {
 
 		// Validate clipboard data
 		if( ! clipboard || jQuery.isEmptyObject(clipboard.data) || clipboard.timestamp < timestamp - 60 * 60 * 3 ) {
-			alert('There is nothing to paste!');
+			alert(LS_l10n.SBPasteError);
 			return false;
 		}
 
-		// Iterate over options, set new values
-		$wrapper.find(':input').each(function() {
-			if(this.name && this.name != 'top' && this.name != 'left') { // !!! don't paste left & top style
+		// Iterate over all selected layers
+		jQuery.each(LS_activeLayerIndexSet, function(index, layerIndex) {
 
-				var $this 	= jQuery(this),
-					area 	= $this.hasClass('sublayerprop') ? 'transition' : 'styles',
-					curVal 	= $this.is(':checkbox') ? $this.prop('checked') : $this.val(),
-					newVal 	= clipboard.data[area][this.name];
+			var layerData 	= LS_activeLayerDataSet[ index ],
+				undoObj 	= {},
+				redoObj 	= {};
 
+			// Iterate over options, set new values
+			$wrapper.find(':input').each(function() {
+				if(this.name && this.name != 'top' && this.name != 'left') { // !!! don't paste left & top style
 
-				if( curVal != newVal ) {
-					if($this.is(':checkbox')) {
-						$this.next().click();
-					} else {
-						$this.val( newVal ).trigger('input').trigger('keyup');
+					var $this 	= jQuery(this),
+						area 	= $this.hasClass('sublayerprop') ? 'transition' : 'styles',
+						data 	= layerData[area];
+						curVal 	= layerData[area][this.name],
+						newVal 	= clipboard.data[area][this.name];
+
+					if( this.name === 'style' ) { curVal = layerData[this.name]; }
+
+					if( curVal != newVal ) {
+
+						if( ! undoObj[ area ] ) { undoObj[ area ] = {}; }
+						if( ! redoObj[ area ] ) { redoObj[ area ] = {}; }
+
+						undoObj[ area ][ this.name ] = curVal;
+						redoObj[ area ][ this.name ] = newVal;
 					}
 
-					if( ! undoObj[ area ] ) { undoObj[ area ] = {}; }
-					if( ! redoObj[ area ] ) { redoObj[ area ] = {}; }
-
-					undoObj[ area ][ this.name ] = curVal;
-					redoObj[ area ][ this.name ] = newVal;
+					// Handle custom CSS field separately
+					if( this.name === 'style' ) { layerData.style = newVal; }
+						else { data[this.name] = newVal; }
 				}
+			});
 
+			updateInfo.push({
+				itemIndex: layerIndex,
+				undo: undoObj,
+				redo: redoObj
+			});
 
-				LS_activeLayerDataSet[0][area][ this.name ] = newVal;
+			LS_DataSource.buildLayer();
+
+			// Update affected layer in preview
+			// in case of style changes
+			if( storage === 'ls-styles' ) {
+				LayerSlider.generatePreviewItem( layerIndex );
 			}
 		});
 
 		// Add UndoManager action
-		LS_UndoManager.add('layer.general', 'Paste layer settings', {
-			itemIndex: LS_activeLayerIndexSet[0],
-			undo: undoObj,
-			redo: redoObj
-		});
+		LS_UndoManager.add('layer.general', LS_l10n.SBUndoPasteSettings, updateInfo);
+
 
 		$el.css('color', '#90ca77');
 		setTimeout(function() { $el.css('color', '#00a0d2'); }, 1000);
 
-		if( undoArea === 'style' ) {
-			LayerSlider.generatePreviewItem( LS_activeLayerIndexSet[0] );
-		}
 	},
 
 
@@ -1836,22 +2289,48 @@ var LayerSlider = {
 		}
 	},
 
-	changeVideoType: function() {
+	changeVideoType: function( event ) {
 
-		var $input 		= jQuery('.ls-sublayer-basic input.bgvideo'),
-			$options 	= jQuery('.ls-sublayer-basic .ls-media-options');
-			$overlays 	= jQuery('.ls-sublayer-basic .ls-bgvideo-options');
+		var $input 			= jQuery('.ls-sublayer-basic input.bgvideo'),
+			$options 		= jQuery('.ls-sublayer-basic .ls-media-options');
+			$notification 	= jQuery('.ls-sublayer-basic .ls-bgvideo-options');
 
 		if( $input.prop('checked') ) {
-			$options.hide();
-			$overlays.show();
-			LS_activeLayerDataSet[0].locked = true;
+			$options.find('td').hide().filter('.volume,.overlay').show();
+			$notification.show();
 
 		} else {
-			$options.show();
-			$overlays.hide();
-			LS_activeLayerDataSet[0].locked = false;
+			$options.find('td').show().filter('.overlay').hide();
+			$notification.hide();
+		}
 
+
+		if( event && event.type === 'change' ) {
+			LS_activeLayerDataSet[0].locked = $input.prop('checked') ? true : false;
+			LS_DataSource.buildLayersListItem( LS_activeLayerIndexSet[0] );
+		}
+	},
+
+
+
+	validateCustomCSS: function( $textarea ) {
+
+		var keys = ['mix-blend-mode', 'filter'];
+
+		for(var c = 0; c < keys.length; c++) {
+
+			if( $textarea.val().indexOf(keys[c]) !== -1 ) {
+
+				$textarea.val( $textarea.val().replace( new RegExp(keys[c], 'gi'), '') );
+
+				TweenMax.to( jQuery('.ls-sublayer-style :input[name="'+keys[c]+'"]')[0], 0.15, {
+					yoyo: true,
+					repeat: 3,
+					ease: Quad.easeInOut,
+					scale: 1.2,
+					backgroundColor: 'rgba(255, 0, 0, 0.2)'
+				});
+			}
 		}
 	},
 
@@ -1876,6 +2355,7 @@ var LayerSlider = {
 
 		// Slider data sets
 	var sliderProps = window.lsSliderData.properties,
+		sliderSize 	= LayerSlider.getSliderSize(),
 		slideIndex 	= LS_activeSlideIndex,
 		slideData 	= LS_activeSlideData,
 		slideProps 	= slideData.properties,
@@ -1884,13 +2364,13 @@ var LayerSlider = {
 
 
 		// Preview data
-		width 		= parseInt( sliderProps.sublayercontainer) || parseInt(sliderProps.width) || 1280,
-		height 		= parseInt(sliderProps.height) || 720,
+		width 		= sliderSize.width,
+		height 		= sliderSize.height,
 		bgColor 	= sliderProps.backgroundcolor,
 		bgImage 	= sliderProps.backgroundimage,
 		yourLogo 	= sliderProps.yourlogo,
 		yourLogoStyle = sliderProps.yourlogostyle,
-		posts 		= window.lsPostsJSON,
+		posts 		= window.lsPostsJSON || [],
 		postOffset 	= slideProps.post_offset,
 		slideBG 	= slideProps.background,
 		slideBGSize = slideProps.bgsize,
@@ -1917,7 +2397,7 @@ var LayerSlider = {
 
 
 		// --- Set preview canvas size ---
-		LS_previewArea.add(LS_previewStatic).css({
+		LS_previewArea.css({
 			width : width,
 			height : height
 		}).empty();
@@ -1950,7 +2430,7 @@ var LayerSlider = {
 		// Handle post content
 		if(slideBG == '[image-url]') {
 			slideBG = post['image-url'];
-			jQuery('.slide-image:eq(0) img').attr('src', post['image-url']);
+			LS_GUI.updateImagePicker( 'background', post['image-url'], { fromPost: true });
 		}
 
 		// -- Set slide background && empty previous content ---
@@ -1962,13 +2442,17 @@ var LayerSlider = {
 			slideBGPos = sliderProps.slideBGPosition;
 		}
 
-		LS_previewStatic.css({
+		LS_previewArea.css({
 			backgroundImage: slideBG ? 'url('+slideBG+')' : 'none',
 			backgroundSize: slideBGSize || 'auto',
 			backgroundPosition: slideBGPos || 'center center',
 			backgroundColor: slideProps.bgcolor || 'transparent',
 			backgroundRepeat: 'no-repeat'
 		});
+
+		if( sliderProps.sliderclass ) {
+			LS_previewArea.addClass( sliderProps.sliderclass );
+		}
 
 
 		// -- Set background on slide tab
@@ -2046,12 +2530,12 @@ var LayerSlider = {
 
 	generateStaticPreview: function() {
 
-		LS_previewStatic.empty();
+		LS_previewArea.children('.ls-static-layer').remove();
 
 		jQuery.each(LS_activeStaticLayersDataSet, function(idx, data) {
 			LayerSlider.generatePreviewItem( idx, false, {
-				$targetArea: LS_previewStatic,
-				$layerItem: LS_previewStatic.children().eq(idx),
+				$targetArea: LS_previewArea,
+				$layerItem: LS_previewArea.children('.ls-static-layer').eq(idx),
 				layerData: data.layerData,
 				isStatic: true
 			});
@@ -2064,6 +2548,13 @@ var LayerSlider = {
 		LayerSlider.timeout = setTimeout(function() {
 				LayerSlider.generatePreviewItem(layerIndex);
 		}, 150);
+	},
+
+
+	generateSelectedPreviewItems: function() {
+		jQuery.each(LS_activeLayerIndexSet, function(index, layerIndex) {
+			LayerSlider.generatePreviewItem( layerIndex );
+		});
 	},
 
 
@@ -2090,8 +2581,10 @@ var LayerSlider = {
 			generateProperties.$layerItem.remove();
 		}
 
+
 		// Get layer data sets
 		var layerData = generateProperties.layerData,
+			layerCount 	= LS_activeSlideData.sublayers ? LS_activeSlideData.sublayers.length : 0,
 
 			// Get layer attributes
 			item,
@@ -2106,6 +2599,10 @@ var LayerSlider = {
 			innerAttrs = layerData.innerAttributes || {},
 			outerAttrs = layerData.outerAttributes || {};
 
+		if( generateProperties.isStatic ) {
+			layerIndex = layerCount + layerIndex;
+		}
+
 		switch( layerData.media ) {
 			case 'img': type = 'img'; break;
 			case 'media':
@@ -2116,7 +2613,7 @@ var LayerSlider = {
 
 		// Get post content if not passed
 		if( ! post ) {
-			var posts = window.lsPostsJSON,
+			var posts = window.lsPostsJSON || [],
 				postOffset = LS_activeSlideData.properties.post_offset;
 
 			if( postOffset == -1 ) {
@@ -2129,7 +2626,7 @@ var LayerSlider = {
 		// Hidden layer
 		if(layerData.skip || layerData['hide_on_'+LS_activeScreenType] ) {
 
-			item = jQuery('<div>').appendToWithIndex(generateProperties.$targetArea, layerIndex).hide();
+			item = jQuery('<div class="ls-l">').appendToWithIndex(generateProperties.$targetArea, layerIndex).hide();
 			if( ! generateProperties.isStatic ) {
 				LS_previewItems[layerIndex] = item;
 			}
@@ -2145,7 +2642,7 @@ var LayerSlider = {
 
 			if(url == '[image-url]') {
 				url = post['image-url'] || '';
-				jQuery('.ls-layer-image img').attr('src', post['image-url']);
+				LS_GUI.updateImagePicker( 'image', post['image-url'], { fromPost: true } );
 			}
 
 			var tmpContent = url ? '<img src="'+url+'">' : '<div>';
@@ -2155,7 +2652,7 @@ var LayerSlider = {
 
 			var textlength = layerData.post_text_length;
 			for(var key in post) {
-				if(html.indexOf('['+key+']') !== -1) {
+				if(html && html.indexOf('['+key+']') !== -1) {
 					var postVal = post[key];
 					if( (key == 'title' || key == 'content' || key == 'excerpt') && textlength > 0) {
 						postVal = LS_Utils.stripTags(postVal).substr(0, textlength);
@@ -2182,16 +2679,6 @@ var LayerSlider = {
 			if(html !== '') { item.html(html); }
 		}
 
-		// Restore selection
-		if( ! generateProperties.isStatic ) {
-			LS_previewItems[layerIndex] = item;
-			if(LS_activeLayerIndexSet.indexOf(layerIndex) !== -1) {
-				item.addClass('ui-selected');
-			} else {
-				item.removeClass('ui-selected');
-			}
-		}
-
 		// Sublayer properties
 		var transforms = {}, trKey, trVal, defVal;
 		for( trKey in layerData.transition) {
@@ -2211,9 +2698,8 @@ var LayerSlider = {
 		}
 
 		// Styles
-		var styles = {};
+		var styles = { 'z-index': (100 + layerCount) - layerIndex };
 		for(var sKey in layerData.styles) {
-
 			var cssVal = layerData.styles[sKey];
 
 			if( ! cssVal && cssVal !== 0 ) { continue; }
@@ -2223,7 +2709,7 @@ var LayerSlider = {
 
 			styles[sKey] = isNumber(cssVal) ? cssVal + 'px' : cssVal;
 
-			if( ['font-weight', 'opacity'].indexOf( sKey )  !== -1 ) {
+			if( ['z-index', 'font-weight', 'opacity'].indexOf( sKey )  !== -1 ) {
 				styles[sKey] = cssVal;
 			}
 		}
@@ -2232,17 +2718,33 @@ var LayerSlider = {
 		layerData.hasTransforms = ! jQuery.isEmptyObject( transforms );
 
 
-		if( layerData.locked ) { item.addClass('disabled'); }
-		if( layerData.hasTransforms ) { item.addClass('transformed'); }
 
 		// Apply style settings and attributes
 		item.attr( jQuery.extend({}, innerAttrs, outerAttrs) ).attr({
 			id: id,
 			style: layerData.style,
 		}).css(styles).css({
-			zIndex: 500 - layerIndex,
 			whiteSpace: !layerData.styles.wordwrap ? 'nowrap' : 'normal',
 		}).addClass(layerData['class']);
+
+		// Restore selection
+		if( ! generateProperties.isStatic ) {
+			LS_previewItems[layerIndex] = item;
+			if(LS_activeLayerIndexSet.indexOf(layerIndex) !== -1) {
+				item.addClass('ui-selected');
+			} else {
+				item.removeClass('ui-selected');
+			}
+		}
+
+		// Add ls-l or static layer classes
+		item.addClass( generateProperties.isStatic ? 'disabled ls-static-layer' : 'ls-l' );
+
+		if( layerData.locked ) { item.addClass('disabled'); }
+		if( layerData.hasTransforms ) { item.addClass('transformed'); }
+		if( document.location.href.indexOf('ls-revisions') !== -1 ) {
+			item.addClass('disabled');
+		}
 
 		// Iframes & media embeds
 		var $iframe = item.children('iframe,video').eq(0);
@@ -2282,6 +2784,15 @@ var LayerSlider = {
 			}
 		}
 
+		// Make sure to override controls for media elements if set by media settings.
+		if( layerData.media === 'media' && item.children('audio,video').length ) {
+			if( layerData.transition.controls === 'enabled' ) {
+				item.children('audio,video').prop('controls', true);
+			} else if( layerData.transition.controls === 'disabled' ) {
+				item.children('audio,video').prop('controls', false);
+			}
+		}
+
 		if( item.is('img') ) {
 
 			item.on( 'load', function(){
@@ -2303,8 +2814,9 @@ var LayerSlider = {
 
 		if( transforms.transformOrigin.indexOf( 'slider') !== -1 ){
 
-			var	sliderWidth = parseInt( window.lsSliderData.properties.sublayercontainer ) || parseInt( window.lsSliderData.properties.width ) || 1280,
-				sliderHeight = parseInt( window.lsSliderData.properties.height ) || 720,
+			var sliderSize = LayerSlider.getSliderSize(),
+				sliderWidth = sliderSize.width,
+				sliderHeight = sliderSize.height,
 				itemLeft = parseFloat( item[0].style.left ),
 				itemTop = parseFloat( item[0].style.top ),
 				itemWidth = item.outerWidth(),
@@ -2375,7 +2887,7 @@ var LayerSlider = {
 
 
 	previewItemAtIndex: function(index) {
-		return LS_previewArea.children().eq(index);
+		return LS_previewArea.children('.ls-l').eq(index);
 	},
 
 
@@ -2392,7 +2904,7 @@ var LayerSlider = {
 
 		if( LS_activeLayerIndexSet.length === 1 ) {
 			var layerData = LS_activeLayerDataSet[0];
-			if ( layerData && ( layerData.hasTransforms ||layerData.locked ) ) {
+			if ( layerData && ( layerData.hasTransforms || layerData.locked ) ) {
 				$lasso.hide();
 				return;
 			}
@@ -2454,7 +2966,7 @@ var LayerSlider = {
 
 			// Media Library params
 			var frame = wp.media({
-				title : 'Pick an image to use it in LayerSlider WP',
+				title : LS_l10n.SBMediaLibraryImage,
 				multiple : multiple,
 				library : { type : type },
 				button : { text : 'Insert' }
@@ -2480,7 +2992,7 @@ var LayerSlider = {
 					LS_GUI.updateImagePicker( jQuery(uploadInput),  previewImg);
 
 					// Add action to UndoManager
-					LS_UndoManager.add('slide.general', 'Slide image', {
+					LS_UndoManager.add('slide.general', LS_l10n.SBUndoSlideImage, {
 						itemIndex: LS_activeSlideIndex,
 						undo: {
 							background: LS_activeSlideData.properties.background,
@@ -2514,7 +3026,7 @@ var LayerSlider = {
 
 						// Add a layer
 						newLayerData = jQuery.extend(true, {}, LS_DataSource.getDefaultLayerData());
-						newLayerData.subtitle = 'Layer #1';
+						newLayerData.subtitle = LS_l10n.SBLayerTitle.replace('%d', '1');
 
 						// Add new layer
 						window.lsSliderData.layers.push({
@@ -2524,7 +3036,8 @@ var LayerSlider = {
 
 						// Add new slide tab
 						var newIndex 	= window.lsSliderData.layers.length + 1,
-							tab 		= jQuery('<a href="#"><span>Slide #'+newIndex+'</span><img src="'+previewImg+'" ><span class="dashicons dashicons-dismiss"></span>').insertBefore('#ls-add-layer');
+							title 		= LS_l10n.SBSlideTitle.replace('%d', newIndex),
+							tab 		= jQuery('<a href="#"><span>'+title+'</span><img src="'+previewImg+'" ><span class="dashicons dashicons-dismiss"></span>').insertBefore('#ls-add-layer');
 					}
 
 
@@ -2555,7 +3068,7 @@ var LayerSlider = {
 					LS_GUI.updateImagePicker( jQuery(uploadInput),  previewImg);
 
 					// Add action to UndoManager
-					LS_UndoManager.add('layer.general', 'Layer image', {
+					LS_UndoManager.add('layer.general', LS_l10n.SBUndoLayerImage, {
 						itemIndex: LS_activeLayerIndexSet[0],
 						undo: {
 							image: LS_activeLayerDataSet[0].image,
@@ -2602,7 +3115,7 @@ var LayerSlider = {
 
 					// Maintain UndoManager
 					if(updateInfo.length) {
-						LS_UndoManager.add('slide.layers', 'New layer(s)', updateInfo);
+						LS_UndoManager.add('slide.layers', LS_l10n.SBUndoNewLayers, updateInfo);
 					}
 
 
@@ -2615,7 +3128,7 @@ var LayerSlider = {
 					LS_GUI.updateImagePicker( jQuery(uploadInput),  previewImg);
 
 					// Add action to UndoManager
-					LS_UndoManager.add('layer.general', 'Video poster', {
+					LS_UndoManager.add('layer.general', LS_l10n.SBUndoVideoPoster, {
 						itemIndex: LS_activeLayerIndexSet[0],
 						undo: {
 							poster: LS_activeLayerDataSet[0].poster,
@@ -2661,6 +3174,24 @@ var LayerSlider = {
 					window.lsSliderData.properties.yourlogoId = attachment.id;
 
 
+				// Slider Preview
+				// -------------------------------------
+				} else if( jQuery(uploadInput).hasClass('ls-slider-preview') ) {
+
+					// Set image chooser preview
+					previewImg = !typeof attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.sizes.full.url;
+					LS_GUI.updateImagePicker( jQuery(uploadInput),  previewImg);
+
+					// Make sure that the meta object exits
+					if( ! window.lsSliderData.meta ) {
+						window.lsSliderData.meta = {};
+					}
+
+					// Store changes and update the preview
+					window.lsSliderData.meta.preview = attachment.url;
+					window.lsSliderData.meta.previewId = attachment.id;
+
+
 				// Multimedia HTML
 				} else if( jQuery(uploadInput).hasClass('ls-insert-media')) {
 
@@ -2688,7 +3219,7 @@ var LayerSlider = {
 
 					// Insert multimedia
 					if(hasVideo) {
-						mediaHTML += '<video width="320" height="240" preload="metadata" controls>\r\n';
+						mediaHTML += '<video width="640" height="360" preload="metadata" controls>\r\n';
 						for(c = 0; c < videos.length; c++) {
 							mediaHTML += '\t<source src="'+videos[c].url+'" type="'+videos[c].mime+'">\r\n';
 						}
@@ -2787,12 +3318,12 @@ var LayerSlider = {
 				processData: false,
 				contentType: false,
 				error: function(jqXHR, textStatus, errorThrown) {
-					alert('Upload error:' + errorThrown);
+					alert( LS_l10n.SBUploadErrorMessage.replace('%s', errorThrown) );
 				},
 				success: function(resp) {
 
 					if(!resp || !resp.success) {
-						alert('Upload error');
+						alert(LS_l10n.SBUploadError);
 						return;
 					}
 
@@ -2828,7 +3359,7 @@ var LayerSlider = {
 				var oldIndex = LayerSlider.dragIndex;
 				var index = jQuery('.moving').removeClass('moving').index();
 
-				LS_UndoManager.add('layer.order', 'Sort layers', {
+				LS_UndoManager.add('layer.order', LS_l10n.SBUndoSortLayers, {
 					itemIndex: null,
 					undo: { from: index, to: oldIndex },
 					redo: { from: oldIndex, to: index }
@@ -2898,7 +3429,7 @@ var LayerSlider = {
 
 		// Add dragables and update settings
 		// while and after dragging
-		LS_previewArea.children().draggable({
+		LS_previewArea.children('.ls-l').draggable({
 			snap: true,
 			snapTolerance: 10,
 			cancel: '.disabled,.transformed',
@@ -2952,7 +3483,7 @@ var LayerSlider = {
 				});
 
 				// Add changes to undoManager
-				LS_UndoManager.add('layer.style', 'Layer position', updateInfo.reverse());
+				LS_UndoManager.add('layer.style', LS_l10n.SBUndoLayerPosition, updateInfo.reverse());
 			}
 		});
 	},
@@ -3071,8 +3602,8 @@ var LayerSlider = {
 
 	listPreviewItems: function(e) {
 
-		// Bail out if preview is active
-		if( LayerSlider.isSlidePreviewActive || LayerSlider.isLayerPreviewActive ) {
+		// Bail out if preview is active or when using Revisions
+		if( LayerSlider.isSlidePreviewActive || LayerSlider.isLayerPreviewActive || document.location.href.indexOf('ls-revisions') !== -1 ) {
 			return;
 		}
 
@@ -3083,7 +3614,7 @@ var LayerSlider = {
 			ml 		= e.pageX;
 
 		// Loop through layers list
-		LS_previewArea.children().each(function(layerIndex) {
+		LS_previewArea.children('.ls-l').each(function(layerIndex) {
 
 			// Get layer item and data
 			var $layer 		= jQuery(this),
@@ -3136,7 +3667,7 @@ var LayerSlider = {
 
 		// Get layer related data
 		var layerIndex = jQuery(el).data('layerIndex');
-		var $previewItem = LS_previewArea.children().eq(layerIndex);
+		var $previewItem = LS_previewArea.children('.ls-l').eq(layerIndex);
 
 
 		// Highlight item
@@ -3145,14 +3676,32 @@ var LayerSlider = {
 	},
 
 
-	selectPreviewItem: function(el) {
-
-		// Select layer
-		var layerIndex = jQuery(el).data('layerIndex');
-		jQuery('.ls-sublayers li').eq(layerIndex).click();
+	selectPreviewItem: function( layerIndex, event ) {
 
 		// Remove layer highlights (if any)
 		LS_previewArea.children().removeClass('highlighted lowlighted');
+
+		if( ! event.ctrlKey && ! event.metaKey ) {
+			if( JSON.stringify(LS_activeLayerIndexSet) !== '['+layerIndex+']' ) {
+				return LayerSlider.selectLayer( [ layerIndex ] );
+			}
+
+		} else {
+
+			// Get layer
+			var $previewItem = LS_previewArea.children().eq( layerIndex );
+
+			// Select layer
+			LS_previewHolder.triggerHandler(
+				jQuery.Event('mousedown.ls', {
+					target: $previewItem[0],
+					which: 1,
+					shiftKey: event.shiftKey,
+					ctrlKey: event.ctrlKey,
+					metaKey: event.metaKey
+				})
+			);
+		}
 	},
 
 
@@ -3244,9 +3793,11 @@ var LayerSlider = {
 
 		// Reindex default layers' title
 		jQuery('#ls-layers .ls-sublayers > li').each(function(index) {
-			var layerTitle = jQuery(this).find('.ls-sublayer-title').val();
-			if( layerTitle.indexOf('Layer #') != -1 && layerTitle.indexOf('copy') == -1) {
-				jQuery(this).find('.ls-sublayer-title').val('Layer #' + (layerCount-index));
+			var layerTitle 	= jQuery(this).find('.ls-sublayer-title').val(),
+				pattern 	= LS_l10n.SBLayerTitle.substring(0, LS_l10n.SBLayerTitle.length-2);
+
+			if( layerTitle.indexOf(pattern) != -1 && layerTitle.indexOf('copy') == -1) {
+				jQuery(this).find('.ls-sublayer-title').val( LS_l10n.SBLayerTitle.replace('%d', (layerCount-index) ) );
 			}
 		});
 	},
@@ -3273,6 +3824,37 @@ var LayerSlider = {
 					'data-help-transition': false
 				}).html('<span>'+title+'</span><span class="dashicons dashicons-dismiss"></span>');
 		});
+	},
+
+
+	rebuildSlides: function() {
+
+		// Remove tabs
+		jQuery('#ls-layer-tabs a:not(.unsortable)').remove();
+
+		jQuery.each(window.lsSliderData.layers, function(slideKey, slideData) {
+
+			var title 	= slideData.properties.title || LS_l10n.SBSlideTitle.replace('%d', slideKey+1),
+				src 	= slideData.properties.backgroundThumb || pluginPath+'admin/img/blank.gif';
+
+
+			if( title.indexOf('copy') === -1 && title.indexOf('Slide #') !== -1 ) {
+				title = 'Slide #' + (slideKey + 1);
+			}
+
+			$tab = jQuery('<a></a>').insertBefore('#ls-layer-tabs .unsortable:first');
+
+			$tab.attr({
+				'href': '#',
+				'data-help': "<div style='background-image: url("+src+");'></div>",
+				'data-help-class': 'ls-slide-preview-tooltip popover-light',
+				'data-help-delay': 1,
+				'data-help-transition': false
+			}).html('<span>'+title+'</span><span class="dashicons dashicons-dismiss"></span>');
+		});
+
+
+		jQuery('#ls-layer-tabs a').eq( LS_activeSlideIndex ).addClass('active');
 	},
 
 	checkMediaAutoPlay: function( $textarea, prop, val ) {
@@ -3354,23 +3936,229 @@ var LayerSlider = {
 
 		// Get slider settings and preview container
 		var sliderProps = window.lsSliderData.properties,
-
-		// Slider settings
-			width 		= sliderProps.width,
-			height 		= sliderProps.height,
-			posts 		= window.lsPostsJSON,
-			callbacks 	= window.lsSliderData.callbacks,
+			sliderSize 	= LayerSlider.getSliderSize(),
 			plugins 	= [];
 
 		// Switch between preview and editor
-		var  $slider  = jQuery('#ls-layers .ls-real-time-preview').show();
-		 $slider  = jQuery('<div id="ls-preview-timeline" class="ls-wp-container">').appendTo( $slider );
+		var $slider  = jQuery('#ls-layers .ls-real-time-preview').show();
+			$slider  = jQuery('<div id="ls-preview-timeline" class="ls-wp-container">').appendTo( $slider );
+
+		if( sliderProps.sliderclass ) {
+			$slider.addClass( sliderProps.sliderclass );
+		}
+
 		jQuery('#ls-layers .ls-preview').hide();
 		jQuery('#ls-layers .ls-preview-button').html('Stop').addClass('playing');
+
 		LayerSlider.hidePreviewSelection();
 
 		// Empty the preview area to avoid ID collisions
-		jQuery('#ls-static-preview, #ls-preview-layers').empty();
+		LS_previewArea.empty();
+
+		// Append slides & layers
+		this.populateSliderPreview( $slider, plugins );
+
+		// Handle plugins
+		if( sliderOptions && sliderOptions.plugins ) {
+			sliderOptions.plugins = jQuery.merge(sliderOptions.plugins, plugins);
+		}
+
+		// Init layerslider
+		$slider.layerSlider( jQuery.extend( true, {
+			type: 'responsive',
+			width: sliderSize.width,
+			height: sliderSize.height,
+			skin: 'v6',
+			skinsPath: pluginPath + 'layerslider/skins/',
+			firstSlide: LS_activeSlideIndex + 1,
+			autoStart: true,
+			pauseOnHover: false,
+			startInViewport: false,
+			autoPlayVideos: sliderProps.autoplayvideos ? true : false,
+			slideBGSize: sliderProps.slideBGSize,
+			slideBGPosition: sliderProps.slideBGPosition,
+			globalBGColor: sliderProps.backgroundcolor,
+			globalBGImage: sliderProps.backgroundimage,
+			globalBGAttachment: sliderProps.globalBGAttachment,
+			globalBGRepeat: sliderProps.globalBGRepeat,
+			globalBGPosition: sliderProps.globalBGPosition,
+			globalBGSize: sliderProps.globalBGSize,
+			parallaxScrollReverse: sliderProps.parallaxScrollReverse,
+			playByScroll: sliderProps.playByScroll ? true : false,
+			playByScrollStart: sliderProps.playByScrollStart ? true : false,
+			playByScrollSpeed: sliderProps.playByScrollSpeed || 1,
+			navButtons: false,
+			navStartStop: false,
+			allowRestartOnResize: sliderProps.allowRestartOnResize ? true : false,
+			preferBlendMode: sliderProps.preferBlendMode,
+			plugins: plugins
+
+		}, sliderOptions )).on('slideTimelineDidComplete', function( event, slider ) {
+			// if( jQuery('.ls-timeline-switch li').eq(0).hasClass('active') ) {
+			// 	slider.api('replay');
+			// 	return false;
+			// }
+
+		}).on( 'slideTimelineDidCreate', function(){
+			jQuery( '.ls-slidebar-slider' ).attr({
+				'data-help': LS_l10n.SBDragMe,
+				'data-km-ui-popover-once': 'true',
+				'data-km-ui-popover-theme': 'red',
+				'data-km-ui-popover-autoclose': 3,
+				'data-km-ui-popover-distance': 20
+			}).trigger( 'mouseenter' );
+		});
+	},
+
+
+
+	stopSlidePreview: function() {
+
+		if( this.isSlidePreviewActive ) {
+			this.isSlidePreviewActive = false;
+
+			// Show the editor
+			jQuery('#ls-layers .ls-preview').show();
+
+			// Stop LayerSlider and empty the preview contents
+			var layersliders = jQuery('#ls-layers .ls-real-time-preview');
+			layersliders.find('.ls-container').layerSlider( 'destroy', true );
+			layersliders.hide();
+
+			// Rewrote the Preview button text
+			var btnText = document.location.href.indexOf('ls-revisions') !== -1 ? LS_l10n.SBPreviewSlide : LS_l10n.slideNoun;
+			jQuery('#ls-layers .ls-preview-button').text( btnText ).removeClass('playing');
+
+			LayerSlider.generatePreview();
+			LayerSlider.showPreviewSelection();
+			LayerSlider.updatePreviewSelection();
+
+			// Remove timeline
+			jQuery('.ls-timeline-switch li:first-child').click();
+
+			// SET: layer editor size
+			kmUI.smartResize.set();
+		}
+	},
+
+
+	startPopupPreview: function( sliderOptions, button ) {
+
+		// Stop both layer & slide preview if they are active
+		this.stopLayerPreview(true);
+		this.stopSlidePreview();
+
+		sliderOptions = sliderOptions || {};
+
+		// Prevent pressing the Preview button multiple times
+		jQuery(button).prop('disabled', true);
+		setTimeout(function() {
+			jQuery(button).prop('disabled', false);
+		}, 1000);
+
+		// Get slider settings and preview container
+		var sliderProps = window.lsSliderData.properties,
+			width 		= parseInt(sliderProps.popupWidth),
+			height 		= parseInt(sliderProps.popupHeight),
+			sliderCSS 	= sliderProps.sliderstyle,
+			circleTimer = sliderProps.circletimer ? true : false,
+			plugins 	= ['popup'];
+
+		// Append live preview element
+		var $slider  = jQuery('<div id="ls-popup-preview" class="ls-wp-container">').appendTo('body');
+
+		if( sliderCSS ) {
+			$slider.attr('style', sliderCSS);
+		}
+
+		if( sliderProps.sliderclass ) {
+			$slider.addClass( sliderProps.sliderclass );
+		}
+
+
+		// Get popup init options
+		jQuery('.ls-settings-popup .popup-prop').each(function() {
+			if( this.name ) { sliderOptions[ this.name ] = window.lsSliderData.properties[ this.name ]; }
+		});
+
+		// Append slides & layers
+		if( LayerSlider.sliderIsEmpty( 1 ) ) {
+			$slider.html( jQuery('#tmpl-popup-example-slider').text() );
+			width = 700;
+			height = 500;
+			circleTimer = false;
+			sliderOptions.popupCloseButtonStyle = 'top: 20px; left: 40px;';
+			sliderOptions.popupPositionHorizontal = 'center';
+			sliderOptions.popupPositionVertical = 'middle';
+			sliderOptions.popupFitWidth = false;
+			sliderOptions.popupFitHeight = false;
+		} else {
+			this.populateSliderPreview( $slider, plugins );
+		}
+
+
+
+		// Handle plugins
+		if( sliderOptions && sliderOptions.plugins ) {
+			sliderOptions.plugins = jQuery.merge(sliderOptions.plugins, plugins);
+		}
+
+		// Init layerslider
+		$slider.layerSlider( jQuery.extend( true, {
+			type: 'popup',
+			width: width,
+			height: height,
+			popupWidth: width,
+			popupHeight: height,
+			skin: sliderProps.skin,
+			skinsPath: pluginPath + 'layerslider/skins/',
+			autoStart: sliderProps.autostart ? true : false,
+			pauseOnHover: sliderProps.pauseonhover,
+			firstSlide: sliderProps.firstlayer,
+			shuffleSlideshow: sliderProps.randomslideshow ? true : false,
+			navPrevNext: sliderProps.navprevnext ? true : false,
+			hoverPrevNext: sliderProps.hoverprevnext ? true : false,
+			navStartStop: sliderProps.navstartstop ? true : false,
+			navButtons: sliderProps.navbuttons ? true : false,
+			hoverBottomNav: sliderProps.hoverbottomnav ? true : false,
+			showBarTimer: sliderProps.bartimer ? true : false,
+			showCircleTimer: circleTimer,
+			thumbnailNavigation: sliderProps.thumb_nav,
+			tnContainerWidth: sliderProps.thumb_container_width,
+			tnWidth: sliderProps.thumb_width,
+			tnHeight: sliderProps.thumb_height,
+			tnActiveOpacity: sliderProps.thumb_active_opacity,
+			tnInactiveOpacity: sliderProps.thumb_inactive_opacity,
+			startInViewport: false,
+			autoPlayVideos: sliderProps.autoplayvideos ? true : false,
+			slideBGSize: sliderProps.slideBGSize,
+			slideBGPosition: sliderProps.slideBGPosition,
+			globalBGColor: sliderProps.backgroundcolor,
+			globalBGImage: sliderProps.backgroundimage,
+			globalBGAttachment: sliderProps.globalBGAttachment,
+			globalBGRepeat: sliderProps.globalBGRepeat,
+			globalBGPosition: sliderProps.globalBGPosition,
+			globalBGSize: sliderProps.globalBGSize,
+			parallaxScrollReverse: sliderProps.parallaxScrollReverse,
+			allowRestartOnResize: sliderProps.allowRestartOnResize ? true : false,
+			preferBlendMode: sliderProps.preferBlendMode,
+			plugins: plugins,
+
+			// Popup Settings
+			popupShowOnce: true,
+			popupShowOnTimeout: 0.01,
+			popupDisableOverlay: false,
+			popupOverlayClickToClose: true
+
+		}, sliderOptions ));
+	},
+
+
+	populateSliderPreview: function( $slider, plugins ) {
+
+		var sliderProps = window.lsSliderData.properties,
+			callbacks 	= window.lsSliderData.callbacks,
+			posts 		= window.lsPostsJSON || [];
 
 		// Iterate over the slides
 		jQuery.each(window.lsSliderData.layers, function(slideIndex, slideData) {
@@ -3447,10 +4235,6 @@ var LayerSlider = {
 			slideData.sublayers.reverse();
 		});
 
-		// Get slider settings
-		var autoPlayVideos = sliderProps.autoplayvideos;
-			autoPlayVideos = autoPlayVideos ? true : false;
-
 		// Callbacks
 		if( callbacks ) {
 			for( var key in callbacks ) {
@@ -3463,83 +4247,6 @@ var LayerSlider = {
 
 				$slider.on(key, new Function('event', 'slider', body));
 			}
-		}
-
-		// Handle plugins
-		if( sliderOptions && sliderOptions.plugins ) {
-			sliderOptions.plugins = jQuery.merge(sliderOptions.plugins, plugins);
-		}
-
-		// Init layerslider
-		$slider.layerSlider( jQuery.extend( true, {
-			type: 'responsive',
-			width: width,
-			height: height,
-			skin: 'v6',
-			skinsPath: pluginPath + 'layerslider/skins/',
-			firstSlide: LS_activeSlideIndex + 1,
-			autoStart: true,
-			pauseOnHover: false,
-			startInViewport: false,
-			autoPlayVideos: autoPlayVideos,
-			slideBGSize: sliderProps.slideBGSize,
-			slideBGPosition: sliderProps.slideBGPosition,
-			globalBGColor: sliderProps.backgroundcolor,
-			globalBGImage: sliderProps.backgroundimage,
-			globalBGAttachment: sliderProps.globalBGAttachment,
-			globalBGRepeat: sliderProps.globalBGRepeat,
-			globalBGPosition: sliderProps.globalBGPosition,
-			globalBGSize: sliderProps.globalBGSize,
-			parallaxScrollReverse: sliderProps.parallaxScrollReverse,
-			playByScroll: sliderProps.playByScroll ? true : false,
-			playByScrollSpeed: sliderProps.playByScrollSpeed || 1,
-			navButtons: false,
-			navStartStop: false,
-			allowRestartOnResize: sliderProps.allowRestartOnResize ? true : false,
-			plugins: plugins
-
-		}, sliderOptions )).on('slideTimelineDidComplete', function( event, slider ) {
-			// if( jQuery('.ls-timeline-switch li').eq(0).hasClass('active') ) {
-			// 	slider.api('replay');
-			// 	return false;
-			// }
-
-		}).on( 'slideTimelineDidCreate', function(){
-			jQuery( '.ls-slidebar-slider' ).attr({
-				'data-help': 'Drag me :)',
-				'data-km-ui-popover-once': 'true',
-				'data-km-ui-popover-theme': 'red',
-				'data-km-ui-popover-autoclose': 3,
-				'data-km-ui-popover-distance': 20
-			}).trigger( 'mouseenter' );
-		});
-	},
-
-
-	stopSlidePreview: function() {
-
-		if( this.isSlidePreviewActive ) {
-			this.isSlidePreviewActive = false;
-
-			// Show the editor
-			jQuery('#ls-layers .ls-preview').show();
-
-			// Stop LayerSlider and empty the preview contents
-			var layersliders = jQuery('#ls-layers .ls-real-time-preview');
-			layersliders.find('.ls-container').layerSlider( 'destroy', true );
-			layersliders.hide();
-
-			// Rewrote the Preview button text
-			jQuery('#ls-layers .ls-preview-button').text('Slide').removeClass('playing');
-			LayerSlider.generatePreview();
-			LayerSlider.showPreviewSelection();
-			LayerSlider.updatePreviewSelection();
-
-			// Remove timeline
-			jQuery('.ls-timeline-switch li:first-child').click();
-
-			// SET: layer editor size
-			kmUI.smartResize.set();
 		}
 	},
 
@@ -3559,9 +4266,16 @@ var LayerSlider = {
 			}
 		}
 
+
+		// Check for Multi-Select
+		if( LS_activeLayerDataSet.length > 1 ) {
+			alert(LS_l10n.SBLayerPreviewMultiSelect);
+			return;
+		}
+
 		// Change preview state
 		this.isLayerPreviewActive = true;
-		jQuery(button).addClass('playing').text('Stop');
+		jQuery(button).addClass('playing').text( LS_l10n.stop );
 
 		// Hide other layers
 		LayerSlider.hidePreviewSelection();
@@ -3571,11 +4285,13 @@ var LayerSlider = {
 		var $wrapper = jQuery('<div>').addClass('ls-layer-preview-wrapper').appendTo('.ls-preview-wrapper');
 
 		// Slide properties
-		var slideProps = LS_activeSlideData.properties,
-			postOffset = slideProps.post_offset;
+		var sliderProps = window.lsSliderData.properties,
+			slideProps 	= LS_activeSlideData.properties,
+			postOffset 	= slideProps.post_offset;
 
 		if(postOffset == -1) { postOffset = LS_activeSlideIndex; }
-		var post = window.lsPostsJSON[postOffset];
+		var posts 	= window.lsPostsJSON || [];
+		var post 	= posts[postOffset];
 
 		// Slide attributes
 		var properties = '', sKey, sVal;
@@ -3586,6 +4302,10 @@ var LayerSlider = {
 			if( sVal !== '' && sVal !== 'null' && sKey !== 'slidedelay' ) {
 				properties += sKey+':'+sVal+';';
 			}
+		}
+
+		if( sliderProps.sliderclass ) {
+			$wrapper.addClass( sliderProps.sliderclass );
 		}
 
 		// Add slide
@@ -3605,11 +4325,13 @@ var LayerSlider = {
 		item.skip = true;
 		LS_previewItems[ LS_activeLayerIndexSet[0] ].addClass('ls-invisible');
 
+		var sliderSize = LayerSlider.getSliderSize();
+
 		// Initialize slider
 		$wrapper.layerSlider({
 			type: 'responsive',
-			width: window.lsSliderData.properties.width,
-			height: window.lsSliderData.properties.height,
+			width: sliderSize.width,
+			height: sliderSize.height,
 			skin: 'v6',
 			skinsPath: pluginPath + 'layerslider/skins/',
 			pauseOnHover: false,
@@ -3629,17 +4351,6 @@ var LayerSlider = {
 	},
 
 
-	updateLayerPreview: function() {
-
-		var $slider = jQuery('.ls-real-time-preview .ls-container'),
-			$layer 	= jQuery('.ls-layer', $slider);
-
-
-
-		$slider.layerSlider( 'updateLayerData', $layer, 'scalein: 2; rotatein: 360; scaleout: 2; rotateout: 360; rotate: -45;' );
-	},
-
-
 	stopLayerPreview: function(forceStop){
 
 		if(this.isLayerPreviewActive) {
@@ -3647,7 +4358,7 @@ var LayerSlider = {
 			// Change preview state
 			this.isLayerPreviewActive = false;
 			LayerSlider.showPreviewSelection();
-			jQuery('.ls-layer-preview-button').removeClass('playing').text('Layer');
+			jQuery('.ls-layer-preview-button').removeClass('playing').text( LS_l10n.layer );
 
 			jQuery.each(LS_activeLayerDataSet, function(index, item) {
 				item.skip = false;
@@ -3655,10 +4366,8 @@ var LayerSlider = {
 
 			// Restore editing area
 			// LS_activeLayerDataSet.skip = false;
-			if( forceStop ){
-				jQuery.each(LS_activeLayerIndexSet, function(index, item) {
-					LayerSlider.generatePreviewItem( item );
-				});
+			if( forceStop ) {
+				LayerSlider.generateSelectedPreviewItems();
 			}
 
 			jQuery('.ls-layer-preview-wrapper').layerSlider( 'destroy', true );
@@ -3737,7 +4446,7 @@ var LayerSlider = {
 			if (cssVal) { // !! fix for unused styles don't override Custom CSS
 				styles[cssProp] = isNumber(cssVal) ? cssVal + 'px' : cssVal;
 
-				if( ['font-weight', 'opacity'].indexOf( cssProp )  !== -1 ) {
+				if( ['z-index', 'font-weight', 'opacity'].indexOf( cssProp )  !== -1 ) {
 					styles[cssProp] = cssVal;
 				}
 			}
@@ -3831,6 +4540,58 @@ var LayerSlider = {
 	},
 
 
+	updatePopupNotifications: function() {
+
+		var $wrapper 	= jQuery('#ls-popup-notifications'),
+			$layout 	= jQuery('.ls-popup-layout-notification', $wrapper),
+			$trigger 	= jQuery('.ls-popup-trigger-notification', $wrapper),
+			sliderProps = window.lsSliderData.properties,
+			layoutCond 	= sliderProps.type !== 'popup',
+			triggerCond = jQuery.trim(sliderProps.popupShowOnTimeout) || jQuery.trim(sliderProps.popupShowOnIdle) || jQuery.trim(sliderProps.popupShowOnScroll) || sliderProps.popupShowOnLeave || jQuery.trim(sliderProps.popupShowOnClick);
+
+		$layout[ layoutCond ? 'removeClass' : 'addClass' ]('ls-hidden');
+		$trigger[ ! triggerCond ? 'removeClass' : 'addClass' ]('ls-hidden');
+
+		$wrapper.children(':not(.ls-hidden):first').removeClass('ls-hidden').siblings().addClass('ls-hidden');
+	},
+
+
+	updatePopupPositionGrid: function() {
+
+		var vPos = window.lsSliderData.properties.popupPositionVertical,
+			hPos = window.lsSliderData.properties.popupPositionHorizontal;
+
+		jQuery('.ls-popup-position td[data-move="'+vPos+' '+hPos+'"]').click();
+	},
+
+
+	updatePopupPreview: function() {
+
+		var fitWidth 	= window.lsSliderData.properties.popupFitWidth,
+			fitHeight 	= window.lsSliderData.properties.popupFitHeight,
+			vPos 		= window.lsSliderData.properties.popupPositionVertical,
+			hPos 		= window.lsSliderData.properties.popupPositionHorizontal,
+			$preview 	= jQuery('.ls-settings-popup .ls-popup-layout-preview .ls-popup-layout-inner');
+
+			$preview.attr('class', 'ls-popup-layout-inner ls-popup-'+vPos+' ls-popup-'+hPos);
+
+			if( fitWidth ) { $preview.addClass('ls-popup-fitwidth'); }
+			if( fitHeight ) { $preview.addClass('ls-popup-fitheight'); }
+	},
+
+
+	updateLayerPreview: function() {
+
+		var $slider = jQuery('.ls-real-time-preview .ls-container'),
+			$layer 	= jQuery('.ls-layer', $slider);
+
+
+
+		$slider.layerSlider( 'updateLayerData', $layer, 'scalein: 2; rotatein: 360; scaleout: 2; rotateout: 360; rotate: -45;' );
+	},
+
+
+
 	openTransitionGallery: function() {
 
 		kmUI.modal.open( '#tmpl-ls-transition-modal', { width: 900, height: 1500 } );
@@ -3892,13 +4653,13 @@ var LayerSlider = {
 		if(check) {
 
 			jQuery( '#ls-transitions-list section:eq('+index+')' ).find('.tr-item').addClass('added');
-			checkbox.attr('class', 'on').text('Deselect all');
+			checkbox.attr('class', 'on').text( LS_l10n.deselectAll );
 			LS_activeSlideData.properties[ type ] = 'all';
 
 		} else {
 
 			jQuery( '#ls-transitions-list section:eq('+index+')' ).find('.tr-item').removeClass('added');
-			checkbox.attr('class', 'off').text('Select all');
+			checkbox.attr('class', 'off').text( LS_l10n.selectAll);
 			LS_activeSlideData.properties[ type ] = '';
 		}
 	},
@@ -3923,7 +4684,7 @@ var LayerSlider = {
 		} else {
 
 			// Check the checkbox
-			jQuery('#ls-transition-window header i:last').attr('class', 'off').text('Select all');
+			jQuery('#ls-transition-window header i:last').attr('class', 'off').text( LS_l10n.selectAll );
 		}
 
 		// Gather checked selected transitions
@@ -3937,7 +4698,9 @@ var LayerSlider = {
 	},
 
 
-	save: function(el) {
+	save: function( saveProperties ) {
+
+		saveProperties = saveProperties || {};
 
 		// Bring all layers back in,
 		// as it can mess with saving.
@@ -3947,7 +4710,7 @@ var LayerSlider = {
 		var sliderData = jQuery.extend(true, {}, window.lsSliderData);
 
 		// Temporary disable submit button
-		jQuery('.ls-publish').addClass('saving').find('button').text('Saving ...').attr('disabled', true);
+		jQuery('.ls-publish').addClass('saving').find('button').text( LS_l10n.saving ).attr('disabled', true);
 
 		// Serialize slider settings to prevent jQuery form converting form data
 		sliderData.properties = JSON.stringify(sliderData.properties);
@@ -3959,6 +4722,9 @@ var LayerSlider = {
 		//    to remove empty values added mistakenly.
 		//
 		// 3. Also check whether they use dynamic content.
+		//
+		// 4. Generate UUIDs on save for every layer for WPML
+		//    and other purposes that requires a persistent ID.
 		jQuery.each(sliderData.layers, function(slideIndex, slideData) {
 			slideData.properties.post_content = false;
 			jQuery.each(slideData.sublayers, function(layerIndex, layerData) {
@@ -3977,6 +4743,9 @@ var LayerSlider = {
 				if(slideData.properties.post_content === false && layerData.media == 'post') {
 					slideData.properties.post_content = true;
 				}
+
+				var uuid = LS_DataSource.uuidForLayer( layerIndex, slideIndex);
+				sliderData.layers[ slideIndex ].sublayers[ layerIndex ].uuid = uuid;
 			});
 
 			// Reverse the list of layers, as it is only
@@ -3990,25 +4759,38 @@ var LayerSlider = {
 		jQuery.ajax({
 			type: 'POST', url: ajaxurl, dataType: 'text',
 			data: {
-				_wpnonce: jQuery('#_wpnonce').val(),
+				_wpnonce: jQuery('#ls-slider-form input[name="_wpnonce"]').val(),
 				_wp_http_referer: jQuery('#ls-slider-form input[name="_wp_http_referer"]').val(),
 				action: 'ls_save_slider',
 				id: LS_sliderID,
 				sliderData: sliderData
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				alert('It seems there is a server issue that prevented LayerSlider from saving your work. Please check LayerSlider -> System Status for potential errors, try to temporarily disable themes/plugins to rule out incompatibility issues or contact your hosting provider to resolve server configuration problems. Your HTTP server thrown the following error: \n\r\n\r' + errorThrown);
+				jQuery('.ls-publish').removeClass('saving').addClass('failed').find('button').text( LS_l10n.error );
+				setTimeout(function() {
+					alert( LS_l10n.SBSaveError.replace('%s', errorThrown ) );
+				}, 100);
 			},
-			complete: function(data) {
+			success: function(jqXHR, textStatus) {
 
 				// Consider the editor as "clean", do not show
 				// unsaved changes warning when leaving the page.
 				LS_editorIsDirty = false;
 
 				// Button feedback
-				jQuery('.ls-publish').removeClass('saving').addClass('saved').find('button').text('Saved');
+				jQuery('.ls-publish').removeClass('saving').addClass('saved').find('button').text( LS_l10n.saved );
+
+				// Display on screen notification when save
+				// was initiated by a keyboard shortcut.
+				if( saveProperties.usedShortcut && typeof lsScreenOptions !== 'undefined' && lsScreenOptions.useNotifyOSD === 'true' ) {
+					jQuery('.ls-notify-osd').addClass('visible');
+				}
+			},
+			complete: function(data) {
+
 				setTimeout(function() {
-					jQuery('.ls-publish').removeClass('saved').find('button').text('Save changes').attr('disabled', false);
+					jQuery('.ls-publish').removeClass('saved failed').find('button').text( LS_l10n.save ).attr('disabled', false);
+					jQuery('.ls-notify-osd').removeClass('visible');
 				}, 2000);
 			}
 		});
@@ -4120,7 +4902,7 @@ var LS_PostOptions = {
 
 		if(data.length === 0) {
 			preview.append( jQuery('<li>')
-				.append( jQuery('<h4>', { 'text' : 'No posts were found with the current filters.' }) )
+				.append( jQuery('<h4>', { 'text' : LS_l10n.SBPostFilterWarning }) )
 			);
 
 		} else {
@@ -4172,6 +4954,99 @@ var LS_PostOptions = {
 		}));
 
 		jQuery(element).keyup();
+	}
+};
+
+
+
+
+var LS_PostChooser = {
+
+	timeout: null,
+	data: null,
+	opened: null,
+
+	init: function() {
+
+		jQuery('#ls-layers').on('click', '.ls-slide-link a.post', function(e) {
+			e.preventDefault();
+
+			LS_PostChooser.opener = this;
+			LS_PostChooser.open();
+		});
+
+		jQuery(document).on('click', '#ls-post-chooser-modal-window li', function(e) {
+			e.preventDefault();
+			LS_PostChooser.select( jQuery(this) );
+		});
+
+		jQuery(document).on('keyup', '#ls-post-chooser-modal-window input', function(e) {
+			LS_PostChooser.search();
+
+		}).on('change', '#ls-post-chooser-modal-window select', function(e) {
+			LS_PostChooser.search(1);
+
+		}).on('submit', '#ls-post-chooser-modal-window form', function(e) {
+			e.preventDefault();
+			LS_PostChooser.search(1);
+		});
+	},
+
+	open: function() {
+		kmUI.modal.open( '#tmpl-post-chooser', { width: 850, height: 900, clip: false } );
+		this.search();
+	},
+
+	search: function( timeout ) {
+
+		timeout = timeout || 300;
+
+		clearTimeout( LS_PostChooser.timeout );
+		LS_PostChooser.timeout = setTimeout(function() {
+			var $form = jQuery('#ls-post-chooser-modal-window form');
+			jQuery.getJSON( ajaxurl, $form.serialize(), function( data ) {
+
+				LS_PostChooser.data = data;
+
+				jQuery('#ls-post-chooser-modal-window .ls-post-previews ul').empty();
+				jQuery.each( data, function( index, item ) {
+
+					jQuery('<li>\
+						<img src="'+item['image-url']+'">\
+						<h3>'+item.title+'</h3>\
+						<div>'+item.content.substr(0, 200)+'</div>\
+						<span class="author">'+item['date-published']+' by '+item.author+'</span>\
+					</li>').appendTo('#ls-post-chooser-modal-window .ls-post-previews ul');
+				});
+			});
+		}, timeout);
+	},
+
+	select: function( $li ) {
+
+		var item 	= LS_PostChooser.data[ $li.index() ],
+			l10nKey = 'SBLinkText'+ucFirst(item['post-type']),
+			$holder = jQuery(LS_PostChooser.opener).closest('.ls-slide-link'),
+			$input 	= jQuery('input.url', $holder);
+
+		$holder.addClass('has-link');
+
+		$input.val( LS_l10n[l10nKey].replace('%s', item.title) )
+			.trigger( 'input' )
+			.trigger( 'change' )
+			.prop('disabled', true)
+
+		.next()
+			.val( item['post-id'] )
+
+		.next()
+			.val( item.title )
+
+		.next()
+			.val( item['post-type'] );
+
+		kmUI.modal.close();
+		kmUI.overlay.close();
 	}
 };
 
@@ -4264,7 +5139,9 @@ var LS_DataSource = {
 		}
 
 		// Select first layer
-		$layersList.children().eq(LS_activeLayerIndexSet).addClass('active');
+		jQuery.each(LS_activeLayerIndexSet, function(index, layerIndex) {
+			$layersList.children().eq( layerIndex ).addClass('active');
+		});
 
 		if( buildProperties.updateLayer ) {
 			this.buildLayer();
@@ -4375,9 +5252,14 @@ var LS_DataSource = {
 			}
 		});
 		jQuery('#ls-transition-selector-table td:not(.ls-padding)').eq(LS_activeLayerTransitionTab).click();
+		LayerSlider.checkForOpeningTransition();
 
 		// Select lastly viewed subpage
 		LayerSlider.selectLayerPage(LS_activeLayerPageIndex);
+
+		if( LS_activeLayerIndexSet.length > 1 ) {
+			LayerSlider.startMultipleSelection();
+		}
 	},
 
 	setFormItemValues: function($items, values, defaults) {
@@ -4540,7 +5422,7 @@ var LS_DataSource = {
 		// Make sure to always override the layer title in the stored copy
 		// to avoid name collisions and weird behaviors.
 		var layerCount 	= LS_activeSlideData.sublayers ? LS_activeSlideData.sublayers.length : 0,
-			layerName 	= 'Layer #' + (layerCount+1);
+			layerName 	= LS_l10n.SBLayerTitle.replace('%d', layerCount+1);
 
 		LS_defaultLayerData.subtitle = layerName;
 
@@ -4572,12 +5454,20 @@ var LS_DataSource = {
 	},
 
 
-	uuidForLayer: function( layerIndex ) {
+	uuidForLayer: function( layerIndex, slideIndex ) {
 
-		layerIndex = layerIndex || LS_activeLayerIndexSet[0];
-		return this.uuidForObject(
-			LS_activeSlideData.sublayers[ layerIndex ]
-		);
+		if( typeof layerIndex === 'undefined' ) {
+			layerIndex = LS_activeLayerIndexSet[0];
+		}
+
+		if( typeof slideIndex === 'undefined' ) {
+			slideIndex = LS_activeSlideIndex;
+		}
+
+
+		var slideData = window.lsSliderData.layers[ slideIndex ];
+
+		return this.uuidForObject( slideData.sublayers[ layerIndex ] );
 	},
 
 
@@ -4626,16 +5516,18 @@ var LS_DataSource = {
 };
 
 
-jQuery(document).ready(function() {
+var initSliderBuilder = function() {
 
 	jQuery('.km-tabs').kmTabs();
 
 	// Set the DB ID of currently editing slider
-	LS_sliderID 		= jQuery('#ls-slider-form input[name="slider_id"]').val();
+	if( ! LS_sliderID ) {
+		LS_sliderID = jQuery('#ls-slider-form input[name="slider_id"]').val();
+	}
+
 	LS_previewArea 		= jQuery('#ls-preview-layers');
 	LS_previewHolder 	= LS_previewArea.parent();
 	LS_previewWrapper 	= LS_previewHolder.parent();
-	LS_previewStatic 	= jQuery('#ls-static-preview');
 
 
 	// Set a small delay to prevent unintentional
@@ -4648,6 +5540,7 @@ jQuery(document).ready(function() {
 	// Add default slide data to data source if it's a new slider
 	if(window.lsSliderData.properties.new) {
 		window.lsSliderData.properties = LS_DataSource.readSliderSettings();
+		window.lsSliderData.properties.createdWith = jQuery('input[name="sliderVersion"]').val();
 		window.lsSliderData.layers = [{
 			properties: jQuery.extend(true, {}, LS_DataSource.getDefaultSlideData()),
 			sublayers: [jQuery.extend(true, {}, LS_DataSource.getDefaultLayerData())]
@@ -4679,6 +5572,7 @@ jQuery(document).ready(function() {
 
 	LS_GUI.updateImagePicker( 'yourlogo', 'useCurrent' );
 	LS_GUI.updateImagePicker( 'backgroundimage', 'useCurrent' );
+	LS_GUI.updateImagePicker( 'preview', 'useCurrent' );
 	LayerSlider.selectSlide(LS_activeSlideIndex, { forceSelect: true });
 
 
@@ -4695,7 +5589,7 @@ jQuery(document).ready(function() {
 	jQuery( window ).on('beforeunload', function(e) {
 
 		if( LS_editorIsDirty ) {
-			var dialogText = 'You have unsaved changes on this page. Do you want to leave and discard the changes made since your last save?';
+			var dialogText = LS_l10n.SBUnsavedChanges;
 			e.returnValue = dialogText;
 			return dialogText;
 		}
@@ -4704,7 +5598,6 @@ jQuery(document).ready(function() {
 
 	// Main tab bar page select
 	jQuery('#ls-main-nav-bar a:not(.unselectable)').click(function(e) {
-		e.preventDefault();
 
 		LayerSlider.selectMainTab( this );
 
@@ -4721,16 +5614,10 @@ jQuery(document).ready(function() {
 	});
 
 	// Deeplink Slider Settings
-	if( document.location.hash ) {
-		var hash 	= document.location.hash.replace('#', ''),
-			$items 	= jQuery('.ls-settings-sidebar li'),
-			$target = $items.filter('[data-deeplink="'+hash+'"]');
-
-		if( $target.length ) {
-			jQuery('#ls-main-nav-bar .settings').click();
-			$target.click();
-		}
-	}
+	if( document.location.hash ) { LS_GUI.deeplinkSection(); }
+	jQuery(window).on('hashchange', function() {
+		LS_GUI.deeplinkSection();
+	});
 
 	// Settings: checkboxes
 	jQuery('.ls-settings :checkbox, .ls-layer-box :checkbox:not(.noreplace)').customCheckbox();
@@ -4751,7 +5638,7 @@ jQuery(document).ready(function() {
 
 		onSelect: function(formattedDate, date, inst) {
 			inst.$el.prev().fadeOut(200);
-			inst.$el.trigger('keyup');
+			inst.$el.trigger('input');
 		}
 
 	}).on('input', function() {
@@ -4768,7 +5655,7 @@ jQuery(document).ready(function() {
 					if( ! data.errorCount && data.dateStr != '' ) {
 						$this.prev().fadeIn(200).removeClass('error').children('span').text( data.dateStr );
 					} else {
-						$this.prev().fadeIn(200).addClass('error').children('span').text( 'Invalid format' );
+						$this.prev().fadeIn(200).addClass('error').children('span').text( LS_l10n.SBInvalidFormat );
 					}
 				});
 			}
@@ -4787,6 +5674,100 @@ jQuery(document).ready(function() {
 
 	});
 
+
+	// Settings: Popup Presets
+	jQuery('.ls-settings-popup').on('click', '#tmpl-popup-presets-button', function(e) {
+		e.preventDefault();
+		kmUI.modal.open( '#tmpl-popup-presets-window', { width: 850, height: 900 } );
+
+
+	// Settings: Popup Include Pages
+	}).on('click', '.ls-popup-include-all-pages', function() {
+		var $switch 	= jQuery(this),
+			$targets 	= jQuery('.ls-popup-include-pages span:not(:first-child), .ls-popup-include-custom-pages');
+
+		if( $switch.hasClass('on') ) {
+			$targets.removeClass('ls-hidden');
+		} else {
+			$targets.addClass('ls-hidden');
+		}
+	// Settings: Popup Preview
+	}).on('click', '.ls-popup-preview-button', function(e) {
+		e.preventDefault();
+		LayerSlider.startPopupPreview({}, this);
+
+	// Settings: Popup Position
+	}).on('click', '.ls-popup-position td', function(e) {
+
+		var $td 	= jQuery(this),
+			$table 	= $td.closest('table'),
+			moves 	= $td.data('move').split(' ');
+
+		// Update UI
+		$table.find('td').removeClass('active');
+		$td.addClass('active');
+
+		// Update settings
+		jQuery('input[name="popupPositionVertical"]').val( moves[0] );
+		jQuery('input[name="popupPositionHorizontal"]').val( moves[1] );
+		window.lsSliderData.properties.popupPositionVertical = moves[0];
+		window.lsSliderData.properties.popupPositionHorizontal = moves[1];
+
+		// Update preview
+		LayerSlider.updatePopupPreview();
+
+	}).on('click', '.ls-popup-fit-width, .ls-popup-fit-height', function() {
+		setTimeout(function() {
+			LayerSlider.updatePopupPreview();
+		}, 100);
+
+	}).on('keyup change', '.ls-popup-triggers :input', function() {
+		setTimeout(function() {
+			LayerSlider.updatePopupNotifications();
+		}, 100);
+	});
+
+	if( jQuery('.ls-popup-include-all-pages').hasClass('on') ) {
+		jQuery('.ls-popup-include-pages span:not(:first-child), .ls-popup-include-custom-pages').addClass('ls-hidden');
+	}
+
+	LayerSlider.updatePopupPositionGrid();
+	LayerSlider.updatePopupPreview();
+
+
+	// Settings: Popup presets
+	jQuery(document).on('click', '#ls-popup-presets-modal-window .ls-layout-illustration-grid', function() {
+		var $item 		= jQuery(this),
+			$options 	= jQuery('.ls-settings-popup :input'),
+			data 		= $item.data('options');
+
+
+		if( typeof data === 'string' ) {
+			data = JSON.parse( data );
+		}
+
+		for( var key in data ) {
+			window.lsSliderData.properties[ key ] = data[key];
+			var $input = $options.filter('[name="'+key+'"]');
+
+			// Handle checkboxes
+			if( typeof data[key] === 'boolean' ) {
+				if( data[key] != $input.prop('checked') ) {
+					$input.next().click();
+				}
+			} else {
+				$input.val( data[key] );
+			}
+		}
+
+		// Update settings
+		LayerSlider.updatePopupPositionGrid();
+		LayerSlider.updatePopupPreview();
+
+		// Close modal
+		kmUI.modal.close();
+		kmUI.overlay.close();
+	});
 
 	// Uploads
 	LayerSlider.openMediaLibrary();
@@ -4858,9 +5839,14 @@ jQuery(document).ready(function() {
 			window.lsSliderData.properties.yourlogoId = '';
 			window.lsSliderData.properties.yourlogoThumb = '';
 
+		} else if($parent.hasClass('ls-slider-preview')) {
+
+			window.lsSliderData.meta.preview = '';
+			window.lsSliderData.meta.previewId = '';
+
 		} else if($parent.hasClass('ls-slide-image')) {
 
-			LS_UndoManager.add('slide.general', 'Remove slide image', {
+			LS_UndoManager.add('slide.general', LS_l10n.SBUndoRemoveSlideImage, {
 				itemIndex: LS_activeSlideIndex,
 				undo: {
 					background: LS_activeSlideData.properties.background,
@@ -4886,7 +5872,7 @@ jQuery(document).ready(function() {
 
 		} else if($parent.hasClass('ls-layer-image')) {
 
-			LS_UndoManager.add('layer.general', 'Remove layer image', {
+			LS_UndoManager.add('layer.general', LS_l10n.SBUndoRemoveLayerImage, {
 				itemIndex: LS_activeLayerIndexSet[0],
 				undo: {
 					image: LS_activeLayerDataSet[0].image,
@@ -4910,7 +5896,7 @@ jQuery(document).ready(function() {
 
 		} else if($parent.hasClass('ls-media-image')) {
 
-			LS_UndoManager.add('layer.general', 'Remove video poster', {
+			LS_UndoManager.add('layer.general', LS_l10n.SBUndoRemoveVideoPoster, {
 				itemIndex: LS_activeLayerIndexSet[0],
 				undo: {
 					poster: LS_activeLayerDataSet[0].poster,
@@ -5018,8 +6004,9 @@ jQuery(document).ready(function() {
 		$this.siblings('input[type="hidden"]').val( type );
 		$this.addClass('active').siblings().removeClass('active');
 
-		// Hide special fields
-		jQuery('.full-width-row, .full-size-row', jQuery('.ls-settings-contents')).hide();
+		// Reset rows
+		jQuery('.ls-settings-contents .ls-popup-hide').show();
+		jQuery('.full-width-row, .full-size-row, .popup-row', jQuery('.ls-settings-contents')).hide();
 
 		switch( type ) {
 			case 'fullwidth':
@@ -5029,10 +6016,16 @@ jQuery(document).ready(function() {
 			case 'fullsize':
 				jQuery('.ls-settings-contents .full-size-row').css('display', 'table-row');
 				break;
+
+			case 'popup':
+				jQuery('.ls-settings-contents .ls-popup-hide').hide();
+				jQuery('.ls-settings-contents .popup-row').css('display', 'table-row');
+				break;
 		}
 
 		// Update data source & reload preview
 		window.lsSliderData.properties.type = type;
+		LayerSlider.updatePopupNotifications();
 		LayerSlider.generatePreview();
 	});
 
@@ -5150,7 +6143,7 @@ jQuery(document).ready(function() {
 	jQuery('#ls-layers').on('click', '.ls-url-prompt', function(e){
 		e.preventDefault();
 
-		var url = prompt('Enter an image URL');
+		var url = prompt( LS_l10n.SBEnterImageURL );
 		if( ! url ) { return false; }
 
 		var $el 	= jQuery(this),
@@ -5181,7 +6174,7 @@ jQuery(document).ready(function() {
 			LS_activeLayerDataSet[0].posterThumb = url;
 		}
 
-		jQuery('img', $target).attr('src', url);
+		LS_GUI.updateImagePicker( $target, url );
 		LayerSlider.generatePreview();
 	});
 
@@ -5258,7 +6251,7 @@ jQuery(document).ready(function() {
 	}).on('click', '#ls-transition-window header i:not(:last)', function(e) {
 
 		// Confirmation
-		if( ! confirm('Are you sure you want to apply the currently selected transitions and effects on the other slides?') ) {
+		if( ! confirm( LS_l10n.SBTransitionApplyOthers ) ) {
 			return false;
 		}
 
@@ -5307,10 +6300,30 @@ jQuery(document).ready(function() {
 		});
 
 	// Select layer
-	}).on('click', '.ls-sublayers li', function() {
-		if( ! jQuery(this).hasClass('active') || LS_activeLayerIndexSet.length !== 1 || LS_activeLayerIndexSet[0] !== jQuery(this).index()) {
-			LayerSlider.selectLayer( [jQuery(this).index()] );
+	}).on('click', '.ls-sublayers li', function( event ) {
+
+		// Range Select
+		if( event.shiftKey && LS_activeLayerDataSet.length === 1 ) {
+
+			var val1 	= LS_lastSelectedLayerIndex || LS_activeLayerIndexSet[0],
+				val2 	= jQuery(this).index(),
+
+				start 	= Math.min(val1, val2),
+				end 	= Math.max(val1, val2),
+
+				indexes = [];
+
+			for(var i = start; i <= end; i++) {
+				indexes.push(i);
+			}
+
+			LayerSlider.selectLayer( indexes );
+
+		// Manual select
+		} else {
+			LayerSlider.selectPreviewItem( jQuery(this).index(), event );
 		}
+
 
 	}).on('keyup', 'input[name="subtitle"]', function() {
 		var index = jQuery(this).closest('li').index();
@@ -5341,14 +6354,14 @@ jQuery(document).ready(function() {
 
 		if( !$item.hasClass('active') ) {
 
-			LS_UndoManager.add('layer.general', 'Layer media', {
-				itemIndex: LS_activeLayerIndexSet,
+			LS_UndoManager.add('layer.general', LS_l10n.SBUndoLayerMedia, {
+				itemIndex: LS_activeLayerIndexSet[0],
 				undo: { media: LS_activeLayerDataSet[0].media },
 				redo: { media: $item.data('section') }
 			});
 
 			LayerSlider.selectMediaType(this);
-			LayerSlider.generatePreviewItem(LS_activeLayerIndexSet);
+			LayerSlider.generatePreviewItem( LS_activeLayerIndexSet[0] );
 		}
 
 	// Layer element type
@@ -5356,14 +6369,14 @@ jQuery(document).ready(function() {
 		e.preventDefault();
 		var $item = jQuery(this);
 
-		LS_UndoManager.add('layer.general', 'Layer type', {
-			itemIndex: LS_activeLayerIndexSet,
+		LS_UndoManager.add('layer.general', LS_l10n.SBUndoLayerType, {
+			itemIndex: LS_activeLayerIndexSet[0],
 			undo: { type: LS_activeLayerDataSet[0].type },
 			redo: { type: $item.data('element') }
 		});
 
 		LayerSlider.selectElementType(this);
-		LayerSlider.generatePreviewItem(LS_activeLayerIndexSet);
+		LayerSlider.generatePreviewItem( LS_activeLayerIndexSet[0] );
 
 	// Layer options: input, textarea, select
 	}).on('input change click', '.ls-sublayer-pages input, .ls-sublayer-pages textarea, .ls-sublayer-pages select', function(event) {
@@ -5373,49 +6386,60 @@ jQuery(document).ready(function() {
 
 		// Bail out early if there was a click event
 		// fired on a non-checkbox form item
-		if(event.type === 'click' && !jQuery(this).is(':checkbox')) {
+		if(event.type === 'click' && ! jQuery(this).is(':checkbox')) {
 			return false;
 		}
 
 		// Prevent triggering the change event
 		// on non-select form items
-		if(event.type === 'change' && !jQuery(this).is('select')) {
+		if(event.type === 'change' && ! jQuery(this).is('select')) {
 			return false;
 		}
 
 		var $item 	= jQuery(this),
 			prop 	= $item.attr('name'),
-			val  	= $item.is(':checkbox') ? $item.prop('checked') : $item.val(),
-			area 	= LS_activeLayerDataSet[0];
-
-		if($item.hasClass('sublayerprop') ) { area = LS_activeLayerDataSet[0].transition; }
-			else if($item.hasClass('auto') ) { area = LS_activeLayerDataSet[0].styles; }
+			val  	= $item.is(':checkbox') ? $item.prop('checked') : $item.val();
 
 		// Boolean conversion
 		if( val === 'true' ) { val = true; }
 		if( val === 'false' ) { val = false; }
 
-		// Null values indicate empty option.
-		// We should remove them entirely from data source.
-		if( val === null || val === 'null' || val === '' ) {
-			delete area[ prop ];
-		} else {
-			area[ prop ] = val;
-		}
+		jQuery.each(LS_activeLayerDataSet, function(index, layerData) {
 
-		LayerSlider.willGeneratePreviewItem(LS_activeLayerIndexSet);
+			var layerIndex 	= LS_activeLayerIndexSet[ index ],
+				area 		= layerData;
 
-		if( LayerSlider.isLayerPreviewActive ){
-			LayerSlider.startLayerPreview( jQuery('.ls-layer-preview-button') );
-		}
+			if($item.hasClass('sublayerprop') ) { area = area.transition; }
+				else if($item.hasClass('auto') ) { area = area.styles; }
+
+			// Null values indicate empty option.
+			// We should remove them entirely from data source.
+			if( val === null || val === 'null' || val === '' ) {
+				delete area[ prop ];
+			} else {
+				area[ prop ] = val;
+			}
+
+			LayerSlider.generatePreviewItem( layerIndex );
+		});
+
+
 
 		if( $item.closest('.ls-sublayer-style').length ) {
 			LayerSlider.updatePreviewSelection();
 		}
 
-		// Check if media embed code contains autoplay setting
-		if( prop === 'html' &&  LS_activeLayerDataSet[0].media === 'media' ) {
-			LayerSlider.checkMediaAutoPlay( $item, prop, val );
+		if( LS_activeLayerDataSet.length === 1 ) {
+
+			// Check if media embed code contains autoplay setting
+			if( prop === 'html' &&  LS_activeLayerDataSet[0].media === 'media' ) {
+				LayerSlider.checkMediaAutoPlay( $item, prop, val );
+			}
+
+			// Restart layer preview
+			if( LayerSlider.isLayerPreviewActive  ){
+				LayerSlider.startLayerPreview( jQuery('.ls-layer-preview-button') );
+			}
 		}
 
 		// startAt
@@ -5436,8 +6460,11 @@ jQuery(document).ready(function() {
 			}, 100);
 		}
 
-	}).on('change', '.ls-sublayer-basic input.bgvideo', function() {
-		LayerSlider.changeVideoType();
+	}).on('change', '.ls-sublayer-basic input.bgvideo', function( event ) {
+		LayerSlider.changeVideoType(event );
+
+	}).on('input', '.ls-sublayer-style textarea.style', function() {
+		LayerSlider.validateCustomCSS( jQuery(this) );
 
 	// Active transition sections
 	}).on('click', '#ls-transition-selector-table td:not(.ls-padding)', function(event) {
@@ -5625,7 +6652,7 @@ jQuery(document).ready(function() {
 					if( $parent.hasClass('ls-slide-image') ) {
 
 						// Add action to UndoManager
-						LS_UndoManager.add('slide.general', 'Slide image', {
+						LS_UndoManager.add('slide.general', LS_l10n.SBUndoSlideImage, {
 							itemIndex: LS_activeSlideIndex,
 							undo: {
 								background: LS_activeSlideData.properties.background,
@@ -5655,7 +6682,7 @@ jQuery(document).ready(function() {
 					} else if( $parent.hasClass('ls-layer-image') ) {
 
 						// Add action to UndoManager
-						LS_UndoManager.add('layer.general', 'Layer image', {
+						LS_UndoManager.add('layer.general', LS_l10n.SBUndoLayerImage, {
 							itemIndex: LS_activeLayerIndexSet[0],
 							undo: {
 								image: LS_activeLayerDataSet[0].image,
@@ -5679,7 +6706,7 @@ jQuery(document).ready(function() {
 					} else if( $parent.hasClass('ls-media-image') ) {
 
 						// Add action to UndoManager
-						LS_UndoManager.add('layer.general', 'Video poster', {
+						LS_UndoManager.add('layer.general', LS_l10n.SBUndoVideoPoster, {
 							itemIndex: LS_activeLayerIndexSet[0],
 							undo: {
 								poster: LS_activeLayerDataSet[0].poster,
@@ -5759,8 +6786,9 @@ jQuery(document).ready(function() {
 	);
 
 	// Select layer from intersecting layers list
-	jQuery(document).on('click', '.ls-preview-item-list li', function() {
-		LayerSlider.selectPreviewItem(this);
+	jQuery(document).on('click', '.ls-preview-item-list li', function(event) {
+		var layerIndex = jQuery(this).data('layerIndex');
+		LayerSlider.selectPreviewItem( layerIndex, event );
 	});
 
 
@@ -5849,7 +6877,7 @@ jQuery(document).ready(function() {
 
 		// Maintain history
 		LayerSlider.updatePreviewSelection();
-		LS_UndoManager.add('layer.style', 'Align layer(s)', updateInfo);
+		LS_UndoManager.add('layer.style', LS_l10n.SBUndoAlignLayer, updateInfo);
 
 	}).on('click', '.ls-editor-layouts button', function(e) {
 		e.preventDefault();
@@ -5883,18 +6911,22 @@ jQuery(document).ready(function() {
 			return;
 		}
 
+		if( document.location.href.indexOf('ls-revisions') !== -1 ) {
+			return;
+		}
+
 		// Save slider when pressing Ctrl/Cmd + S
 		if( (e.metaKey || e.ctrlKey) && e.which == 83 ) {
 			if( ! e.altKey ) {
 				e.preventDefault();
-				LayerSlider.save();
+				LayerSlider.save({ usedShortcut: true });
 				return;
 			}
 		}
 
 		// Disable keyboard shortcuts while the
 		// main builder interface is not visible.
-		if( ! slidesItem.hasClass('active') ) {
+		if( ! slidesItem.length || ! slidesItem.hasClass('active') ) {
 			return true;
 		}
 
@@ -6080,7 +7112,7 @@ jQuery(document).ready(function() {
 
 				clearTimeout(keyTimeout);
 				keyTimeout = setTimeout(function() {
-					LS_UndoManager.add('layer.style', 'Layer position', updateInfo.reverse());
+					LS_UndoManager.add('layer.style', LS_l10n.SBUndoLayerPosition, updateInfo.reverse());
 					oldX = {}; oldY = {};
 				}, 1000);
 
@@ -6140,6 +7172,7 @@ jQuery(document).ready(function() {
 	});
 
 	LS_PostOptions.init();
+	LS_PostChooser.init();
 
 	// Transitions gallery
 	jQuery(document).on('click', '#transitionmenu ul li', function() {
@@ -6170,17 +7203,62 @@ jQuery(document).ready(function() {
 		var trs = jQuery('#ls-transitions-list section.active').find('.tr-item');
 
 		if(trs.filter('.added').length == trs.length) {
-			jQuery('#ls-transition-window header i:last').attr('class', 'on').text('Deselect all');
+			jQuery('#ls-transition-window header i:last').attr('class', 'on').text( LS_l10n.deselectAll );
 		} else {
-			jQuery('#ls-transition-window header i:last').attr('class', 'off').text('Select all');
+			jQuery('#ls-transition-window header i:last').attr('class', 'off').text( LS_l10n.selectAll );
 		}
 	});
 
 	// Link slide to post url
-	jQuery('#ls-layers').on('click', '.ls-slide-link a', function(e) {
+	jQuery('#ls-layers').on('click', '.ls-slide-link a.dyn', function(e) {
 		e.preventDefault();
-		LS_activeLayerDataSet.url = '[post-url]';
-		jQuery(this).closest('.ls-slide-link').children('input').val('[post-url]');
+
+		var $holder = jQuery(this).closest('.ls-slide-link'),
+			$input 	= jQuery('input.url', $holder);
+
+		$input
+			.val('[post-url]')
+			.trigger('input')
+			.trigger('change');
+
+		// !!!!!!!! TODO: LATER
+
+		// Add action to UndoManager
+		// LS_UndoManager.add('slide.general', LS_l10n.SBUndoSlideImage, {
+		// 	itemIndex: LS_activeSlideIndex,
+		// 	undo: {
+		// 		background: LS_activeSlideData.properties.background,
+		// 		backgroundId: LS_activeSlideData.properties.backgroundId,
+		// 		backgroundThumb: LS_activeSlideData.properties.backgroundThumb
+		// 	},
+		// 	redo: {
+		// 		background: attachment.url,
+		// 		backgroundId: attachment.id,
+		// 		backgroundThumb: previewImg
+		// 	}
+		// });
+
+
+		LS_GUI.updateLinkPicker( $input );
+
+
+	// Empty linking field
+	}).on('click', '.ls-slide-link a.change', function(e) {
+		e.preventDefault();
+		var $parent = jQuery(this).closest('.ls-slide-link');
+
+		$parent.removeClass('has-link');
+
+		$parent
+			.find('input[type="text"]')
+			.val('')
+			.prop('disabled', false)
+			.trigger('input')
+			.trigger('change');
+
+		$parent
+			.find('input[type="hidden"]')
+			.val('');
 	});
 
 
@@ -6332,13 +7410,14 @@ jQuery(document).ready(function() {
 			updateInfo.push(undoObj);
 		});
 
-		LS_UndoManager.add('layer.style', 'Layer resize', updateInfo);
+		LS_UndoManager.add('layer.style', LS_l10n.SBUndoLayerResize, updateInfo);
 		LayerSlider.updatePreviewSelection();
 
 	}).addClass('ui-selected-helper').appendTo( LS_previewHolder );
 
 
-	LS_previewHolder.on('mouseup.ls', function(){
+	LS_previewHolder.on('mouseup.ls', function(e) {
+
 		var $helper = jQuery('.ui-selectable-helper');
 		if( $helper.length ) {
 
@@ -6350,7 +7429,7 @@ jQuery(document).ready(function() {
 				items = [];
 
 			// Loop through layers list
-			LS_previewArea.children().each(function(layerIndex) {
+			LS_previewArea.children('.ls-l').each(function(layerIndex) {
 
 				var $layer 	= jQuery(this),
 					t = LS_previewArea.offset().top + $layer.position().top,
@@ -6370,7 +7449,7 @@ jQuery(document).ready(function() {
 				LayerSlider.selectLayer( items );
 			}
 		}
-		// console.log( ( jQuery('.ui-selectable-helper').position().top - LS_previewArea.offset().top ) / LS_previewZoom );
+
 
 	}).selectable({
 		tolerance: 'fit',
@@ -6378,13 +7457,35 @@ jQuery(document).ready(function() {
 		cancel: '.disabled,.transformed'
 
 	// removeFrom | addTo selected layers
+
+	}).on('mouseup.ls', '.ui-draggable', function(e) {
+
+		// Allow selecting a single layer, even if it's
+		// already part of the selection if it wasn't dragged
+		if( e.which !== 3 && ! LS_layerWasDragged ) {
+			if( ! e.ctrlKey && ! e.metaKey ) {
+
+				var $layer 		=  jQuery(this),
+					layerIndex 	= $layer.index(),
+					layerData 	= LS_activeSlideData.sublayers[ layerIndex ];
+
+				// Prevent locked layers to be selected
+				if( ! layerData || layerData.locked ) { return false; }
+
+				LayerSlider.selectLayer( [ jQuery(this).index() ] );
+				return;
+			}
+		}
+
 	}).on('mousedown.ls', '.ui-draggable', function(e){
+
+		LS_layerWasDragged = false;
 
 		if( e.which == 1 ) {
 
 			var $layer 		= jQuery(this),
 				layerIndex 	= $layer.index(),
-				layerData 	= LS_activeSlideData.sublayers[layerIndex];
+				layerData 	= LS_activeSlideData.sublayers[ layerIndex ];
 
 			// Prevent locked layers to be selected
 			if( ! layerData || layerData.locked ) { return false; }
@@ -6399,6 +7500,7 @@ jQuery(document).ready(function() {
 				}
 				$layer.addClass('ui-selected').trigger('selectablestop.ls');
 			}
+
 		}
 
 	// store selected layers, compute lasso position & size
@@ -6416,7 +7518,10 @@ jQuery(document).ready(function() {
 
 		LayerSlider.selectLayer(layerIndexSet);
 
+
 	}).on( 'dragstart.ls', function(u, ui){
+
+		LS_layerWasDragged = true;
 
 		var snapEl = ui.helper.data('ui-draggable').snapElements,
 			snapElLength = snapEl.length,
@@ -6496,7 +7601,17 @@ jQuery(document).ready(function() {
 
 
 	LayerSlider.updatePreviewSelection();
+};
+
+jQuery(document).ready(function() {
+
+	// Initialize the interface only if the
+	// lsSliderData variable is set.
+	if( window.lsSliderData ) {
+		initSliderBuilder();
+	}
 });
+
 
 (function( $ ) {
 
@@ -6643,7 +7758,12 @@ var kmComboBox = {
 	init: function() {
 
 		jQuery(document).on('focus', '.km-combo-input:not(.opened)', function() {
+			LS_comboBoxIsDirty = false;
 			kmComboBox.show( jQuery(this) );
+
+		}).on('click', '.km-combo-box li', function(){
+			LS_comboBoxIsDirty = false;
+			kmComboBox.select( jQuery(this) );
 
 		}).on('blur', '.km-combo-input.opened', function() {
 			var $input = jQuery(this);
@@ -6651,9 +7771,27 @@ var kmComboBox = {
 				kmComboBox.hide( $input );
 			}, 200, $input);
 
-		}).on('click', '.km-combo-box li', function(){
-			kmComboBox.select( jQuery(this) );
+			setTimeout(function() {
+				if( LS_comboBoxIsDirty ) {
+					LayerSlider.generateSelectedPreviewItems();
+				}
+			}, 100);
 
+		}).on('mouseenter', '.km-combo-box li', function() {
+			var $item 		= jQuery(this),
+				cssProp 	= $item.parent().data('css-property'),
+				cssVal 		= $item.text(),
+				fontFamily 	= $item.data('font-family');
+
+
+			if( fontFamily || cssProp ) {
+				LS_previewArea
+					.children('.ui-selected')
+					.css( cssProp || 'font-family', fontFamily || parseInt(cssVal));
+
+				LayerSlider.updatePreviewSelection();
+				LS_comboBoxIsDirty = true;
+			}
 		});
 	},
 
@@ -6672,11 +7810,11 @@ var kmComboBox = {
 		$parent.addClass( 'km-combo-parent' );
 
 		input = {
-				width: $input.outerWidth(),
-				height: $input.outerHeight( true ),
-				left: $input.position().left - parseInt( $parent.css( 'padding-left') ),
-				top: $input.position().top,
-				margins: parseInt( $input.css( 'margin-top' ) ) + parseInt( $input.css( 'margin-bottom' ) )
+			width: $input.outerWidth(),
+			height: $input.outerHeight( true ),
+			left: $input.position().left - parseInt( $parent.css( 'padding-left') ),
+			top: $input.position().top,
+			margins: parseInt( $input.css( 'margin-top' ) ) + parseInt( $input.css( 'margin-bottom' ) )
 		};
 
 		$parent.removeClass( 'km-combo-parent' );
@@ -6689,6 +7827,8 @@ var kmComboBox = {
 
 		// Insert combo-list after the input
 		$list = jQuery('<ul class="km-combo-list">').appendTo( $wrapper );
+		$list.data('css-property', $input.data('css-property') );
+
 
 		// Populate list
 		jQuery.each(options, function(index, option) {
@@ -6698,7 +7838,9 @@ var kmComboBox = {
 				listItem.text(optionName).appendTo($list);
 
 			if( option.font ) {
-				listItem.css('font-family', optionValue);
+				listItem
+					.data('font-family', optionValue)
+					.css('font-family', optionValue);
 			}
 		});
 
@@ -6879,4 +8021,50 @@ var layerTransitionPreview = {
 			}
 		});
 	}
+};
+
+
+var prepTemplateForRelease = function() {
+
+	var sliderData 	= window.lsSliderData,
+		sliderProps = sliderData.properties;
+
+	// Global BG & YourLogo
+	if( sliderProps.backgroundimage ) { sliderProps.backgroundimage = LS_Utils.parse_url( sliderProps.backgroundimage, 'PHP_URL_PATH'); }
+	if( sliderProps.yourlogo ) { sliderProps.yourlogo = LS_Utils.parse_url( sliderProps.yourlogo, 'PHP_URL_PATH'); }
+	if( sliderProps.preview ) { sliderProps.preview = LS_Utils.parse_url( sliderProps.preview, 'PHP_URL_PATH'); }
+	if( sliderData.meta && sliderData.meta.preview ) { sliderData.meta.preview = LS_Utils.parse_url( sliderData.meta.preview, 'PHP_URL_PATH'); }
+
+
+	// Slides
+	jQuery.each(window.lsSliderData.layers, function(slideIndex, slideData) {
+
+		var slideProps = slideData.properties;
+
+		slideData.history = [];
+
+		if( slideData.meta && slideData.meta.undoStackIndex ) {
+			slideData.meta.undoStackIndex = -1;
+		}
+
+		if( slideProps.background ) { slideProps.background = LS_Utils.parse_url( slideProps.background, 'PHP_URL_PATH'); }
+		if( slideProps.backgroundThumb ) { slideProps.backgroundThumb = LS_Utils.parse_url( slideProps.backgroundThumb, 'PHP_URL_PATH'); }
+
+		if( slideProps.thumbnail ) { slideProps.thumbnail = LS_Utils.parse_url( slideProps.thumbnail, 'PHP_URL_PATH'); }
+		if( slideProps.thumbnailThumb ) { slideProps.thumbnailThumb = LS_Utils.parse_url( slideProps.thumbnailThumb, 'PHP_URL_PATH'); }
+
+		// Layers
+		jQuery.each(slideData.sublayers, function(layerIndex, layerData) {
+
+			if( layerData.image ) { layerData.image = LS_Utils.parse_url( layerData.image, 'PHP_URL_PATH'); }
+			if( layerData.imageThumb ) { layerData.imageThumb = LS_Utils.parse_url( layerData.imageThumb, 'PHP_URL_PATH'); }
+
+			if( layerData.poster ) { layerData.poster = LS_Utils.parse_url( layerData.poster, 'PHP_URL_PATH'); }
+			if( layerData.posterThumb ) { layerData.posterThumb = LS_Utils.parse_url( layerData.posterThumb, 'PHP_URL_PATH'); }
+		});
+	});
+
+	LS_UndoManager.update();
+
+	alert("All Done. Performed tasks:\r\n\r\n– Converted URLs to relative format\r\n– Emptied slides history\r\n\r\nManual save required.");
 };

@@ -6,15 +6,8 @@
 	}
 }
 
-.ls-wp-wrap-white {
-	background-color: white !important;
-	padding-top: 32px !important;
-}
-
-.ls-body-black {
-	background-color: black !important;
+.ls-no-overflow {
 	overflow: hidden !important;
-	padding-top: 0 !important;
 }
 
 #show-guides-link-wrap {
@@ -110,6 +103,7 @@
 
 	select {
 		height: 26px;
+		max-width: 150px;
 		font-size: 13px !important;
 		margin: 0 1px;
 
@@ -706,10 +700,10 @@
 
 			li {
 				position: relative;
-				top: 17px;
+				top: 8px;
 				height: 24px;
 				margin: -1px 0 0 0;
-				padding: 5px 0 0 0;
+				padding: 3px 0 0 0;
 				border-top: 1px solid rgba(255, 255, 255, 0.05);
 				border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 				line-height: 24px;
@@ -751,7 +745,6 @@
 
 div.ls-bulk-actions {
 	float: left;
-	width: 260px;
 	height: 30px;
 	margin-top: 3px;
 
@@ -835,13 +828,14 @@ div.ls-bulk-actions {
 		overflow: visible !important;
 
 		&:after {
-			content: 'Importing, please wait...';
+			content: attr(data-l10n-importing);
 			position: absolute;
 			width: 200%;
 			height: 50px;
 			top: 160%;
 			left: -50%;
 			font-size: 18px;
+			text-align: center;
 		}
 	}
 }
@@ -1078,6 +1072,7 @@ div.ls-bulk-actions {
 	.inner {
 		padding: 20px;
 		text-align: center;
+		font-size: 13px;
 	}
 
 	i {
@@ -1360,13 +1355,29 @@ div.ls-bulk-actions {
 	}
 }
 
+.ls-product-tips {
+
+	text-align: justify;
+
+	.button {
+		position: absolute;
+		bottom: 10px;
+		left: 10px;
+		height: 30px;
+	}
+}
+
 .ls-product-support {
 
 	a.button {
 		position: absolute;
 		left: 10px;
-		bottom: 11px;
+		bottom: 10px;
 		box-shadow: none;
+	}
+
+	a.button-normal {
+		height: 30px;
 	}
 
 	a.button-small {
@@ -1478,11 +1489,11 @@ ul.ls-font-list {
 	padding: 0;
 
 	.ls-notice {
-		margin: 5px 0;
+		margin: 10px 10px 20px 10px;
 		text-align: center;
 		font: {
 			family: $fontHelvetica;
-			size: 14px;
+			size: 16px;
 		}
 	}
 
@@ -1563,17 +1574,6 @@ ul.ls-font-list {
 
 .ls-system-status {
 
-	ul {
-		padding-left: 40px;
-		list-style-type: square;
-
-		li:last-child {
-			padding: 1px 5px;
-			font-weight: bold;
-			background: yellow;
-		}
-	}
-
 	span {
 		color: #e14d43;
 
@@ -1598,6 +1598,7 @@ ul.ls-font-list {
 	}
 
 	.inner p {
+		max-width: 900px;
 		margin: 20px auto 30px auto;
 		text-align: center;
 	}
@@ -1641,6 +1642,34 @@ ul.ls-font-list {
 
 	td:nth-child(3) {
 		width: 130px;
+	}
+
+	table mark {
+		display: inline-block;
+		background: #e9e9e9;
+		margin: 1px;
+		padding: 0 3px;
+		color: #555;
+		border-radius: 2px;
+	}
+
+	td.has-button {
+
+		div {
+			min-height: 30px;
+			position: relative;
+		}
+
+		span {
+			display: block;
+			margin-right: 150px;
+		}
+
+		.button {
+			position: absolute;
+			top: 3px;
+			right: 0px;
+		}
 	}
 
 }
@@ -1722,10 +1751,6 @@ ul.ls-font-list {
 	}
 }
 
-.ls-debug-account-button {
-	margin-left: 15px !important;
-}
-
 #ls-erase-modal-window {
 
 	i.ls-notice {
@@ -1744,6 +1769,9 @@ ul.ls-font-list {
 	margin-top: -275px;
 }
 
+.ls-system-status-actions {
+	margin-top: 50px;
+}
 
 
 /* IMPORT MODAL WINDOW */
@@ -1751,6 +1779,17 @@ ul.ls-font-list {
 @import 'https://fonts.googleapis.com/css?family=Damion|Montserrat|Poppins';
 
 /* Head */
+
+#ls-import-modal-overlay {
+	position: fixed;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	opacity: 0;
+	z-index: 10000;
+	background: black;
+}
 
 #ls-import-modal-window {
 
@@ -1783,7 +1822,7 @@ ul.ls-font-list {
 			margin: 0 0 0 105px;
 			height: 100%;
 			line-height: 80px;
-			color: purple;
+			color: #F73E60;
 
 			span {
 				font-size: 32px;
@@ -1811,7 +1850,7 @@ ul.ls-font-list {
 			position: absolute;
 			right: 100px;
 			top: 10px;
-			width: 180px;
+			width: 250px;
 			text-align: center;
 			font-weight: normal;
 			font-size: 12px;
@@ -1945,19 +1984,19 @@ ul.ls-font-list {
 					}
 
 					&.active {
-						color: #ff3300;
+						color: #F73E60;
 
 						span {
-							color: #ff3300;
+							color: #F73E60;
 
 							&:before {
-								border-color: #ff3300;
+								border-color: #F73E60;
 							}
 						}
 					}
 
 					&:hover {
-						background-color: #ff4400;
+						background-color: #F73E60;
 						color: white;
 
 						span {
@@ -2019,7 +2058,7 @@ ul.ls-font-list {
 								font-size: 40px;
 								font-family: 'Damion', cursive;
 								line-height: 50px;
-								color: #ff4400;
+								color: #F73E60;
 								letter-spacing: 1px;
 							}
 						}
@@ -2064,6 +2103,24 @@ ul.ls-font-list {
 							text-overflow: ellipsis;
 							overflow: hidden;
 						}
+					}
+
+					.badge-new {
+						position: absolute;
+						right: -20px;
+						top: 9px;
+						background: #F73E60;
+						color: #fff;
+						width: 82px;
+						height: 22px;
+						line-height: 22px;
+						font-size: 12px;
+						text-align: center;
+						-webkit-transform: rotate(45deg);
+						-moz-transform: rotate(45deg);
+						transform: rotate(45deg);
+						pointer-events: none;
+						z-index: 99;
 					}
 
 					a {

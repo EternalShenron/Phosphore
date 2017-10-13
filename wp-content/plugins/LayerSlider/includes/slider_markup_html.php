@@ -5,6 +5,12 @@ if(!defined('LS_ROOT_FILE')) {
 	exit;
 }
 
+// Popup
+if( !empty($slides['properties']['attrs']['type']) && $slides['properties']['attrs']['type'] === 'popup' ) {
+	$slides['properties']['props']['width']  = ! empty( $slides['properties']['attrs']['popupWidth'] ) ? $slides['properties']['attrs']['popupWidth'] : 640;
+	$slides['properties']['props']['height'] = ! empty( $slides['properties']['attrs']['popupHeight']) ? $slides['properties']['attrs']['popupHeight'] : 360;
+}
+
 // Get slider style
 $sliderStyleAttr[] = 'width:'.layerslider_check_unit($slides['properties']['props']['width']).';';
 
@@ -28,8 +34,18 @@ if(has_action('layerslider_before_slider_content')) {
 	do_action('layerslider_before_slider_content');
 }
 
+// Wrap Popups
+if( !empty($slides['properties']['attrs']['type']) && $slides['properties']['attrs']['type'] === 'popup' ) {
+	$lsContainer[] = '<div class="ls-popup">';
+}
+
+$customClasses = '';
+if( ! empty( $slides['properties']['props']['sliderclass'] ) ) {
+	$customClasses = ' '.$slides['properties']['props']['sliderclass'];
+}
+
 // Start of slider container
-$lsContainer[] = '<div id="'.$sliderID.'" class="ls-wp-container fitvidsignore" style="'.implode('', $sliderStyleAttr).'">';
+$lsContainer[] = '<div id="'.$sliderID.'" class="ls-wp-container fitvidsignore'.$customClasses.'" style="'.implode('', $sliderStyleAttr).'">';
 
 // Add slides
 if(!empty($slider['slides']) && is_array($slider['slides'])) {
@@ -51,7 +67,13 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 
 		// Post content
 		//if( !isset($slide['props']['post_content']) || $slide['props']['post_content']) {
-			$queryArgs = array( 'post_status' => 'publish', 'limit' => 1, 'posts_per_page' => 1 );
+			$queryArgs = array(
+				'post_status' => 'publish',
+				'limit' => 1,
+				'posts_per_page' => 1,
+				'suppress_filters' => false
+			);
+
 
 			if(isset($slide['props']['post_offset'])) {
 				if($slide['props']['post_offset'] == -1) {
@@ -120,8 +142,13 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 		// Add slide thumbnail
 		if(!isset($slides['properties']['attrs']['thumbnailNavigation']) || $slides['properties']['attrs']['thumbnailNavigation'] != 'disabled') {
 			if(!empty($slide['props']['thumbnail'])) {
-				$src = !empty($slide['props']['thumbnailId']) ? apply_filters('ls_get_image', $slide['props']['thumbnailId'], $slide['props']['thumbnail']) : $slide['props']['thumbnail'];
-				$lsMarkup[] = '<img src="'.$src.'" class="ls-tn" alt="Slide thumbnail" />';
+
+				$lsTN = '';
+				if( ! empty($slide['props']['thumbnailId']) ) {
+					$lsTN = wp_get_attachment_image($slide['props']['thumbnailId'], 'full', false, array('class' => 'ls-tn'));
+				}
+
+				$lsMarkup[] = ! empty( $lsTN ) ? $lsTN : '<img src="'.$slide['props']['thumbnail'].'" class="ls-tn" alt="Slide thumbnail" />';
 			}
 		}
 
@@ -142,11 +169,33 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 				}
 
 				// WPML support
-				if(function_exists('icl_t')) {
-					$layer['props']['html'] = icl_t('LayerSlider WP', '<'.$layer['props']['type'].':'.substr(sha1($layer['props']['html']), 0, 10).'> layer on slide #'.($slidekey+1).' in slider #'.$id.'', $layer['props']['html']);
-					if(!empty($layer['props']['url']) && !empty($_GET['lang']) && (strpos($layer['props']['url'], 'http') !== 0 || strpos($layer['props']['url'], $_SERVER['SERVER_NAME']) !== false)) {
-						if(strpos($layer['props']['url'], '?') !== false) { $layer['props']['url'] .= '&amp;lang=' . ICL_LANGUAGE_CODE; }
-						else { $layer['props']['url'] .= '?lang=' . ICL_LANGUAGE_CODE; }
+				if( has_filter( 'wpml_translate_single_string' ) ) {
+
+					// Check 'createdWith' property to decide which WPML implementation
+					// should we use. This property was added in v6.5.5 along with the
+					// new WPML implementation, so no version comparison required.
+					if( ! empty( $slides['properties']['attrs']['createdWith'] ) ) {
+						$string_name = "slider-{$id}-layer-{$layer['props']['uuid']}-html";
+						$layer['props']['html'] = apply_filters( 'wpml_translate_single_string', $layer['props']['html'], 'LayerSlider Sliders', $string_name );
+
+					// Old implementation
+					} else {
+						$string_name = '<'.$layer['props']['type'].':'.substr(sha1($layer['props']['html']), 0, 10).'> layer on slide #'.($slidekey+1).' in slider #'.$id.'';
+						$layer['props']['html'] = apply_filters( 'wpml_translate_single_string', $layer['props']['html'], 'LayerSlider WP', $string_name);
+					}
+
+					// v6.5.6: Don't add the 'lang' param to URL if it's a permalink for a post.
+					// WPML will filter permalink correctly later.
+					if( ! empty( $layer['props']['url'] ) && ! empty( $_GET['lang'] ) && $layer['props']['url'] !== '[post-url]' ) {
+
+						if( strpos( $layer['props']['url'], 'http' ) !== 0 || strpos( $layer['props']['url'], $_SERVER['SERVER_NAME'] ) !== false ) {
+
+							if(strpos($layer['props']['url'], '?') !== false) {
+								$layer['props']['url'] .= '&amp;lang=' . ICL_LANGUAGE_CODE;
+							} else {
+								$layer['props']['url'] .= '?lang=' . ICL_LANGUAGE_CODE;
+							}
+						}
 					}
 				}
 
@@ -229,6 +278,7 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 
 				// HTML attributes
 				$layerAttributes['class'] = 'ls-l';
+
 				if(!empty($layer['props']['id'])) { $innerAttributes['id'] = $layer['props']['id']; }
 				if(!empty($layer['props']['class'])) { $innerAttributes['class'] .= ' '.$layer['props']['class']; }
 				if(!empty($layer['props']['url'])) {
@@ -259,7 +309,7 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 
 				// Text / HTML layer
 				if($layer['props']['media'] != 'post' || ($first != '<' && $last != '>')) {
-					$inner->html(do_shortcode(__(stripslashes($layer['props']['html']))));
+					$inner->html(do_shortcode(stripslashes($layer['props']['html'])));
 				}
 
 				// Rewrite Youtube/Vimeo iframe src to data-src
@@ -289,8 +339,9 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 					foreach( $layer['props']['outerAttributes'] as $key => $val ) {
 						if( $key === 'class' ) {
 							$el->addClass( $val );
+						} else {
+							$el->attr( $key, $val );
 						}
-						$el->attr( $key, $val );
 					}
 				}
 
@@ -298,8 +349,9 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 					foreach( $layer['props']['innerAttributes'] as $key => $val ) {
 						if( $key === 'class' ) {
 							$inner->addClass( $val );
+						} else {
+							$inner->attr( $key, $val );
 						}
-						$inner->attr( $key, $val );
 					}
 				}
 
@@ -319,7 +371,7 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 			}
 
 			// WPML support
-			if(function_exists('icl_t')) {
+			if( has_filter( 'wpml_translate_single_string' ) ) {
 
 				if(!empty($_GET['lang']) && (strpos($slide['props']['linkUrl'], 'http') !== 0 || strpos($slide['props']['linkUrl'], $_SERVER['SERVER_NAME']) !== false)) {
 					if(strpos($slide['props']['linkUrl'], '?') !== false) { $slide['props']['linkUrl'] .= '&amp;lang=' . ICL_LANGUAGE_CODE; }
@@ -327,7 +379,13 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 				}
 			}
 
-			$lsMarkup[] = '<a href="'.$slide['props']['linkUrl'].'"'.$target.' class="ls-link"></a>';
+
+			$linkClass = 'ls-link';
+			if( empty( $slide['props']['linkType'] ) || $slide['props']['linkType'] === 'over' ) {
+				$linkClass .= ' ls-link-on-top';
+			}
+
+			$lsMarkup[] = '<a href="'.$slide['props']['linkUrl'].'"'.$target.' class="'.$linkClass.'"></a>';
 		}
 
 		// End of slide
@@ -337,6 +395,11 @@ if(!empty($slider['slides']) && is_array($slider['slides'])) {
 
 // End of slider container
 $lsMarkup[] = '</div>';
+
+// End of Popup wrapper
+if( !empty($slides['properties']['attrs']['type']) && $slides['properties']['attrs']['type'] === 'popup' ) {
+	$lsMarkup[] = '</div>';
+}
 
 // After slider content hook
 if(has_action('layerslider_after_slider_content')) {

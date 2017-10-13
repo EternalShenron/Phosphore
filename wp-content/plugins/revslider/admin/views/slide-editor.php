@@ -109,6 +109,8 @@ $def_use_parallax = $slider->getParam('use_parallax', 'on');
 
 /* NEW KEN BURN INPUTS */
 $def_kb_start_offset_x = $slider->getParam('def-kb_start_offset_x', '0');
+$def_kb_blur_start = $slider->getParam('def-kb_blur_start', '0');
+$def_kb_blur_end = $slider->getParam('def-kb_blur_end', '0');
 $def_kb_start_offset_y = $slider->getParam('def-kb_start_offset_y', '0');
 $def_kb_end_offset_x = $slider->getParam('def-kb_end_offset_x', '0');
 $def_kb_end_offset_y = $slider->getParam('def-kb_end_offset_y', '0');
@@ -221,6 +223,8 @@ $kbEndOffsetX = intval(RevSliderFunctions::getVal($slideParams, 'kb_end_offset_x
 $kbEndOffsetY = intval(RevSliderFunctions::getVal($slideParams, 'kb_end_offset_y', $def_kb_end_offset_y));
 $kbStartRotate = intval(RevSliderFunctions::getVal($slideParams, 'kb_start_rotate', $def_kb_start_rotate));
 $kbEndRotate = intval(RevSliderFunctions::getVal($slideParams, 'kb_end_rotate', $def_kb_end_rotate));
+$kbBlurStart = intval(RevSliderFunctions::getVal($slideParams, 'kb_blur_start', $def_kb_blur_start));
+$kbBlurEnd = intval(RevSliderFunctions::getVal($slideParams, 'kb_blur_end', $def_kb_blur_end));
 /* END OF NEW KEN BURN INPUTS*/
 
 $bgRepeat = RevSliderFunctions::getVal($slideParams, 'bg_repeat', $def_bg_repeat);
@@ -478,7 +482,7 @@ if($slide->isStaticSlide() || $slider->isSlidesFromPosts()){ //insert sliderid f
 	<div class="rs_breadcrumbs">
 		<a class='breadcrumb-button' href='<?php echo self::getViewUrl("sliders");?>'><i class="eg-icon-th-large"></i><?php _e("All Sliders", 'revslider');?></a>
 		<a class='breadcrumb-button' href="<?php echo self::getViewUrl(RevSliderAdmin::VIEW_SLIDER,"id=$sliderID"); ?>"><i class="eg-icon-cog"></i><?php _e('Slider Settings', 'revslider');?></a>
-		<a class='breadcrumb-button selected' href="#"><i class="eg-icon-pencil-2"></i><?php _e('Slide Editor ', 'revslider');?>"<?php echo ' '.$slider->getParam("title",""); ?>"</a>
+		<a class='breadcrumb-button selected' href="#"><i class="eg-icon-pencil-2"></i><?php _e('Slide Editor ', 'revslider');?>"<?php echo ' '.esc_attr(stripslashes($slider->getParam("title",""))); ?>"</a>
 		<div class="tp-clearfix"></div>
 
 
@@ -597,6 +601,7 @@ if($slide->isStaticSlide() || $slider->isSlidesFromPosts()){ //insert sliderid f
 				switch($slider_type){
 					case 'posts':
 					case 'specific_posts':
+					case 'current_post':
 					case 'woocommerce':
 						?>
 						<li data-content="#slide-post-template-entry" class="selected"><i style="height:45px" class="rs-mini-layer-icon revicon-doc rs-toolbar-icon"></i><span><?php _e('Post', 'revslider'); ?></span></li>
@@ -642,6 +647,11 @@ if($slide->isStaticSlide() || $slider->isSlidesFromPosts()){ //insert sliderid f
 						<li data-content="#slide-vimeo-template-entry" class="selected"><i style="height:45px" class="rs-mini-layer-icon eg-icon-vimeo rs-toolbar-icon"></i><span><?php _e('Vimeo', 'revslider'); ?></span></li>
 						<?php
 					break;
+					case 'gallery':
+						?>
+						<li data-content="#slide-gallery-template-entry" class="selected"><i style="height:45px" class="rs-mini-layer-icon eg-icon-picture rs-toolbar-icon"></i><span><?php _e('General', 'revslider'); ?></span></li>
+						<?php
+					break;
 				}
 				// Apply Filters for Tabs from Add-Ons
 				do_action( 'rev_slider_insert_meta_tabs',array(
@@ -649,14 +659,17 @@ if($slide->isStaticSlide() || $slider->isSlidesFromPosts()){ //insert sliderid f
 						'slider_type'=>$slider_type
 					)
 				);
+				if($slider_type != "gallery"){
 				?>
-				<li data-content="#slide-images-template-entry" class="selected"><i style="height:45px" class="rs-mini-layer-icon eg-icon-picture-1 rs-toolbar-icon"></i><span><?php _e('Images', 'revslider'); ?></span></li>
+					<li data-content="#slide-images-template-entry" class="selected"><i style="height:45px" class="rs-mini-layer-icon eg-icon-picture-1 rs-toolbar-icon"></i><span><?php _e('Images', 'revslider'); ?></span></li>
+				<?php } ?>
 			</ul>
 			<div style="clear: both;"></div>
 			<?php
 			switch($slider_type){
 				case 'posts':
 				case 'specific_posts':
+				case 'current_post':
 				case 'woocommerce':
 					?>
 					<table class="table_template_help" id="slide-post-template-entry" style="display: none;">
@@ -671,6 +684,9 @@ if($slide->isStaticSlide() || $slider->isSlidesFromPosts()){ //insert sliderid f
 						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('date')">{{date}}</a></td><td><?php _e("Date created",'revslider'); ?></td></tr>
 						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('date_modified')">{{date_modified}}</a></td><td><?php _e("Date modified",'revslider'); ?></td></tr>
 						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('author_name')">{{author_name}}</a></td><td><?php _e("Author name",'revslider'); ?></td></tr>
+						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('author_avatar:80px')">{{author_avatar:80px}}</a></td><td><?php _e("Author Avatar URL(size in px)",'revslider'); ?></td></tr>
+						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('author_website')">{{author_website}}</a></td><td><?php _e("Author Website",'revslider'); ?></td></tr>
+						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('author_posts')">{{author_posts}}</a></td><td><?php _e("Author Posts Page",'revslider'); ?></td></tr>
 						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('num_comments')">{{num_comments}}</a></td><td><?php _e("Number of comments",'revslider'); ?></td></tr>
 						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('catlist')">{{catlist}}</a></td><td><?php _e("List of categories with links",'revslider'); ?></td></tr>
 						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('catlist_raw')">{{catlist_raw}}</a></td><td><?php _e("List of categories without links",'revslider'); ?></td></tr>
@@ -843,6 +859,15 @@ if($slide->isStaticSlide() || $slider->isSlidesFromPosts()){ //insert sliderid f
 							<?php
 						}
 						?>
+					</table>
+					<?php
+				break;
+				case 'gallery':
+					?>
+					<table class="table_template_help" id="slide-gallery-template-entry" style="display: none;">
+						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('current_page_link')">{{current_page_link}}</a></td><td><?php _e('Link to current page','revslider'); ?></td></tr>
+						<tr><td><a href="javascript:UniteLayersRev.insertTemplate('home_url')">{{home_url}}</a></td><td><?php _e('Link to WP Home Page','revslider'); ?></td></tr>
+						<?php do_action( 'rev_slider_insert_gallery_meta_row' ); ?>
 					</table>
 					<?php
 				break;
@@ -1082,22 +1107,79 @@ if($slide->isStaticSlide() || $slider->isSlidesFromPosts()){ //insert sliderid f
 				horRuler();
 
 
-				jQuery('.my-color-field').wpColorPicker({
-					palettes:false,
-					height:250,
-					border:false,
-				    change:function(event,ui) {				    					    
-				    	if (event.target.value.length<7) {
-				    		if (event.target.value.indexOf('#')===-1)
-				    			event.target.value = "#"+event.target.value;
-				    		if (event.target.value.length<5) {
-				    			var oldcolor = event.target.value,
-				    				newcolor = "#"+oldcolor[1]+oldcolor[1]+oldcolor[2]+oldcolor[2]+oldcolor[3]+oldcolor[3];
-				    			event.target.value = newcolor;
+			
+				jQuery('.my-color-field').tpColorPicker({
+					defaultValue:'#FFFFFF',
+					mode:'full',					
+					wrapper:'<span class="rev-colorpickerspan"></span>',	
+					cancel:function() {						
+						jQuery('#style_form_wrapper').trigger("colorchanged");
+					},
 
-				    		}
-				    	}
-				    	switch (jQuery(event.target).attr('name')) {
+					onEdit:function(inputElement,color,gradientObj) {				    					    				    	
+				    	switch (inputElement.attr('name')) {
+
+							case "adbutton-color-1":
+							case "adbutton-color-2":
+							case "adbutton-border-color":
+								setExampleButtons();
+							break;
+
+							case "adshape-color-1":
+							case "adshape-color-2":
+							case "adshape-border-color":							
+								setExampleShape();
+							break;
+							case "bg_color":															
+								if (color.length>7) {
+									jQuery("#divbgholder").css("background",color);
+									jQuery('.slotholder .tp-bgimg.defaultimg').css({background:color});
+									jQuery('#slide_selector .list_slide_links li.selected .slide-media-container ').css({background:color});
+								} else {
+									jQuery("#divbgholder").css("background-color",color);
+									jQuery('.slotholder .tp-bgimg.defaultimg').css({backgroundColor:color});
+									jQuery('#slide_selector .list_slide_links li.selected .slide-media-container ').css({backgroundColor:color});
+								}
+							
+							break;
+						}		
+
+
+						var layer = jQuery('.layer_selected.slide_layer');
+						if (layer.length>0) {							
+							switch (inputElement.attr('name')) {
+								case "color_static":
+								case "hover_color_static":
+									if (layer.hasClass("slide_layer_type_text"))
+										punchgs.TweenLite.set(layer.find('>.tp-caption'),{color:color});
+									else if (layer.hasClass("slide_layer_type_svg"))
+										punchgs.TweenLite.set(layer.find('>.tp-caption>svg, >.tp-caption>svg path'),{fill:color});
+								break;
+								case "css_svgstroke-color-show":
+								case "css_svgstroke-hover-color-show":
+									if (layer.hasClass("slide_layer_type_svg"))
+										punchgs.TweenLite.set(layer.find('>.tp-caption>svg'),{stroke:color});
+								break;
+								case "css_background-color":
+								case "hover_css_background-color":
+									jQuery('#style_form_wrapper').trigger("colorchanged");
+									if (color.indexOf('gradient')>=0)
+										punchgs.TweenLite.set(layer.find('>.tp-caption'),{background:color});
+									else
+										punchgs.TweenLite.set(layer.find('>.tp-caption'),{backgroundColor:color});
+								break;
+								case "css_border-color-show":
+								case "hover_css_border-color-show":
+									punchgs.TweenLite.set(layer.find('>.tp-caption'),{borderColor:color});
+								break;
+							}
+						}
+
+					},
+
+				    change:function(inputElement,color,gradientObj) {				    					    
+				    	
+				    	switch (inputElement.attr('name')) {
 							case "adbutton-color-1":
 							case "adbutton-color-2":
 							case "adbutton-border-color":
@@ -1110,27 +1192,24 @@ if($slide->isStaticSlide() || $slider->isSlidesFromPosts()){ //insert sliderid f
 								setExampleShape();
 							break;
 							case "bg_color":
-								var bgColor = jQuery("#slide_bg_color").val();
-								jQuery("#divbgholder").css("background-color",bgColor);
-								jQuery('.slotholder .tp-bgimg.defaultimg').css({backgroundColor:bgColor});
-								jQuery('#slide_selector .list_slide_links li.selected .slide-media-container ').css({backgroundColor:bgColor});
+								var bgColor = jQuery("#slide_bg_color").val();								
+								if (bgColor.length>7) {
+									jQuery("#divbgholder").css("background",bgColor);
+									jQuery('.slotholder .tp-bgimg.defaultimg').css({background:bgColor});
+									jQuery('#slide_selector .list_slide_links li.selected .slide-media-container ').css({background:bgColor});
+								} else {
+									jQuery("#divbgholder").css("background-color",bgColor);
+									jQuery('.slotholder .tp-bgimg.defaultimg').css({backgroundColor:bgColor});
+									jQuery('#slide_selector .list_slide_links li.selected .slide-media-container ').css({backgroundColor:bgColor});
+								}
+							
 							break;
-						}		
+						}								
+						jQuery('#style_form_wrapper').trigger("colorchanged");
 
-						if (jQuery('.layer_selected.slide_layer').length>0) {
-							jQuery(event.target).blur().focus();
-							//jQuery('#style_form_wrapper').trigger("colorchanged");
-						}
-
-					},
-					clear:function(event,ui) {
-						if (jQuery('.layer_selected.slide_layer').length>0) {
-							var inp = jQuery(event.target).closest('.wp-picker-input-wrap').find('.my-color-field');
-							inp.val("transparent").blur().focus();
-							//jQuery('#style_form_wrapper').trigger("colorchanged");
-						}
-					}
+					}					
 				});
+
 
 				jQuery('.adb-input').on("change blur focus",setExampleButtons);
 				jQuery('.ads-input, input[name="shape_fullwidth"], input[name="shape_fullheight"]').on("change blur focus",setExampleShape);

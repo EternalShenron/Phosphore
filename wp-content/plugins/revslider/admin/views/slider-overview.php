@@ -70,8 +70,6 @@ $stable_version = get_option('revslider-stable-version', '4.1');
 			echo apply_filters( 'rev_icon_general_filter', $icon_general ); 
 		?>
 		<a href="<?php echo RevSliderGlobals::LINK_HELP_SLIDERS; ?>" class="button-secondary float_right mtop_10 mleft_10" target="_blank"><?php _e("Help",'revslider'); ?></a>
-
-		<a id="button_general_settings" class="button-secondary float_right mtop_10"><?php _e("Global Settings",'revslider'); ?></a>
 	</div>
 
 	<div class="clear_both"></div>

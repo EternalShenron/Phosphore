@@ -57,6 +57,14 @@ function ls_register_form_actions() {
 			}
 		}
 
+		// Database Update
+		if(isset($_GET['page']) && $_GET['page'] == 'ls-system-status' && isset($_GET['action']) && $_GET['action'] == 'database_update') {
+			if(check_admin_referer('database_update')) {
+				layerslider_create_db_table();
+				wp_redirect('admin.php?page=ls-system-status&message=dbUpdateSuccess');
+			}
+		}
+
 
 		// Slider list bulk actions
 		if(isset($_POST['ls-bulk-action'])) {
@@ -107,6 +115,17 @@ function ls_register_form_actions() {
 			}
 		}
 
+		// Revisions Options
+		if(isset($_POST['ls-revisions-options'])) {
+			add_action('admin_init', 'ls_save_revisions_options');
+		}
+
+		// Revert slider
+		if(isset($_POST['ls-revert-slider'])) {
+			add_action('admin_init', 'ls_revert_slider');
+		}
+
+
 		// Custom CSS editor
 		if(isset($_POST['ls-user-css'])) {
 			if(check_admin_referer('save-user-css')) {
@@ -128,10 +147,24 @@ function ls_register_form_actions() {
 			}
 		}
 
+
 		// Compatibility: convert old sliders to new data storage since 3.6
 		if(isset($_GET['page']) && $_GET['page'] == 'layerslider' && isset($_GET['action']) && $_GET['action'] == 'convert') {
 			if(check_admin_referer('convertoldsliders')) {
 				add_action('admin_init', 'layerslider_convert');
+			}
+		}
+
+		if(isset($_GET['page']) && $_GET['page'] == 'layerslider' && isset($_GET['action']) && $_GET['action'] == 'hide-important-notice') {
+			if(check_admin_referer('hide-important-notice')) {
+
+				$storeData = get_option('ls-store-data', false);
+				if( ! empty( $storeData ) && ! empty( $storeData['important_notice']['date'] ) ) {
+					update_option('ls-last-important-notice', $storeData['important_notice']['date']);
+				}
+
+				header('Location: admin.php?page=layerslider');
+				die();
 			}
 		}
 
@@ -143,20 +176,20 @@ function ls_register_form_actions() {
 			}
 		}
 
+		if(isset($_GET['page']) && $_GET['page'] == 'layerslider' && isset($_GET['action']) && $_GET['action'] == 'hide-canceled-activation-notice') {
+			if(check_admin_referer('hide-canceled-activation-notice')) {
+				update_option('ls-show-canceled_activation_notice', 0);
+				header('Location: admin.php?page=layerslider');
+				die();
+			}
+		}
+
 		if(isset($_GET['page']) && $_GET['page'] == 'layerslider' && isset($_GET['action']) && $_GET['action'] == 'hide-update-notice') {
 			if(check_admin_referer('hide-update-notice')) {
 				$latest = get_option('ls-latest-version', LS_PLUGIN_VERSION);
 				update_option('ls-last-update-notification', $latest);
 				header('Location: admin.php?page=layerslider');
 				die();
-			}
-		}
-
-
-		// Create Debug Account
-		if(isset($_GET['page']) && $_GET['page'] == 'ls-system-status' && isset($_GET['action']) && $_GET['action'] == 'debug_account') {
-			if(check_admin_referer('debug_account')) {
-				add_action('admin_init', 'ls_create_debug_account');
 			}
 		}
 
@@ -177,6 +210,7 @@ function ls_register_form_actions() {
 		add_action('wp_ajax_ls_save_screen_options', 'ls_save_screen_options');
 		add_action('wp_ajax_ls_get_mce_sliders', 'ls_get_mce_sliders');
 		add_action('wp_ajax_ls_get_post_details', 'ls_get_post_details');
+		add_action('wp_ajax_ls_get_search_posts', 'ls_get_search_posts');
 		add_action('wp_ajax_ls_get_taxonomies', 'ls_get_taxonomies');
 		add_action('wp_ajax_ls_upload_from_url', 'ls_upload_from_url');
 		add_action('wp_ajax_ls_store_opened', 'ls_store_opened');
@@ -198,8 +232,8 @@ function layerslider_delete_caches() {
 			WHERE option_name LIKE '_transient_ls-slider-data-%'
 			ORDER BY option_id DESC LIMIT 100";
 
-	if($transients = $wpdb->get_results($sql)) {
-		foreach ($transients as $key => $value) {
+	if( $transients = $wpdb->get_results($sql) ) {
+		foreach( $transients as $key => $value ) {
 			$key = str_replace('_transient_', '', $value->option_name);
 			delete_transient($key);
 		}
@@ -242,7 +276,8 @@ function ls_sliders_bulk_action() {
 	} elseif($_POST['action'] === 'delete') {
 		if(!empty($_POST['sliders']) && is_array($_POST['sliders'])) {
 			foreach($_POST['sliders'] as $item) {
-				LS_Sliders::delete( intval($item));
+				LS_Sliders::delete( intval($item) );
+				LS_Revisions::clear( intval($item) );
 				delete_transient('ls-slider-data-'.intval($item));
 			}
 			header('Location: admin.php?page=layerslider&message=deleteSuccess'); die();
@@ -322,7 +357,16 @@ function ls_save_google_fonts() {
 
 function ls_save_advanced_settings() {
 
-	$options = array('use_cache', 'include_at_footer', 'conditional_script_loading', 'concatenate_output', 'use_custom_jquery',  'put_js_to_body');
+	$options = array(
+		'use_cache',
+		'include_at_footer',
+		'conditional_script_loading',
+		'concatenate_output',
+		'use_custom_jquery',
+		'put_js_to_body',
+		'gsap_sandboxing'
+	);
+
 	foreach($options as $item) {
 		update_option('ls_'.$item, (int) array_key_exists($item, $_POST));
 	}
@@ -335,6 +379,10 @@ function ls_save_advanced_settings() {
 
 
 function ls_save_screen_options() {
+
+	// Security check
+	check_admin_referer('ls-save-screen-options');
+
 	$_POST['options'] = !empty($_POST['options']) ? $_POST['options'] : array();
 	update_option('ls-screen-options', $_POST['options']);
 	die();
@@ -345,7 +393,7 @@ function ls_get_mce_sliders() {
 	$sliders = LS_Sliders::find(array('limit' => 50));
 	foreach($sliders as $key => $item) {
 		$sliders[$key]['preview'] = apply_filters('ls_preview_for_slider', $item );
-		$sliders[$key]['name'] = ! empty($item['name']) ? htmlspecialchars($item['name']) : 'Unnamed';
+		$sliders[$key]['name'] = ! empty($item['name']) ? htmlspecialchars(stripslashes($item['name'])) : 'Unnamed';
 	}
 
 	die(json_encode($sliders));
@@ -398,7 +446,7 @@ function ls_save_slider() {
 	}
 
 	// WPML
-	if(function_exists('icl_register_string')) {
+	if( has_action( 'wpml_register_single_string' ) ) {
 		layerslider_register_wpml_strings($id, $data);
 	}
 
@@ -407,14 +455,95 @@ function ls_save_slider() {
 	delete_transient('ls-slider-data-'.$id);
 
 	// Update the slider
-	if(empty($id)) {
-		LS_Sliders::add($title, $data, $slug);
+	if( empty( $id ) ) {
+		$id = LS_Sliders::add($title, $data, $slug);
 	} else {
 		LS_Sliders::update($id, $title, $data, $slug);
 	}
 
+
+	// Revisions handling
+	if( LS_Revisions::$active ) {
+
+		$lastRevision = LS_Revisions::last( $id );
+
+		if( ! $lastRevision || $lastRevision->date_c < time() - 60*LS_Revisions::$interval ) {
+			LS_Revisions::add( $id, json_encode($data) );
+
+			if( LS_Revisions::count( $id ) > LS_Revisions::$limit ) {
+				LS_Revisions::shift( $id );
+			}
+		}
+	}
+
+
+	// Popup Index
+	if( $data['properties']['type'] === 'popup' ) {
+		$props = $data['properties'];
+		LS_Popups::addIndex(array(
+			'id' => $id,
+			'first_time_visitor' => ! empty($props['popup_first_time_visitor']),
+			'repeat' => ! empty( $props['popup_repeat'] ),
+			'repeat_days' => $props['popup_repeat_days'],
+			'roles' => array(
+				'administrator' => ! empty($props['popup_roles_administrator']),
+				'editor' 		=> ! empty($props['popup_roles_editor']),
+				'author' 		=> ! empty($props['popup_roles_author']),
+				'contributor' 	=> ! empty($props['popup_roles_contributor']),
+				'subscriber' 	=> ! empty($props['popup_roles_subscriber']),
+				'visitor' 		=> ! empty($props['popup_roles_visitor'])
+			),
+
+			'pages' => array(
+				'all'  		=> ! empty($props['popup_pages_all']),
+				'home' 		=> ! empty($props['popup_pages_home']),
+				'post' 		=> ! empty($props['popup_pages_post']),
+				'page' 		=> ! empty($props['popup_pages_page']),
+				'custom' 	=> $props['popup_pages_custom'],
+				'exclude' 	=> $props['popup_pages_exclude']
+			)
+		));
+
+	} else {
+		LS_Popups::removeIndex( $id );
+	}
+
 	die(json_encode(array('status' => 'ok')));
 }
+
+
+function ls_save_revisions_options() {
+
+	// Security check
+	check_admin_referer('ls-save-revisions-options');
+
+	update_option('ls-revisions-enabled', (int) isset( $_POST['ls-revisions-enabled'] ) );
+	update_option('ls-revisions-limit', $_POST['ls-revisions-limit']);
+	update_option('ls-revisions-interval', $_POST['ls-revisions-interval']);
+
+	if( empty($_POST['ls-revisions-enabled']) )  {
+		LS_Revisions::truncate();
+	}
+
+	wp_redirect( admin_url('admin.php?page=ls-revisions') );
+}
+
+
+
+function ls_revert_slider( ) {
+
+	$sliderId 	= (int)$_POST['slider-id'];
+	$revisionId = (int)$_POST['revision-id'];
+
+	// Security check
+	check_admin_referer('ls-revert-slider-'.$sliderId);
+
+	LS_Revisions::revert( $sliderId, $revisionId );
+
+	wp_redirect( admin_url('admin.php?page=layerslider&action=edit&id='.$sliderId) );
+	die();
+}
+
 
 
 function ls_parse_date() {
@@ -559,18 +688,50 @@ function ls_import_online() {
 	// Download package
 	$zip = $GLOBALS['LS_AutoUpdate']->sendApiRequest( $remoteURL );
 
+
+	// Check whether we received back
+	// a valid response from the server
 	if( ! $zip ) {
 		die(json_encode(array(
 			'success' => false,
-			'message' => __("LayerSlider couldn't download your selected slider. Please check LayerSlider -> System Status for potential issues. The WP Remote functions may be unavailable or your web hosting provider has to allow external connections to our domain.", 'LayerSlider')
+			'message' => __('LayerSlider couldn’t download your selected slider. Please check LayerSlider -> System Status for potential issues. The WP Remote functions may be unavailable or your web hosting provider has to allow external connections to our domain.', 'LayerSlider')
 		)));
+	}
+
+
+	// Try parsing response as JSON.
+	//
+	// Warn about potential errors and check
+	// activation state on client side in case
+	// of receiving a "Not Activated" flag
+	if( $zip && $zip[0] === '{' && $zip[1] === '"' )  {
+		if( $data = json_decode($zip) ) {
+
+			if( ! empty( $data->_not_activated ) ) {
+				$GLOBALS['LS_AutoUpdate']->check_activation_state();
+			}
+
+			if( ! empty($data->message ) ) {
+				die(json_encode(array(
+					'success' 	=> false,
+					'reload' 	=> true,
+					'message' 	=> __('LayerSlider couldn’t download your selected slider. The server responded with the following error message: ', 'LayerSlider') . $data->message
+				)));
+			}
+		}
+	}
+
+	// Check activation state on client side in
+	// case of receiving a "Not Activated" flag
+	if( $zip && $data = json_decode($zip) ) {
+		$this->check_activation_state();
 	}
 
 	// Save package
 	if( ! file_put_contents($downloadPath, $zip) ) {
 		die(json_encode(array(
 			'success' => false,
-			'message' => __("LayerSlider couldn't save the downloaded slider on your server. Please check LayerSlider -> System Status for potential issues. The most common reason for this issue is the lack of write permission on the /wp-content/uploads/ directory.", 'LayerSlider')
+			'message' => __('LayerSlider couldn’t save the downloaded slider on your server. Please check LayerSlider -> System Status for potential issues. The most common reason for this issue is the lack of write permission on the /wp-content/uploads/ directory.', 'LayerSlider')
 		)));
 	}
 
@@ -578,15 +739,22 @@ function ls_import_online() {
 	include LS_ROOT_PATH.'/classes/class.ls.importutil.php';
 	$import = new LS_ImportUtil( $downloadPath);
 	$id = $import->lastImportId;
+	$sliderCount = (int)$import->sliderCount;
 
 	// Remove package
 	unlink( $downloadPath );
+
+	$url = admin_url('admin.php?page=layerslider&action=edit&id='.$id);
+
+	if( $sliderCount > 1 ) {
+		$url = admin_url('admin.php?page=layerslider&message=importSuccess&sliderCount='.$sliderCount);
+	}
 
 	// Success
 	die(json_encode(array(
 		'success' => !! $id,
 		'slider_id' => $id,
-		'url' => admin_url('admin.php?page=layerslider&action=edit&id='.$id)
+		'url' => $url
 	)));
 }
 
@@ -625,7 +793,16 @@ function ls_import_sliders() {
 	include LS_ROOT_PATH.'/classes/class.ls.importutil.php';
 	$import = new LS_ImportUtil($_FILES['import_file']['tmp_name'], $_FILES['import_file']['name']);
 
-	header('Location: '.menu_page_url('layerslider', 0));
+
+	// One slider, redirect to editor
+	if( ! empty($import->lastImportId) && (int)$import->sliderCount === 1 ) {
+		wp_redirect( admin_url('admin.php?page=layerslider&action=edit&id='.$import->lastImportId) );
+
+	// Multiple sliders, redirect to slider list
+	} else {
+		wp_redirect( admin_url('admin.php?page=layerslider&message=importSuccess&sliderCount='.$import->sliderCount) );
+	}
+
 	die();
 }
 
@@ -717,7 +894,7 @@ function ls_save_user_css() {
 
 	// File isn't writable
 	} else {
-		wp_die(__("It looks like your files isn't writable, so PHP couldn't make any changes (CHMOD).", "LayerSlider"), __('Cannot write to file', 'LayerSlider'), array('back_link' => true) );
+		wp_die(__('It looks like your files isn’t writable, so PHP couldn’t make any changes (CHMOD).', 'LayerSlider'), __('Cannot write to file', 'LayerSlider'), array('back_link' => true) );
 	}
 }
 
@@ -731,7 +908,7 @@ function ls_save_user_skin() {
 
 	// Error checking
 	if(empty($_POST['skin']) || strpos($_POST['skin'], '..') !== false) {
-		wp_die(__("It looks like you haven't selected any skin to edit.", "LayerSlider"), __('No skin selected.', 'LayerSlider'), array('back_link' => true) );
+		wp_die(__('It looks like you haven’t selected any skin to edit.', 'LayerSlider'), __('No skin selected.', 'LayerSlider'), array('back_link' => true) );
 	}
 
 	// Get skin file and contents
@@ -744,7 +921,7 @@ function ls_save_user_skin() {
 		header('Location: admin.php?page=ls-skin-editor&skin='.$skin['handle'].'&edited=1');
 		die();
 	} else {
-		wp_die(__("It looks like your files isn't writable, so PHP couldn't make any changes (CHMOD).", "LayerSlider"), __('Cannot write to file', 'LayerSlider'), array('back_link' => true) );
+		wp_die(__('It looks like your files isn’t writable, so PHP couldn’t make any changes (CHMOD).', 'LayerSlider'), __('Cannot write to file', 'LayerSlider'), array('back_link' => true) );
 	}
 }
 
@@ -772,7 +949,8 @@ function ls_get_post_details() {
 		'post_status' => 'publish',
 		'limit' => 100,
 		'posts_per_page' => 100,
-		'post_type' => $params['post_type']
+		'post_type' => $params['post_type'],
+		'suppress_filters' => false
 	);
 
 	if(!empty($params['post_orderby'])) {
@@ -801,51 +979,67 @@ function ls_get_post_details() {
 }
 
 
+function ls_get_search_posts() {
+
+	$filters = array(
+		'posts_per_page' 	=> 50,
+		'post_status' 		=> 'any',
+		'post_type' 		=> 'post'
+	);
+
+	if( ! empty( $_GET['s'] ) ) {
+		$filters['s'] = $_GET['s'];
+	}
+
+	if( ! empty( $_GET['post_type'] ) ) {
+		$types = array( 'post', 'page', 'attachment' );
+		if( in_array( $_GET['post_type'], $types ) ) {
+			$filters['post_type'] = $_GET['post_type'];
+		}
+	}
+
+	$query = new WP_Query( $filters );
+
+	if( ! empty( $query->posts ) ) {
+		$ret = array();
+		foreach ( $query->posts as $key => $val ) {
+
+			if( $val->post_type === 'attachment' ) {
+				$imageURL = wp_get_attachment_url( $val->ID );
+			} elseif( function_exists('get_post_thumbnail_id') && function_exists('wp_get_attachment_url') ) {
+				$imageURL = wp_get_attachment_url(get_post_thumbnail_id( $val->ID ));
+			}
+
+			if( ! $imageURL ) {
+				$imageURL = LS_ROOT_URL . '/static/admin/img/blank.gif';
+			}
+
+			$ret[] = array(
+				'author' 	=> get_userdata($val->post_author)->user_nicename,
+				'content' 	=> htmlentities( $val->post_content ),
+				'image-url' => $imageURL,
+				'post-id' 	=> $val->ID,
+				'post-slug' => $val->post_name,
+				'post-url' 	=> get_permalink( $val->ID ),
+				'post-type' => $val->post_type,
+				'title' 	=> htmlentities( $val->post_title ),
+				'date-published' => date( get_option('date_format'), strtotime($val->post_date) ),
+				'date-modified' => date( get_option('date_format'), strtotime($val->post_modified) )
+			);
+		}
+
+		die( json_encode( $ret ) );
+	}
+
+	die('[]');
+
+}
+
+
 function ls_get_taxonomies() {
 	die(json_encode(array_values(get_terms($_POST['taxonomy']))));
 }
 
-
-function ls_create_debug_account() {
-
-	// Only administrators can use this function
-	// with activated auto-update feature.
-	if(
-		! current_user_can('manage_options') ||
-		! get_option('layerslider-authorized-site', false)
-	 ) {
-		die();
-	}
-
-	$userName = 'KreaturaSupport';
-
-	// Check if debug account already exits
-	if( $userID = username_exists( $userName ) ) {
-		wp_redirect(admin_url('admin.php?page=ls-system-status&error=1&message=debugAccountError&user='.$userID));
-		exit;
-	}
-
-	// Create account
-	$password = wp_generate_password( 12, true );
-	$userID = wp_create_user( $userName, $password );
-
-	// Set the role
-	$user = new WP_User( $userID );
-	$user->set_role('administrator');
-
-	// Message & headers
-	$message = 'New debug account for site: '. get_site_url().'/wp-admin/';
-	$message.= '<br><br>Username: '.$userName.'<br><br>Password: '.$password;
-	$headers = array(
-		'From: '.get_bloginfo('name').'<'.get_bloginfo('admin_email').'>',
-		'Content-Type: text/html; charset=UTF-8'
-	);
-
-	// Email the user
-	wp_mail( 'support@kreaturamedia.com', 'Debug Account', $message, $headers );
-	wp_redirect(admin_url('admin.php?page=ls-system-status&message=debugAccountSuccess'));
-	exit;
-}
 
 
 function ls_erase_plugin_data() {
@@ -897,9 +1091,9 @@ function ls_do_erase_plugin_data() {
 
 	WP_Filesystem();
 
-	// 1. Remove wp_layerslider DB table
-	$table = $wpdb->prefix.'layerslider';
-	$wpdb->query("DROP TABLE $table");
+	// 1. Remove wp_layerslider & layerslider_revisions DB table
+	$wpdb->query("DROP TABLE {$wpdb->prefix}layerslider;");
+	$wpdb->query("DROP TABLE {$wpdb->prefix}layerslider_revisions;");
 
 	// 2. Remove wp_option entries
 	$options = array(
@@ -927,6 +1121,8 @@ function ls_do_erase_plugin_data() {
 		'ls-share-displayed',
 		'ls-last-update-notification',
 		'ls-show-support-notice',
+		'ls-show-canceled_activation_notice',
+		'layerslider_cancellation_update_info',
 		'layerslider-release-channel',
 		'layerslider-authorized-site',
 		'layerslider-purchase-code',
@@ -934,6 +1130,13 @@ function ls_do_erase_plugin_data() {
 		'ls-store-data',
 		'ls-store-last-updated',
 
+		// Revisions
+		'ls-revisions-enabled',
+		'ls-revisions-limit',
+		'ls-revisions-interval',
+
+		// Popup Index
+		'ls-popup-index',
 
 		// Legacy
 		'ls-collapsed-boxes',
@@ -1058,3 +1261,75 @@ function ls_do_erase_plugin_data() {
 // 		}
 // 	}
 // }
+
+
+function layerslider_convert_urls($arr) {
+
+	// Global BG
+	if(!empty($arr['properties']['backgroundimage']) && strpos($arr['properties']['backgroundimage'], 'http://') !== false) {
+		$arr['properties']['backgroundimage'] = parse_url($arr['properties']['backgroundimage'], PHP_URL_PATH);
+	}
+
+	// YourLogo img
+	if(!empty($arr['properties']['yourlogo']) && strpos($arr['properties']['yourlogo'], 'http://') !== false) {
+		$arr['properties']['yourlogo'] = parse_url($arr['properties']['yourlogo'], PHP_URL_PATH);
+	}
+
+	if(!empty($arr['layers'])) {
+		foreach($arr['layers'] as $key => $slide) {
+
+			// Layer BG
+			if(strpos($slide['properties']['background'], 'http://') !== false) {
+				$arr['layers'][$key]['properties']['background'] = parse_url($slide['properties']['background'], PHP_URL_PATH);
+			}
+
+			// Layer Thumb
+			if(strpos($slide['properties']['thumbnail'], 'http://') !== false) {
+				$arr['layers'][$key]['properties']['thumbnail'] = parse_url($slide['properties']['thumbnail'], PHP_URL_PATH);
+			}
+
+			// Image sublayers
+			if(!empty($slide['sublayers'])) {
+				foreach($slide['sublayers'] as $subkey => $layer) {
+					if($layer['media'] == 'img' && strpos($layer['image'], 'http://') !== false) {
+						$arr['layers'][$key]['sublayers'][$subkey]['image'] = parse_url($layer['image'], PHP_URL_PATH);
+					}
+				}
+			}
+		}
+	}
+
+	return $arr;
+}
+
+
+function layerslider_register_wpml_strings( $sliderID, $data ) {
+
+	if(!empty($data['layers']) && is_array($data['layers'])) {
+		foreach($data['layers'] as $slideIndex => $slide) {
+
+			if(!empty($slide['sublayers']) && is_array($slide['sublayers'])) {
+				foreach($slide['sublayers'] as $layerIndex => $layer) {
+
+					if( ! empty( $layer['html'] ) && $layer['type'] != 'img' ) {
+
+						// Check 'createdWith' property to decide which WPML implementation
+						// should we use. This property was added in v6.5.5 along with the
+						// new WPML implementation, so no version comparison required.
+						if( ! empty( $layer['uuid'] ) && ! empty( $data['properties']['createdWith'] ) ) {
+
+							$string_name = "slider-{$sliderID}-layer-{$layer['uuid']}-html";
+							do_action( 'wpml_register_single_string', 'LayerSlider Sliders', $string_name, $layer['html'] );
+
+						// Old implementation
+						} else {
+
+							$string_name = '<'.$layer['type'].':'.substr(sha1($layer['html']), 0, 10).'> layer on slide #'.($slideIndex+1).' in slider #'.$sliderID.'';
+							do_action( 'wpml_register_single_string', 'LayerSlider WP', $string_name, $layer['html']);
+						}
+					}
+				}
+			}
+		}
+	}
+}

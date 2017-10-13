@@ -9,7 +9,7 @@ if( !defined( 'ABSPATH' ) ) exit();
 
 class RevSliderTemplate {
 	
-	private $templates_url		= 'http://templates.themepunch.tools/';
+	private $templates_url		= 'https://templates.themepunch.tools/';
 	private $templates_list		= 'revslider/get-list.php';
 	private $templates_download	= 'revslider/download.php';
 	
@@ -1107,19 +1107,7 @@ class RevSliderTemplate {
 				<span class="ttm_space"></span>		
 				<?php
 				if ($allow_install !== false) {
-					if($slider_id !== false){
-						?>								
-						<div class="install_template_slider" data-zipname="<?php echo $template['zip']; ?>" data-uid="<?php echo $template['uid']; ?>" data-title="<?php echo esc_html($template['title']); ?>"><i class="eg-icon-download"></i><?php _e('Re-Install Slider', 'revslider'); ?></div>							
-						<span class="tp-clearfix" style="margin-bottom:5px"></span>
-						<?php
-						if(isset($template['package']) && $template['package'] !== ''){
-							$txt = ($template['package_full_installded']) ? __('Re-Install Slider Pack', 'revslider') : __('Install Slider Pack', 'revslider');
-							?>
-							<div class="install_template_slider_package" data-zipname="<?php echo $template['zip']; ?>" data-uid="<?php echo $template['uid']; ?>" data-title="<?php echo esc_html($template['title']); ?>"><i class="eg-icon-download"></i><?php echo $txt; ?></div>							
-							<span class="tp-clearfix" style="margin-bottom:5px"></span>
-							<?php
-						}
-					}
+					
 					?>	 
 					<?php
 					if($slider_id !== false){
@@ -1138,6 +1126,20 @@ class RevSliderTemplate {
 						?>
 						<div class="add_template_slider_item_package" data-uid="<?php echo $template['uid']; ?>" data-title="<?php echo esc_html($template['title']); ?>"><i class="eg-icon-plus"></i><?php echo __('Add Slider Pack', 'revslider'); ?></div>
 						<?php
+					}
+					if($slider_id !== false){
+						?>	
+						<span class="tp-clearfix" style="margin-bottom:5px"></span>						
+						<div class="install_template_slider" data-zipname="<?php echo $template['zip']; ?>" data-uid="<?php echo $template['uid']; ?>" data-title="<?php echo esc_html($template['title']); ?>"><i class="eg-icon-download"></i><?php _e('Re-Download Slider', 'revslider'); ?></div>							
+						<span class="tp-clearfix" style="margin-bottom:5px"></span>
+						<?php
+						if(isset($template['package']) && $template['package'] !== ''){
+							$txt = ($template['package_full_installded']) ? __('Re-Download Slider Pack', 'revslider') : __('Install Slider Pack', 'revslider');
+							?>
+							<div class="install_template_slider_package" data-zipname="<?php echo $template['zip']; ?>" data-uid="<?php echo $template['uid']; ?>" data-title="<?php echo esc_html($template['title']); ?>"><i class="eg-icon-download"></i><?php echo $txt; ?></div>							
+							<span class="tp-clearfix" style="margin-bottom:5px"></span>
+							<?php
+						}
 					}
 				} else {
 					?>

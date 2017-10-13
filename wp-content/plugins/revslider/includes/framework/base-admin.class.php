@@ -20,7 +20,7 @@ class RevSliderBaseAdmin extends RevSliderBase {
 	private static $menuRole = 'admin';
 	private static $arrMetaBoxes = array();		//option boxes that will be added to post
 	
-	private static $allowed_views = array('master-view', 'system/validation', 'system/dialog-video', 'system/dialog-update', 'system/dialog-global-settings', 'sliders', 'slider', 'slider_template', 'slides', 'slide', 'navigation-editor', 'slide-editor', 'slide-overview', 'slide-editor', 'slider-overview', 'themepunch-google-fonts');
+	private static $allowed_views = array('master-view', 'system/validation', 'system/dialog-video', 'system/dialog-update', 'system/dialog-global-settings', 'sliders', 'slider', 'slider_template', 'slides', 'slide', 'navigation-editor', 'slide-editor', 'slide-overview', 'slide-editor', 'slider-overview', 'themepunch-google-fonts', 'global-settings');
 	
 	/**
 	 * 
@@ -178,7 +178,7 @@ class RevSliderBaseAdmin extends RevSliderBase {
 	private function isInsidePlugin(){
 		$page = self::getGetVar("page");
 		
-		if($page == 'revslider' || $page == 'themepunch-google-fonts' || $page == 'revslider_navigation')
+		if($page == 'revslider' || $page == 'themepunch-google-fonts' || $page == 'revslider_navigation' || $page == 'revslider_global_settings')
 			return(true);
 		return(false);
 	} 

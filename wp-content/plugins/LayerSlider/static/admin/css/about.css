@@ -1,7 +1,8 @@
 .ls-about-img {
   position: absolute;
   height: 65px !important;
-  top: 10px; }
+  top: 10px;
+  border: 0 !important; }
 
 .ls-start-button {
   border: none !important;
@@ -13,7 +14,8 @@
   display: block !important;
   margin: 20px auto 25px auto !important;
   width: 200px !important;
-  line-height: 46px !important; }
+  line-height: 46px !important;
+  text-align: center; }
 
 .ls-about-page .ls-share-template {
   position: absolute;
@@ -63,4 +65,5 @@
     margin: 20px; }
   .km-about-news-sections h2 {
     margin: 0;
-    text-align: inherit; }
+    text-align: inherit;
+    font-size: 22px; }

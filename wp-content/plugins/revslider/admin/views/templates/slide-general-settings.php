@@ -3,9 +3,6 @@
 $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(), $slide, $slider);
 ?>
 
-<script>
-	jQuery(document).ready(function(){function r(r){var i;return r=r.replace(/ /g,""),r.match(/rgba\(\d+\,\d+\,\d+\,([^\)]+)\)/)?(i=100*parseFloat(r.match(/rgba\(\d+\,\d+\,\d+\,([^\)]+)\)/)[1]).toFixed(2),i=parseInt(i)):i=100,i}function i(r,i,e,t){var n,o,c;n=i.data("a8cIris"),o=i.data("wpWpColorPicker"),n._color._alpha=r,c=n._color.toString(),i.val(c),o.toggler.css({"background-color":c}),t&&a(r,e),i.wpColorPicker("color",c)}function a(r,i){i.slider("value",r),i.find(".ui-slider-handle").text(r.toString())}Color.prototype.toString=function(r){if("no-alpha"==r)return this.toCSS("rgba","1").replace(/\s+/g,"");if(1>this._alpha)return this.toCSS("rgba",this._alpha).replace(/\s+/g,"");var i=parseInt(this._color,10).toString(16);if(this.error)return"";if(i.length<6)for(var a=6-i.length-1;a>=0;a--)i="0"+i;return"#"+i},jQuery.fn.alphaColorPicker=function(){return this.each(function(){var e,t,n,o,c,l,s,d,u,p,f;e=jQuery(this),e.wrap('<div class="alpha-color-picker-wrap"></div>'),n=e.attr("data-palette")||"true",o=e.attr("data-show-opacity")||"true",c=e.attr("data-default-color")||"",l=-1!==n.indexOf("|")?n.split("|"):"false"==n?!1:!0,t=e.val().replace(/\s+/g,""),""==t&&(t=c),s={change:function(i,a){var t,n,o,l;t=e.attr("data-customize-setting-link"),n=e.wpColorPicker("color"),c==n&&(o=r(n),u.find(".ui-slider-handle").text(o)),"undefined"!=typeof wp.customize&&wp.customize(t,function(r){r.set(n)}),l=d.find(".transparency"),l.css("background-color",a.color.toString("no-alpha"))},palettes:l},e.wpColorPicker(s),d=e.parents(".wp-picker-container:first"),jQuery('<div class="alpha-color-picker-container"><div class="min-click-zone click-zone"></div><div class="max-click-zone click-zone"></div><div class="alpha-slider"></div><div class="transparency"></div></div>').appendTo(d.find(".wp-picker-holder")),u=d.find(".alpha-slider"),p=r(t),f={create:function(r,i){var a=jQuery(this).slider("value");jQuery(this).find(".ui-slider-handle").text(a),jQuery(this).siblings(".transparency ").css("background-color",t)},value:p,range:"max",step:1,min:0,max:100,animate:300},u.slider(f),"true"==o&&u.find(".ui-slider-handle").addClass("show-opacity"),d.find(".min-click-zone").on("click",function(){i(0,e,u,!0)}),d.find(".max-click-zone").on("click",function(){i(100,e,u,!0)}),d.find(".iris-palette").on("click",function(){var i,t;i=jQuery(this).css("background-color"),t=r(i),a(t,u),100!=t&&(i=i.replace(/[^,]+(?=\))/,(t/100).toFixed(2))),e.wpColorPicker("color",i)}),d.find(".button.wp-picker-default").on("click",function(){var i=r(c);a(i,u)}),e.on("input",function(){var i=jQuery(this).val(),e=r(i);a(e,u)}),u.slider().on("slide",function(r,a){var t=parseFloat(a.value)/100;i(t,e,u,!1),jQuery(this).find(".ui-slider-handle").text(a.value)})})}});
-</script>
 
 <!-- THE CONTEXT MENU -->
 <div id="context_menu_underlay" class="ignorecontextmenu"></div>
@@ -13,7 +10,7 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 <ul id="context-menu-first-ul" class="context-menu__items">
   <!-- CURRENT LAYER -->
   <li class="context-menu__item not_in_ctx_bg" id="ctx-m-activelayer">
-    <div class="ctx_item_inner"><i id="cx-selected-layer-icon" class="rs-icon-layerimage_n context-menu__link" data-action="nothing"></i><span id="cx-selected-layer-name">Black Canon DSLR</span>
+    <div class="ctx_item_inner"><i id="cx-selected-layer-icon" class="rs-icon-layerimage_n context-menu__link" data-action="nothing"></i><span id="cx-selected-layer-name"><?php _e('Black Canon DSLR', 'revslider'); ?></span>
     	<span data-uniqueid="4" id="ctx-list-of-layer-links" class="ctx-list-of-layer-links">			
     		<span id="ctx-layer-link-type-element-cs" class="ctx-layer-link-type-element ctx-layer-link-type-element-cs ctx-layer-link-type-3"></span>			
     		<span class="ctx-list-of-layer-links-inner">				
@@ -240,7 +237,7 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 						<span class="diblock bg-settings-block">
 							<!-- IMAGE FROM MEDIAGALLERY -->												
 							<?php
-							if($slider_type == 'posts' || $slider_type == 'specific_posts' || $slider_type == 'woocommerce'){
+							if($slider_type == 'posts' || $slider_type == 'specific_posts' || $slider_type == 'current_post' || $slider_type == 'woocommerce'){
 								?>
 								<label><?php _e("Featured Image",'revslider'); ?></label>
 								<input type="radio" name="background_type" value="image" class="bgsrcchanger" data-callid="tp-bgimagewpsrc" data-imgsettings="on" data-bgtype="image" id="radio_back_image" <?php checked($bgType, 'image'); ?>>
@@ -302,7 +299,7 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 
 							<!-- THE BG IMAGE FROM EXTERNAL SOURCE -->
 							<span id="tp-bgimageextsrc" class="bgsrcchanger-div" style="display:none;margin-left:20px;">
-								<input type="text" name="bg_external" id="slide_bg_external" value="<?php echo $slideBGExternal?>" <?php echo ($bgType != 'external') ? ' class="disabled"' : ''; ?>>
+								<input type="text" name="bg_external" id="slide_bg_external" value="<?php echo esc_url($slideBGExternal); ?>" <?php echo ($bgType != 'external') ? ' class="disabled"' : ''; ?>>
 								<a href="javascript:void(0)" id="button_change_external" class="button-primary revblue" ><?php _e("Get External",'revslider'); ?></a>
 							</span>
 							
@@ -314,17 +311,17 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 							<div class="tp-clearfix"></div>
 							
 							<!-- COLORED BACKGROUND -->
-							<label><?php _e("Solid Colored",'revslider'); ?></label>
+							<label><?php _e("Colored",'revslider'); ?></label>
 							<input type="radio" name="background_type" value="solid"  data-callid="tp-bgcolorsrc" class="bgsrcchanger" data-bgtype="solid" id="radio_back_solid" <?php checked($bgType, 'solid'); ?>>
 							
 							<!-- THE COLOR SELECTOR -->
 							<span id="tp-bgcolorsrc"  class="bgsrcchanger-div"  style="display:none;margin-left:20px;">
-								<input type="text" name="bg_color" id="slide_bg_color" class="my-color-field" value="<?php echo $slideBGColor; ?>">
+								<input type="text" data-editing="Background Color" name="bg_color" id="slide_bg_color" class="my-color-field" value="<?php echo $slideBGColor; ?>">
 							</span>
 							<div class="tp-clearfix"></div>
 
 							<!-- THE YOUTUBE SELECTOR -->
-							<label><?php _e("YouTube Video",'revslider'); ?></label>
+							<label id="label_radio_back_youtube"><?php _e("YouTube Video",'revslider'); ?></label>
 							<input type="radio" name="background_type" value="youtube"  data-callid="tp-bgyoutubesrc" class="bgsrcchanger" data-bgtype="youtube" id="radio_back_youtube" <?php checked($bgType, 'youtube'); ?>>
 							<div class="tp-clearfix"></div>
 							
@@ -340,7 +337,7 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 							<div class="tp-clearfix"></div>
 							
 							<!-- THE VIMEO SELECTOR -->
-							<label><?php _e("Vimeo Video",'revslider'); ?></label>
+							<label id="label_radio_back_vimeo"><?php _e("Vimeo Video",'revslider'); ?></label>
 							<input type="radio" name="background_type" value="vimeo"  data-callid="tp-bgvimeosrc" class="bgsrcchanger" data-bgtype="vimeo" id="radio_back_vimeo" <?php checked($bgType, 'vimeo'); ?>>
 							<div class="tp-clearfix"></div>
 
@@ -509,7 +506,7 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 							
 							<div class="vid-rev-vimeo-youtube video_volume_wrapper">
 								<label for="video_volume"><?php _e('Video Volume:', 'revslider'); ?></label>
-								<input type="text" id="video_volume" name="video_volume" <?php echo esc_attr($video_volume); ?>>
+								<input type="text" id="video_volume" name="video_volume" value="<?php echo esc_attr($video_volume); ?>">
 							</div>
 
 							<span id="vid-rev-youtube-options">
@@ -728,6 +725,14 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 								<label style="min-width:20px"><?php _e('To', 'revslider')?></label>
 								<input style="min-width:54px;width:54px" class="kb_input_values" type="text" name="kb_end_rotate" id="kb_end_rotate" value="<?php echo $kbEndRotate; ?>" />
 							</p>
+
+							<p>
+								<label><?php _e('Blur Filter:', 'revslider')?></label>
+								<label style="min-width:40px"><?php _e('From', 'revslider'); ?></label>							
+								<input style="min-width:54px;width:54px" class="kb_input_values" type="text" name="kb_blur_start" id="kb_blur_start" value="<?php echo $kbBlurStart; ?>" />
+								<label style="min-width:20px"><?php _e('To', 'revslider')?></label>
+								<input style="min-width:54px;width:54px" class="kb_input_values" type="text" name="kb_blur_end" id="kb_blur_end" value="<?php echo $kbBlurEnd; ?>" />								
+							</p>
 							
 							<p>
 								<label><?php _e('Easing:', 'revslider'); ?></label>
@@ -788,7 +793,7 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 					?>
 						<!-- SLIDE TITLE -->
 						<p style="display:none">
-							<?php $title = RevSliderFunctions::getVal($slideParams, 'title','Slide'); ?>
+							<?php $title = esc_attr(stripslashes(RevSliderFunctions::getVal($slideParams, 'title','Slide'))); ?>
 							<label><?php _e("Slide Title",'revslider'); ?></label>
 							<input type="text" class="medium" id="title" disabled="disabled" name="title" value="<?php echo $title; ?>">
 							<span class="description"><?php _e("The title of the slide, will be shown in the slides list.",'revslider'); ?></span>
@@ -798,7 +803,7 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 						<p>
 							<?php $delay = RevSliderFunctions::getVal($slideParams, 'delay',''); ?>
 							<label><?php _e('Slide "Delay":','revslider'); ?></label>
-							<input type="text" class="small-text" id="delay" name="delay" value="<?php echo $delay; ?>">
+							<input type="text" class="small-text" id="delay" name="delay" value="<?php echo intval($delay); ?>">
 							<span class="description"><?php _e("A new delay value for the Slide. If no delay defined per slide, the delay defined via Options (9000ms) will be used.",'revslider'); ?></span>
 						</p>
 
@@ -1277,9 +1282,9 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 											foreach($placeholder['data'] as $k => $d){
 												$get_from = RevSliderFunctions::getVal($slideParams, 'ph-'.$ph_arr_type.'-'.$pht.'-'.$placeholder['handle'].'-'.$k.'-slide', 'off');
 												if($get_from == 'on'){ //get from Slide
-													$ph_vals[$k] = RevSliderFunctions::getVal($slideParams, 'ph-'.$ph_arr_type.'-'.$pht.'-'.$placeholder['handle'].'-'.$k, $d);											
+													$ph_vals[$k] = stripslashes(RevSliderFunctions::getVal($slideParams, 'ph-'.$ph_arr_type.'-'.$pht.'-'.$placeholder['handle'].'-'.$k, $d));											
 												}else{ ////get from Slider
-													$ph_vals[$k] = $slider->getParam('ph-'.$ph_arr_type.'-'.$pht.'-'.$placeholder['handle'].'-'.$k, $d);											
+													$ph_vals[$k] = stripslashes($slider->getParam('ph-'.$ph_arr_type.'-'.$pht.'-'.$placeholder['handle'].'-'.$k, $d));											
 												}
 											}										
 											?>
@@ -1546,7 +1551,7 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 								$arrSlideNames = $slider->getArrSlideNames();
 							if(!empty($arrSlideNames) && is_array($arrSlideNames)){
 								foreach($arrSlideNames as $slideNameID=>$arr){
-									$slideName = $arr["title"];
+									$slideName = esc_attr(stripslashes($arr["title"]));
 									$arrSlideLink[$slideNameID] = $slideName;
 									$arrSlideLinkLayers[$slideNameID] = $slideName;
 								}
@@ -1589,7 +1594,13 @@ $slide_general_addon = apply_filters('revslider_slide_settings_addons', array(),
 	var rs_plugin_url = '<?php echo RS_PLUGIN_URL; ?>';
 	
 	jQuery('document').ready(function() {
-		jQuery('.my-alphacolor-field').alphaColorPicker();
+    
+		jQuery('.my-alphacolor-field').tpColorPicker({
+          mode:'single',
+          wrapper:'<span class="rev-colorpickerspan"></span>'          
+      });
+
+
 		jQuery('#enable_link').change(function(){
 			if(jQuery(this).val() == 'true'){
 				jQuery('.rs-slide-link-setting-wrapper').show();

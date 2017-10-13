@@ -20,7 +20,7 @@ class RevSliderTinyBox {
 	 * @since: 5.1.1
 	 */
 	public static function add_tinymce_editor(){
-		global $typenow;
+		global $typenow, $pagenow;
 		
 		// check user permissions
 		if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) return;
@@ -29,7 +29,7 @@ class RevSliderTinyBox {
 		if(!is_array($post_types)) $post_types = array( 'post', 'page' );
 		// verify the post type
 		if(!in_array($typenow, $post_types)) return;
-		if((isset($_GET['action']) && $_GET['action'] == 'edit') || (isset($_GET['vc_action']) && $_GET['vc_action'] == 'vc_inline')){
+		if((isset($_GET['action']) && $_GET['action'] == 'edit') || (isset($_GET['vc_action']) && $_GET['vc_action'] == 'vc_inline') || $pagenow == 'post-new.php'){
 			// check if WYSIWYG is enabled
 			if(get_user_option('rich_editing') == 'true'){
 				add_filter('mce_external_plugins', array('RevSliderTinyBox', 'add_tinymce_shortcode_editor_plugin'));
@@ -278,7 +278,7 @@ class RevSliderTinyBox {
 						
 						if($type == 'gallery'){
 							$slides = $slider->getSlides();
-						}elseif($type == 'specific_posts'){
+						}elseif($type == 'specific_posts' || $type == 'current_post'){
 							$slides = $slider->getSlidesFromPosts();
 						}
 						
@@ -366,6 +366,7 @@ class RevSliderTinyBox {
 					if(!empty($sl)){
 						foreach($sl as $type => $slider){
 							$mtype = ($type == 'specific_posts') ? 'Specific Posts' : $type;
+							$mtype = ($type == 'current_post') ? 'Current Post' : $type;
 							echo '<option disabled="disabled">--- '.ucfirst(esc_attr($mtype)).' ---</option>';
 							foreach($slider as $values){
 								if($values['alias'] != 'false'){

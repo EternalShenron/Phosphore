@@ -798,8 +798,14 @@ class RevSliderSlider extends RevSliderElementsBase{
 					}
 				}
 			}
+			
+			$d = array('usedSVG' => $usedSVG, 'usedImages' => $usedImages, 'usedVideos' => $usedVideos);
+			$d = apply_filters('revslider_exportSlider_usedMedia', $d, $cfw, $sliderParams, $useDummy); //  $arrSlides, $arrStaticSlide, 
+			
+			$usedSVG = $d['usedSVG'];
+			$usedImages = $d['usedImages'];
+			$usedVideos = $d['usedVideos'];
 		}
-		
 		
 		$arrSliderExport = array("params"=>$sliderParams,"slides"=>$arrSlides);
 		if(!empty($arrStaticSlide))
@@ -1021,7 +1027,6 @@ class RevSliderSlider extends RevSliderElementsBase{
 	public function importSliderFromPost($updateAnim = true, $updateStatic = true, $exactfilepath = false, $is_template = false, $single_slide = false, $updateNavigation = true){
 		
 		$real_slider_id = '';
-		
 		try{
 			$upload_dir = wp_upload_dir();
 			$rem_path = $upload_dir['basedir'].'/rstemp/';
@@ -1273,7 +1278,6 @@ class RevSliderSlider extends RevSliderElementsBase{
 			if(isset($sliderParams["background_image"]))
 				$sliderParams["background_image"] = RevSliderFunctionsWP::getImageUrlFromPath($sliderParams["background_image"]);
 			
-			
 			$import_statics = true;
 			if(isset($sliderParams['enable_static_layers'])){
 				if($sliderParams['enable_static_layers'] == 'off') $import_statics = false;
@@ -1383,7 +1387,6 @@ class RevSliderSlider extends RevSliderElementsBase{
 					}
 				}
 				
-				
 				//convert layers images:
 				foreach($layers as $key=>$layer){					
 					//import if exists in zip folder
@@ -1453,6 +1456,15 @@ class RevSliderSlider extends RevSliderElementsBase{
 				$arrCreate["slider_id"] = $sliderID;
 				$arrCreate["slide_order"] = $slide["slide_order"];
 				
+				$d = array('params' => $params, 'sliderParams' => $sliderParams, 'layers' => $layers, 'settings' => $settings, 'alreadyImported' => $alreadyImported);
+				$d = apply_filters('revslider_importSliderFromPost_modify_data', $d, 'normal', $d_path);
+				
+				$params = $d['params'];
+				$sliderParams = $d['sliderParams'];
+				$layers = $d['layers'];
+				$settings = $d['settings'];
+				$alreadyImported = $d['alreadyImported'];
+				
 				$my_layers = json_encode($layers);
 				if(empty($my_layers))
 					$my_layers = stripslashes(json_encode($layers));
@@ -1462,7 +1474,6 @@ class RevSliderSlider extends RevSliderElementsBase{
 				$my_settings = json_encode($settings);
 				if(empty($my_settings))
 					$my_settings = stripslashes(json_encode($settings));
-				
 				
 				$arrCreate["layers"] = $my_layers;
 				$arrCreate["params"] = $my_params;
@@ -1764,6 +1775,14 @@ class RevSliderSlider extends RevSliderElementsBase{
 						
 						$layers[$key] = $layer;
 					}
+					
+					$d = array('params' => $params, 'layers' => $layers, 'settings' => $settings);
+					$d = apply_filters('revslider_importSliderFromPost_modify_data', $d, 'static', $d_path);
+					
+					$params = $d['params'];
+					$layers = $d['layers'];
+					$settings = $d['settings'];
+					
 					
 					//create new slide
 					$arrCreate = array();
@@ -2333,6 +2352,10 @@ class RevSliderSlider extends RevSliderElementsBase{
 					break;
 				}
 			break;
+			case "current_post":
+				global $post;
+				$arrPosts = $this->getPostsFromSpecificList(array("",$post->ID));
+			break;
 			case "specific_posts":
 				$arrPosts = $this->getPostsFromSpecificList($gal_ids);
 			break;
@@ -2351,7 +2374,7 @@ class RevSliderSlider extends RevSliderElementsBase{
 		
 		
 		foreach($arrPosts as $postData){
-			$slideTemplate = clone($slideTemplates[$templateKey]);
+			$slideTemplate = clone $slideTemplates[$templateKey];
 			
 			//advance the templates
 			$templateKey++;
@@ -2514,6 +2537,8 @@ class RevSliderSlider extends RevSliderElementsBase{
 		if(empty($arrPosts)) RevSliderFunctions::throwError(__('Failed to load Stream', 'revslider'));
 		
 		foreach($arrPosts as $postData){
+			if(empty($postData)) continue; //ignore empty entries, like from instagram
+			
 			$slideTemplate = $slideTemplates[$templateKey];
 			
 			//advance the templates
@@ -2557,11 +2582,21 @@ class RevSliderSlider extends RevSliderElementsBase{
 	 * get slides of the current slider
 	 */
 	public function getSlidesFromGallery($publishedOnly = false, $allwpml = false, $first = false){
-	
+		//global $rs_slide_template;
 		$this->validateInited();
 		
 		$arrSlides = array();
 		$arrSlideRecords = $this->db->fetch(RevSliderGlobals::$table_slides,$this->db->prepare("slider_id = %s", array($this->id)),"slide_order");
+		
+		//add Slides set by postsettings, so slide_template
+		/*if(!empty($rs_slide_template)){
+			foreach($rs_slide_template as $rs_s_t){
+				$rs_s_t_d = $this->db->fetch(RevSliderGlobals::$table_slides,$this->db->prepare("id = %s", array($rs_s_t)),"slide_order");
+				foreach($rs_s_t_d as $rs_s_t_d_v){
+					$arrSlideRecords[] = $rs_s_t_d_v;
+				}
+			}
+		}*/
 		
 		$arrChildren = array();
 		
@@ -2809,7 +2844,7 @@ class RevSliderSlider extends RevSliderElementsBase{
 			$arrSlidesExport[] = $slideNew;
 		}
 		
-		return($arrSlidesExport);
+		return apply_filters('revslider_getSlidesForExport', $arrSlidesExport);
 	}
 
 	
@@ -2833,7 +2868,7 @@ class RevSliderSlider extends RevSliderElementsBase{
 			$arrSlidesExport[] = $slideNew;
 		}
 		
-		return($arrSlidesExport);
+		return apply_filters('revslider_getStaticSlideForExport', $arrSlidesExport);
 	}
 	
 	
@@ -3126,7 +3161,7 @@ class RevSliderSlider extends RevSliderElementsBase{
 	public function isSlidesFromPosts(){
 		$this->validateInited();
 		$sourceType = $this->getParam("source_type","gallery");
-		if($sourceType == "posts" || $sourceType == "specific_posts" || $sourceType == "woocommerce")
+		if($sourceType == "posts" || $sourceType == "specific_posts" || $sourceType == "current_post" || $sourceType == "woocommerce")
 			return(true);
 		
 		return(false);
@@ -3139,7 +3174,7 @@ class RevSliderSlider extends RevSliderElementsBase{
 	public function isSlidesFromStream(){
 		$this->validateInited();
 		$sourceType = $this->getParam("source_type","gallery");
-		if($sourceType != "posts" && $sourceType != "specific_posts" && $sourceType != "woocommerce" && $sourceType != "gallery")
+		if($sourceType != "posts" && $sourceType != "specific_posts" && $sourceType != "current_post" && $sourceType != "woocommerce" && $sourceType != "gallery")
 			return($sourceType);
 		
 		return(false);

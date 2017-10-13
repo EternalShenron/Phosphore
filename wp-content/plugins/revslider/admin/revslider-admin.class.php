@@ -69,6 +69,7 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 		self::addMenuPage('Slider Revolution', "adminPages");
 		
 		self::addSubMenuPage(__('Navigation Editor', 'revslider'), 'display_plugin_submenu_page_navigation', 'revslider_navigation');
+		self::addSubMenuPage(__('Global Settings', 'revslider'), 'display_plugin_submenu_page_global_settings', 'revslider_global_settings');
 		
 
 		$this->addSliderMetaBox();
@@ -270,6 +271,10 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 		
 		wp_enqueue_style(array('wp-color-picker'));
 		wp_enqueue_script(array('wp-color-picker'));
+
+		//enqueue TP-COLOR 
+		wp_enqueue_style('tp-color-picker-css', plugins_url('../public/assets/css/tp-color-picker.css', __FILE__ ), array(), RevSliderGlobals::SLIDER_REVISION);
+		wp_enqueue_script('tp-color-picker-js', plugins_url('../public/assets/js/tp-color-picker.min.js', __FILE__ ), array('jquery'), RevSliderGlobals::SLIDER_REVISION);
 		
 		
 		//enqueue in all pages / posts in backend
@@ -289,6 +294,14 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 	 */
 	public function display_plugin_submenu_page_navigation() {
 		self::display_plugin_submenu('navigation-editor');
+	}
+	
+
+	/**
+	 * Include wanted submenu page
+	 */
+	public function display_plugin_submenu_page_global_settings() {
+		self::display_plugin_submenu('global-settings');
 	}
 	
 
@@ -790,7 +803,6 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 						//check if Slider Template was already imported. If yes, remove the old Slider Template as we now do an "update" (in reality we delete and insert again)
 						//get all template sliders
 						$tmp_slider = $tmp->getThemePunchTemplateSliders();
-						
 						foreach($tmp_slider as $tslider){
 							if(isset($tslider['uid']) && $uid == $tslider['uid']){
 								if(!isset($tslider['installed'])){ //slider is installed
@@ -806,7 +818,6 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 								break;
 							}
 						}
-						
 						
 						$slider = new RevSlider();
 						$response = $slider->importSliderFromPost($updateAnim, $updateStatic, $filepath, $uid, $single_slide);
@@ -899,7 +910,8 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 					set_time_limit(60); //reset the time limit
 			
 					$filepath = $tmp->_download_template($uid); //can be single or multiple, depending on $package beeing false or true
-					
+					//var_dump($filepath);
+					//exit;
 					//send request to TP server and download file
 					if(is_array($filepath) && isset($filepath['error'])){
 						$message = $filepath['error'];
@@ -1097,6 +1109,7 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 
 		$action = self::getPostGetVar("client_action");
 		$data = self::getPostGetVar("data");
+		if($data == '') $data = array();
 		$nonce = self::getPostGetVar("nonce");
 		if(empty($nonce))
 			$nonce = self::getPostGetVar("rs-nonce");
@@ -1501,8 +1514,10 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 					exit();
 				break;
 				case "update_captions_css":
-					
 					$arrCaptions = $operations->updateCaptionsContentData($data);
+					
+					//now check all layers of all sliders and check if you need to change them (only if all values are default)
+					
 					
 					if($arrCaptions !== false){
 						$db = new RevSliderDB();
@@ -2037,6 +2052,12 @@ class RevSliderAdmin extends RevSliderBaseAdmin{
 						update_option('revslider_slide_editor_sticky', 'false');
 					}
 					self::ajaxResponseData(array());
+				break;
+				case 'save_color_preset':
+				
+					$presets = TPColorpicker::save_color_presets($data['presets']);
+					self::ajaxResponseData(array('presets' => $presets));
+					
 				break;
 				default:
 					$return = apply_filters('revslider_admin_onAjaxAction_switch', false, $action, $data, $slider, $slide, $operations);

@@ -15,6 +15,11 @@ if( ( !empty($slides['properties']['attrs']['type']) && $slides['properties']['a
 	$init[] = 'height: '.$slides['properties']['props']['height'].'';
 }
 
+// Popup
+if( !empty($slides['properties']['attrs']['type']) && $slides['properties']['attrs']['type'] === 'popup' ) {
+	$lsPlugins[] = 'popup';
+}
+
 if( ! empty( $lsPlugins ) ) {
 	$init[] = 'plugins: ' . json_encode( array_unique( $lsPlugins ) );
 }
@@ -28,9 +33,9 @@ $lsInit[] = '</script>';
 
 // Include JS files to body option
 if(get_option('ls_put_js_to_body', false)) {
-	$lsInit[] = '<script data-cfasync="false" type="text/javascript" src="'.LS_ROOT_URL.'/static/layerslider/js/layerslider.transitions.js?ver='.LS_PLUGIN_VERSION.'"></script>' . NL;
-    $lsInit[] = '<script data-cfasync="false" type="text/javascript" src="'.LS_ROOT_URL.'/static/layerslider/js/layerslider.kreaturamedia.jquery.js?ver='.LS_PLUGIN_VERSION.'"></script>' . NL;
-    $lsInit[] = '<script data-cfasync="false" type="text/javascript" src="'.LS_ROOT_URL.'/static/layerslider/js/greensock.js?ver=1.11.8"></script>' . NL;
+	$lsInit[] = '<script type="text/javascript" data-cfasync="false" src="'.LS_ROOT_URL.'/static/layerslider/js/layerslider.transitions.js?ver='.LS_PLUGIN_VERSION.'"></script>' . NL;
+    $lsInit[] = '<script type="text/javascript" data-cfasync="false" src="'.LS_ROOT_URL.'/static/layerslider/js/layerslider.kreaturamedia.jquery.js?ver='.LS_PLUGIN_VERSION.'"></script>' . NL;
+    $lsInit[] = '<script type="text/javascript" data-cfasync="false" src="'.LS_ROOT_URL.'/static/layerslider/js/greensock.js?ver=1.11.8"></script>' . NL;
 }
 
 $lsInit[] = '<script data-cfasync="false" type="text/javascript">' . NL;

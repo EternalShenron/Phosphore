@@ -5,6 +5,12 @@ $obj_library = new RevSliderObjectLibrary();
 $startanims = $operations->getArrAnimations();
 $slider_addons = apply_filters('revslider_slide_addons', array(), $slide, $slider);
 $global_settings = $operations->getGeneralSettingsValues();
+
+//show/hide layers of specific slides
+$add_static = 'false';
+if($slide->isStaticSlide()){
+	$add_static = 'true';
+}
 ?>
 
 
@@ -87,7 +93,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 				<div>
 
 					<!-- FONT TEMPLATE -->
-					<span class="rs-layer-toolbar-box ho_row_ ho_column_ ho_group_" style="padding-right:15px;">
+					<span class="rs-layer-toolbar-box ho_row_ ho_column_ ho_group_" style="padding-right:19px;">
 						<i class="rtlmr0 rs-mini-layer-icon rs-icon-fonttemplate rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Caption Style",'revslider'); ?>" style="margin-right:10px"></i>
 						<input type="text"  style="width:150px; padding-right:30px;" class="textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Style Template",'revslider'); ?>"  id="layer_caption" name="layer_caption" value="-" />
 						<span id="layer_captions_down" ><i class="eg-icon-arrow-combo"></i></span>
@@ -120,6 +126,12 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<i class="rs-mini-layer-icon rs-icon-lineheight rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Line Height (px)",'revslider'); ?>" style="margin-right:11px" ></i>
 						<input type="text" data-suffix="px" class="rs-layer-input-field tipsy_enabled_top" title="<?php _e("Line Height",'revslider'); ?>" style="width:61px" id="layer_line_height_s" name="line_height_static" value="22px" />
 						<span class="rs-layer-toolbar-space" style="margin-right:10px" ></span>
+
+						<!-- COLOR -->
+						<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Font Color",'revslider'); ?>"></i>
+						<input type="text" class="my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Font Color",'revslider'); ?>"  data-editing="Layer Color" data-mode="single" id="layer_color_s" name="color_static" value="#ffffff" />
+
+						
 					</span>
 
 
@@ -155,23 +167,28 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<i class="rs-mini-layer-icon rs-icon-yoffset rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Vertical Offset from Aligned Position (px)",'revslider'); ?>" style="margin-right:4px"></i>
 						<input type="text" data-suffix="px" class="text-sidebar setting-disabled rs-layer-input-field tipsy_enabled_top" title="<?php _e("Vertical Offset from Aligned Position (px)",'revslider'); ?>" style="width:60px" id="layer_top" name="layer_top" value="" disabled="disabled">					
 					</span>
+					
+					<span class="rs-layer-toolbar-box">	
+						<!-- DISPLAY OPTIONS (NONE VISIBLE) -->
+						<span class="rs-layer-toolbar-box tipsy_enabled_top" style="display: none">						
+							<select id="layer_display" name="layer_display">
+								<option value="block" selected="selected"><?php _e('Block', 'revslider'); ?></option>
+								<option value="inline-block"><?php _e('Inline-Block', 'revslider'); ?></option>
+								<option value="flex"><?php _e('Flex', 'revslider'); ?></option>
+								<option value="table"><?php _e('Table', 'revslider'); ?></option>
+								<option value="table-cell"><?php _e('Table-Cell', 'revslider'); ?></option>
+							</select>
+						</span>
+						
 
+						<!-- LINE BREAK -->					
+						<span id="layer-linebreak-wrapper" class="rs-linebreak-check layer-toolbar-button tipsy_enabled_top ho_column_ ho_row_ ho_group_ ho_svg_" title="<?php _e("Auto Linebreak (on/off - White Space:normal / nowrap).  ",'revslider'); ?>">												
+							<input type="checkbox" id="layer_auto_line_break" class="inputCheckbox" name="layer_auto_line_break" >
+						</span>
 
-					<span class="rs-layer-toolbar-box">
-						<!-- HTML TAG -->
-						<span class="ho_shape_ ho_video_ ho_image_ ho_button_ ho_column_ ho_row_ ho_group_">				
-							<i class="rs-mini-layer-icon eg-icon-code rs-toolbar-icon tipsy_enabled_top" title="<?php _e("HTML Tag for Layer",'revslider'); ?>"></i>
-							<select class="rs-layer-input-field tipsy_enabled_top" title="<?php _e("HTML Tag",'revslider'); ?>" style="width:61px" id="layer_html_tag" name="layer_html_tag">
-								<option value="div">&lt;div&gt; - default</option>
-								<option value="p">&lt;p&gt;</option>
-								<option value="h1">&lt;h1&gt;</option>
-								<option value="h2">&lt;h2&gt;</option>
-								<option value="h3">&lt;h3&gt;</option>
-								<option value="h4">&lt;h4&gt;</option>
-								<option value="h5">&lt;h5&gt;</option>
-								<option value="h6">&lt;h6&gt;</option>
-								<option value="span">&lt;span&gt;</option>
-							</select>					
+						<!-- DISPLAY MODE -->					
+						<span id="layer-displaymode-wrapper" class="rs-displaymode-check layer-toolbar-button tipsy_enabled_top show_on_miw ho_row_ ho_column_ ho_row_ ho_group_ ho_svg_" title="<?php _e("Display Mode Block / Inline-Block).  ",'revslider'); ?>">												
+							<input type="checkbox" id="layer_displaymode" class="inputCheckbox" name="layer_displaymode" >						
 						</span>
 					</span>
 				</div>
@@ -207,9 +224,26 @@ $global_settings = $operations->getGeneralSettingsValues();
 						</select>
 						<span class="rs-layer-toolbar-space"></span>
 
-						<!-- COLOR -->
-						<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Font Color",'revslider'); ?>"></i>
-						<input type="text" class="my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Font Color",'revslider'); ?>"  id="layer_color_s" name="color_static" value="#ffffff" />
+						<!-- LETTER SPACING -->
+						<i class="rs-mini-layer-icon rs-icon-letterspacing rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Letter Spacing (px)",'revslider'); ?>" style="margin-right:11px" ></i>
+						<input type="text" data-suffix="px" class="rs-layer-input-field tipsy_enabled_top" title="<?php _e("Letter Spacing",'revslider'); ?>" style="width:61px" id="letter_spacing_s" name="letter_spacing_static" value="0px" />
+						<span class="rs-layer-toolbar-space" style="margin-right:10px" ></span>
+						
+						<!-- HTML TAG -->
+						<span class="ho_shape_ ho_video_ ho_image_ ho_button_ ho_column_ ho_row_ ho_group_">				
+							<i class="rs-mini-layer-icon eg-icon-code rs-toolbar-icon tipsy_enabled_top" title="<?php _e("HTML Tag for Layer",'revslider'); ?>"></i>
+							<select class="rs-layer-input-field tipsy_enabled_top" title="<?php _e("HTML Tag",'revslider'); ?>" style="width:61px" id="layer_html_tag" name="layer_html_tag">
+								<option value="div">&lt;div&gt; - default</option>
+								<option value="p">&lt;p&gt;</option>
+								<option value="h1">&lt;h1&gt;</option>
+								<option value="h2">&lt;h2&gt;</option>
+								<option value="h3">&lt;h3&gt;</option>
+								<option value="h4">&lt;h4&gt;</option>
+								<option value="h5">&lt;h5&gt;</option>
+								<option value="h6">&lt;h6&gt;</option>
+								<option value="span">&lt;span&gt;</option>
+							</select>					
+						</span>
 					</span>
 
 					<!-- ALIGN -->
@@ -233,9 +267,9 @@ $global_settings = $operations->getGeneralSettingsValues();
 							<input type="text" data-suffix="px" data-suffixalt="%" class="input-deepselects text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Layer Height (px) Use 'auto' to respect White Space",'revslider'); ?>" style="width:60px" id="layer_scaleY" name="layer_scaleY" value="" data-deepwidth="125" data-selects="Custom %||Custom PX||100%||100px||auto" data-svalues ="50%||150px||100%||100px||auto" data-icons="wrench||wrench||filter||filter||font">						
 						</span>
 						<!-- DEFAULT LAYER SIZE -->
-						<span id="layer_max_widthheight_wrapper" class="ho_row_ ho_column_">
-							<i class="rs-mini-layer-icon rs-icon-maxwidth rs-toolbar-icon tipsy_enabled_top " title="<?php _e("Layer Width (px/%). Use 'auto' to respect White Space",'revslider'); ?>" style="margin-right:3px"></i>
-							<input type="text" data-suffix="px" data-suffixalt="%" class="input-deepselects text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Layer Width (px/%). Use 'auto' to respect White Space",'revslider'); ?>" style="width:60px" id="layer_max_width" name="layer_max_width" value="auto" data-deepwidth="125" data-selects="Custom %||Custom PX||100%||100px||auto" data-svalues ="50%||150px||100%||100px||auto" data-icons="wrench||wrench||filter||filter||font">						
+						<span id="layer_max_widthheight_wrapper" class="ho_column_">
+							<i class="rs-mini-layer-icon rs-icon-maxwidth rs-toolbar-icon tipsy_enabled_top ho_row_" title="<?php _e("Layer Width (px/%). Use 'auto' to respect White Space",'revslider'); ?>" style="margin-right:3px"></i>
+							<input type="text" data-suffix="px" data-suffixalt="%" class="input-deepselects text-sidebar rs-layer-input-field tipsy_enabled_top ho_row_" title="<?php _e("Layer Width (px/%). Use 'auto' to respect White Space",'revslider'); ?>" style="width:60px" id="layer_max_width" name="layer_max_width" value="auto" data-deepwidth="125" data-selects="Custom %||Custom PX||100%||100px||auto" data-svalues ="50%||150px||100%||100px||auto" data-icons="wrench||wrench||filter||filter||font">						
 							<span class="rs-layer-toolbar-space" style="margin-right:11px"></span>
 							<i class="rs-mini-layer-icon rs-icon-maxheight rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Layer Height (px). Use 'auto' to respect White Space",'revslider'); ?>"></i>
 							<input type="text" data-suffix="px" data-suffixalt="%" class="input-deepselects text-sidebar rs-layer-input-field tipsy_enabled_top " title="<?php _e("Layer Height (px). Use 'auto' to respect White Space",'revslider'); ?>" style="width:60px" id="layer_max_height" name="layer_max_height" value="auto" data-deepwidth="125" data-selects="Custom %||Custom PX||100%||100px||auto" data-svalues ="50%||150px||100%||100px||auto" data-icons="wrench||wrench||filter||filter||font">
@@ -250,7 +284,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 						</span>
 
 						<!-- MIN HEIGHT -->
-						<span id="layer_minwidthheight_wrapper" style="display:none">
+						<span id="layer_minwidthheight_wrapper" class="ho_column_" style="display:none">
 							<i class="rs-mini-layer-icon rs-icon-maxwidth rs-toolbar-icon tipsy_enabled_top ho_column_" title="<?php _e("Min Width of Element. Use 'auto' to respect White Space",'revslider'); ?>" style="margin-right:3px"></i>						
 							<input type="text" data-suffix="px" data-suffixalt="%" class="input-deepselects text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Min Width",'revslider'); ?>" style="width:60px" id="layer_min_width" name="layer_min_width" value="" data-deepwidth="125" data-selects="Custom %||Custom PX||100%||100px||auto" data-svalues ="50%||150px||100%||100px||auto" data-icons="wrench||wrench||filter||filter||font">
 							<span class="rs-layer-toolbar-space" style="margin-right:11px"></span>
@@ -268,37 +302,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 
 					</span>
 
-					<span class="rs-layer-toolbar-box">	
-							
-						
 
-						
-
-						
-
-						<!-- LINE BREAK -->					
-						<span id="layer-linebreak-wrapper" class="rs-linebreak-check layer-toolbar-button tipsy_enabled_top ho_column_ ho_row_ ho_group_ ho_svg_" title="<?php _e("Auto Linebreak (on/off - White Space:normal / nowrap).  ",'revslider'); ?>">												
-							<input type="checkbox" id="layer_auto_line_break" class="inputCheckbox" name="layer_auto_line_break" >
-						</span>
-
-						<!-- DISPLAY MODE -->					
-						<span id="layer-displaymode-wrapper" class="rs-displaymode-check layer-toolbar-button tipsy_enabled_top show_on_miw ho_row_ ho_column_ ho_row_ ho_group_ ho_svg_" title="<?php _e("Display Mode Block / Inline-Block).  ",'revslider'); ?>">												
-							<input type="checkbox" id="layer_displaymode" class="inputCheckbox" name="layer_displaymode" >						
-						</span>
-
-						<!-- DISPLAY OPTIONS (NONE VISIBLE) -->
-						<span class="rs-layer-toolbar-box tipsy_enabled_top" style="display: none">						
-							<select id="layer_display" name="layer_display">
-								<option value="block" selected="selected"><?php _e('Block', 'revslider'); ?></option>
-								<option value="inline-block"><?php _e('Inline-Block', 'revslider'); ?></option>
-								<option value="flex"><?php _e('Flex', 'revslider'); ?></option>
-								<option value="table"><?php _e('Table', 'revslider'); ?></option>
-								<option value="table-cell"><?php _e('Table-Cell', 'revslider'); ?></option>
-							</select>
-						</span>
-
-						
-					</span>
 
 					<span class="rs-layer-toolbar-box">	
 
@@ -343,16 +347,21 @@ $global_settings = $operations->getGeneralSettingsValues();
 								</ul>
 								<div style="width:100%;height:1px;display:block"></div>
 
-								<!-- FILTERS IN -->							
+								<!-- FILTERS IDLE -->							
 								<span id="style-sub-filters" class="rs-layer-toolbar-box" style="display:none;border:none;">
-									<!-- BLUR START -->
+									<!-- BLUR IDLE -->
 									<i class="rs-mini-layer-icon fa-icon-spinner rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Blur",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																	
 									<input data-suffix="px" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Blur",'revslider'); ?>"  id="blurfilter_idle" name="blurfilter_idle" value="0" data-selects="0||Custom||3||10" data-svalues ="0||5||3||10" data-icons="minus||shuffle||wrench||filter||filter">
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
-									<!-- grayscale START -->
+									<!-- grayscale IDLE -->
 									<i class="rs-mini-layer-icon fa-icon-adjust rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Grayscale",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																
 									<input data-suffix="%" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Grayscale",'revslider'); ?>"  id="grayscalefilter_idle" name="grayscalefilter_idle" value="0"  data-selects="0||Custom||25%||100%" data-svalues ="0||50||25||100" data-icons="minus||wrench||filter||filter">
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+
+									<!-- brightness IDLE -->
+									<i class="rs-mini-layer-icon fa-icon-adjust rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Brightness",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																
+									<input data-suffix="%" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("brightness",'revslider'); ?>"  id="brightnessfilter_idle" name="brightnessfilter_idle" value="100"  data-selects="100%||Custom||50%||150%" data-svalues ="100||125||50||150" data-icons="minus||wrench||filter||filter">
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
 									<!-- BLEND MODE -->
@@ -411,11 +420,6 @@ $global_settings = $operations->getGeneralSettingsValues();
 
 								<span id="style-sub-font" class="rs-layer-toolbar-box ho_shape_ ho_video_ ho_image_ ho_row_ ho_column_ ho_group_" style="display:block">
 
-									<!-- FONT OPACITY -->
-									<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Font Opacity",'revslider'); ?>" style="margin-right:10px"></i>
-									<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" class="rs-staticcustomstylechange pad-input text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Font Opacity",'revslider'); ?>" style="width:50px" type="text" id="css_font-transparency" name="css_font-transparency" value="1">
-									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
-
 									<!-- ITALIC -->
 									<i class="rs-mini-layer-icon rs-icon-italic rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Italic Font",'revslider'); ?>" style="margin-right:10px"></i>
 									<input type="checkbox" id="css_font-style" name="css_font-style" class="rs-staticcustomstylechange tipsy_enabled_top tp-moderncheckbox" title="<?php _e("Italic Font On/Off",'revslider'); ?>">
@@ -464,15 +468,8 @@ $global_settings = $operations->getGeneralSettingsValues();
 								<span id="style-sub-background" class="rs-layer-toolbar-box" style="display:none;border:none;">
 									<!-- BACKGROUND COLOR -->
 									<i class="rs-mini-layer-icon rs-icon-bg rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Background Color",'revslider'); ?>" style="margin-right:10px"></i>
-									<input type="text" class="rs-staticcustomstylechange rs-layer-input-field tipsy_enabled_top my-color-field" title="<?php _e("Background Color",'revslider'); ?>" style="width:150px" id="css_background-color" name="css_background-color" value="transparent" />
+									<input type="text" class="rs-staticcustomstylechange rs-layer-input-field tipsy_enabled_top my-color-field" title="<?php _e("Background Color",'revslider'); ?>" data-editing="Layer Background Color" style="width:150px" id="css_background-color" name="css_background-color" value="transparent" />
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
-
-									<!-- BACKGROUND OPACITY -->
-									<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Background Opacity",'revslider'); ?>" style="margin-right:10px"></i>
-									<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" class="rs-staticcustomstylechange pad-input text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Background Opacity",'revslider'); ?>" style="width:50px" type="text" id="css_background-transparency" name="css_background-transparency" value="1">
-									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
-									
-									
 									
 									<span class="ho_image_ ho_video_ ho_audio_ ho_image_ ">
 										<!-- BACKGROUND IMAGE FOR CERTAIN LAYERS -->
@@ -547,12 +544,13 @@ $global_settings = $operations->getGeneralSettingsValues();
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
 									<!-- TEXT ALIGN VERTICAL (NOT USED YET, NOT VISIBLE !!)-->
-									<!--<i class="ho_row_ rs-mini-layer-icon rs-icon-vertical-align rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Vertical Align ",'revslider'); ?>" style="margin-right:10px"></i>
-									<select class="ho_row_ rs-staticcustomstylechange rs-layer-input-field  tipsy_enabled_top" title="<?php _e("Vertical Align",'revslider'); ?>" style="width:100px;cursor:pointer" id="css_vertical-align" name="css_vertical-align">
+									<i class="ho_row_ ho_image_ ho_shape_ ho_button_ ho_video_ ho_svg_ ho_sltic_ ho_text_ rs-mini-layer-icon rs-icon-vertical-align rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Vertical Align ",'revslider'); ?>" style="margin-right:10px"></i>
+									<select class="ho_row_ ho_image_ ho_shape_ ho_button_ ho_video_ ho_svg_ ho_sltic_ ho_text_ rs-staticcustomstylechange rs-layer-input-field  tipsy_enabled_top" title="<?php _e("Vertical Align",'revslider'); ?>" style="width:100px;cursor:pointer" id="css_vertical-align" name="css_vertical-align">
 										<option value="top"><?php _e('Top', 'revslider'); ?></option>
 										<option value="middle"><?php _e('Middle', 'revslider'); ?></option>
 										<option value="bottom"><?php _e('Bottom', 'revslider'); ?></option>
-									</select>-->
+									</select>
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
 									<!-- ROW BREAK (NOT VISIBLE !!) -->								
 									<select style="display:none" class="rs-staticcustomstylechange rs-layer-input-field  tipsy_enabled_top" title="<?php _e("Columns Break at",'revslider'); ?>" style="width:100px;cursor:pointer" id="column_break_at" name="column_break_at">
@@ -576,14 +574,10 @@ $global_settings = $operations->getGeneralSettingsValues();
 								<span id="style-sub-border" class="rs-layer-toolbar-box" style="display:none;border:none;">
 									<!-- BORDER COLOR -->
 									<i class="rs-mini-layer-icon rs-icon-bordercolor rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Border Color",'revslider'); ?>" style="margin-right:10px"></i>
-									<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Border Color",'revslider'); ?>"  style="width:150px" id="css_border-color-show" name="css_border-color-show" value="transparent" />
+									<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Border Color",'revslider'); ?>"  data-editing="Layer Border Color" data-mode="single" style="width:150px" id="css_border-color-show" name="css_border-color-show" value="transparent" />
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
-									<!-- FONT OPACITY -->
-									<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Border Opacity",'revslider'); ?>" style="margin-right:10px"></i>
-									<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" class="rs-staticcustomstylechange pad-input text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Border Opacity",'revslider'); ?>" style="width:50px" type="text" id="css_border-transparency" name="css_border-transparency" value="1">
-									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
-
+								
 									<!-- BORDER STYLE -->
 									<i class="rs-mini-layer-icon rs-icon-borderstyle rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Border Style",'revslider'); ?>" style="margin-right:10px"></i>
 									<select class="rs-staticcustomstylechange rs-layer-input-field tipsy_enabled_top" title="<?php _e("Border Style",'revslider'); ?>" style="width:100px cursor:pointer" id="css_border-style" name="css_border-style">
@@ -791,12 +785,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 
 									<!-- SVG STROKE COLOR -->
 									<i class="rs-mini-layer-icon rs-icon-bordercolor rs-toolbar-icon tipsy_enabled_top" title="<?php _e("SVG Stroke Color",'revslider'); ?>" style="margin-right:10px"></i>
-									<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("SVG Stroke Color",'revslider'); ?>"  style="width:150px" id="css_svgstroke-color-show" name="css_svgstroke-color-show" value="transparent" />
-									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
-
-									<!-- SVG STROKE OPACITY -->
-									<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon tipsy_enabled_top" title="<?php _e("SVG Stroke Opacity",'revslider'); ?>" style="margin-right:10px"></i>
-									<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" class="rs-staticcustomstylechange pad-input text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("SVG Stroke Opacity",'revslider'); ?>" style="width:50px" type="text" id="css_svgstroke-transparency" name="css_svgstroke-transparency" value="1">
+									<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("SVG Stroke Color",'revslider'); ?>"  style="width:150px" id="css_svgstroke-color-show" data-editing="SVG Stroke Color" data-mode="single" name="css_svgstroke-color-show" value="transparent" />
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
 									<!-- SVG STROKE WIDTH-->
@@ -834,14 +823,19 @@ $global_settings = $operations->getGeneralSettingsValues();
 
 									<!-- FILTERS IN -->							
 								<span id="hover-sub-filters" class="rs-layer-toolbar-box" style="display:none;border:none;">
-									<!-- BLUR START -->
+									<!-- BLUR HOVER -->
 									<i class="rs-mini-layer-icon fa-icon-spinner rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Blur",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																	
 									<input data-suffix="px" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Blur",'revslider'); ?>"  id="blurfilter_hover" name="blurfilter_hover" value="0" data-selects="0||Custom||3||10" data-svalues ="0||5||3||10" data-icons="minus||shuffle||wrench||filter||filter">
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
-									<!-- grayscale START -->
+									<!-- grayscale HOVER -->
 									<i class="rs-mini-layer-icon fa-icon-adjust rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Grayscale",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																
 									<input data-suffix="%" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Grayscale",'revslider'); ?>"  id="grayscalefilter_hover" name="grayscalefilter_hover" value="0"  data-selects="0||Custom||25%||100%" data-svalues ="0||50||25||100" data-icons="minus||wrench||filter||filter">
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+
+									<!-- brightness HOVER -->
+									<i class="rs-mini-layer-icon fa-icon-adjust rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Brightness",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																
+									<input data-suffix="%" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("brightness",'revslider'); ?>"  id="brightnessfilter_hover" name="brightnessfilter_hover" value="100"  data-selects="100%||Custom||50%||150%" data-svalues ="100||125||50||150" data-icons="minus||wrench||filter||filter">
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 									
 								</span>
@@ -881,12 +875,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 
 										<!-- SVG STROKE COLOR -->
 										<i class="rs-mini-layer-icon rs-icon-bordercolor rs-toolbar-icon tipsy_enabled_top" title="<?php _e("SVG Stroke Color",'revslider'); ?>" style="margin-right:10px"></i>
-										<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("SVG Stroke Color",'revslider'); ?>"  style="width:150px" id="css_svgstroke-hover-color-show" name="css_svgstroke-hover-color-show" value="transparent" />
-										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
-
-										<!-- SVG STROKE OPACITY -->
-										<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon tipsy_enabled_top" title="<?php _e("SVG Stroke Opacity",'revslider'); ?>" style="margin-right:10px"></i>
-										<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" class="rs-staticcustomstylechange pad-input text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("SVG Stroke Opacity",'revslider'); ?>" style="width:50px" type="text" id="css_svgstroke-hover-transparency" name="css_svgstroke-hover-transparency" value="1">
+										<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("SVG Stroke Color",'revslider'); ?>"  style="width:150px" id="css_svgstroke-hover-color-show" data-editing="SVG Stroke Hover Color" data-mode="single" name="css_svgstroke-hover-color-show" value="transparent" />
 										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
 										<!-- SVG STROKE WIDTH-->
@@ -908,13 +897,9 @@ $global_settings = $operations->getGeneralSettingsValues();
 									<span id="hover-sub-font" class="rs-layer-toolbar-box" style="display:block">
 
 										<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Font Color",'revslider'); ?>"></i>
-										<input type="text" class="my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Font Color",'revslider'); ?>"  id="hover_layer_color_s" name="hover_color_static" value="#ff0000" />
+										<input type="text" class="my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Font Color",'revslider'); ?>"  data-editing="Layer Hover Color" data-mode="single"  id="hover_layer_color_s" name="hover_color_static" value="#ff0000" />
 										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
-
-										<!-- FONT HOVER OPACITY -->
-										<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Font Hover Opacity",'revslider'); ?>" style="margin-right:10px"></i>
-										<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" class="rs-staticcustomstylechange pad-input text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Font Hover Opacity",'revslider'); ?>" style="width:50px" type="text" id="hover_css_font-transparency" name="hover_css_font-transparency" value="1">
-										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+										
 
 										<!-- DECORATION -->
 										<i class="rs-mini-layer-icon rs-icon-decoration rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Font Decoration",'revslider'); ?>" style="margin-right:10px"></i>
@@ -929,23 +914,14 @@ $global_settings = $operations->getGeneralSettingsValues();
 									<span id="hover-sub-background" class="rs-layer-toolbar-box" style="display:none;border:none;">
 										<!-- BACKGROUND COLOR -->
 										<i class="rs-mini-layer-icon rs-icon-bg rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Background Color",'revslider'); ?>" style="margin-right:10px"></i>
-										<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Background Color",'revslider'); ?>"  id="hover_css_background-color" name="hover_css_background-color" value="transparent" />
-										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
-
-										<!-- BACKGROUND OPACITY -->
-										<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Background Opacity",'revslider'); ?>" style="margin-right:10px"></i>
-										<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" class="rs-staticcustomstylechange pad-input text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Background Opacity",'revslider'); ?>" style="width:50px" type="text" id="hover_css_background-transparency" name="hover_css_background-transparency" value="1">
+										<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Background Color",'revslider'); ?>" data-editing="Layer Background Hover Color" id="hover_css_background-color" name="hover_css_background-color" value="transparent" />
+										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>										
 									</span>
 
 									<span id="hover-sub-border" class="rs-layer-toolbar-box" style="display:none;border:none;">
 										<!-- BORDER COLOR -->
 										<i class="rs-mini-layer-icon rs-icon-bordercolor rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Border Color",'revslider'); ?>" style="margin-right:10px"></i>
-										<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Border Color",'revslider'); ?>"  id="hover_css_border-color-show" name="hover_css_border-color-show" value="transparent" />
-
-										<!-- BORDER OPACITY -->
-										<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Border Opacity",'revslider'); ?>" style="margin-right:10px"></i>
-										<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" class="rs-staticcustomstylechange pad-input text-sidebar rs-layer-input-field tipsy_enabled_top" title="<?php _e("Border Opacity",'revslider'); ?>" style="width:50px" type="text" id="hover_css_border-transparency" name="hover_css_border-transparency" value="1">
-
+										<input type="text" class="rs-staticcustomstylechange my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("Border Color",'revslider'); ?>"  data-editing="Layer Border Hover Color" data-mode="single" id="hover_css_border-color-show" name="hover_css_border-color-show" value="transparent" />
 
 										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
@@ -1081,7 +1057,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<select class="rs-inoutanimationfield rs-layer-input-field tipsy_enabled_top" title="<?php _e("Animation Template",'revslider'); ?>" style="width:135px" id="layer_animation" name="layer_animation">
 							<?php
 							foreach($startanims as $ahandle => $aname){
-								$dis = (in_array($ahandle,array('custom',"v5s","v5","v5e","v4s","v4","v4e","vss","vs","vse"))) ? ' disabled="disabled"' : '';
+								$dis = (in_array($ahandle,array('custom',"v5s","v5","v5e","v4s","v4","v4e","vss","vs","vse","vSFXs","vSFX","vSFXe"))) ? ' disabled="disabled"' : '';
 								echo '<option value="'.$ahandle.'"'.$dis.'>'.$aname['handle'].'</option>';
 							}
 							?>
@@ -1115,9 +1091,16 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<input type="text" style="width:60px; padding-right:10px;" class="rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Animation Speed (in ms)",'revslider'); ?>" id="layer_speed" name="layer_speed" value="">
 						<span class="rs-layer-toolbar-space" style="margin-right: 10px"></span>
 
+						<!-- SFX ANIMATION COLOR PICKER -->
+						<span class="show-on-sfx_in">
+							<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("SFX Color",'revslider'); ?>"></i>
+							<input type="text" class="my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("SFX Color",'revslider'); ?>"  data-editing="SFX Color" data-mode="full"  id="sfx_color_start" name="sfx_color_start" value="#ffffff" />
+							<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+						</span>
+
 						<!-- SPLIT TEXT -->
-						<i class="rs-mini-layer-icon rs-icon-splittext rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Split Animaton Text (will not respect Html Markups !)",'revslider'); ?>"></i>
-						<select id="layer_split" name="layer_split" class="rs-inoutanimationfield rs-layer-input-field tipsy_enabled_top" title="<?php _e("Split Animaton Text (will not respect Html Markups !)",'revslider'); ?>" style="width:110px">
+						<i class="hide-on-sfx_in rs-mini-layer-icon rs-icon-splittext rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Split Animaton Text (will not respect Html Markups !)",'revslider'); ?>"></i>
+						<select id="layer_split" name="layer_split" class="hide-on-sfx_in rs-inoutanimationfield rs-layer-input-field tipsy_enabled_top" title="<?php _e("Split Animaton Text (will not respect Html Markups !)",'revslider'); ?>" style="width:110px">
 							<option value="none" selected="selected"><?php _e("No Split",'revslider'); ?></option>
 								<option value="chars"><?php _e("Char Based",'revslider'); ?></option>
 								<option value="words"><?php _e("Word Based",'revslider'); ?></option>
@@ -1125,18 +1108,34 @@ $global_settings = $operations->getGeneralSettingsValues();
 						</select>
 						<span class="rs-layer-toolbar-space" style="margin-right: 10px"></span>
 
-						<i class="rs-mini-layer-icon rs-icon-splittext-delay rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Animation Delay between Splitted Elements",'revslider'); ?>"></i>
-						<input type="text" style="width:65px; padding-right:10px;" class="rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Animation Delay between Splitted Elements",'revslider'); ?>" id="layer_splitdelay" name="layer_splitdelay" value="10" disabled="disabled">
+						<!-- SPLIT TEXT DIRECTION -->
+						<i class="hide-on-sfx_in rs-mini-layer-icon rs-icon-splittext-direction rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Split Animaton Text Direction",'revslider'); ?>"></i>
+						<select id="layer_split_direction" name="layer_split_direction" class="hide-on-sfx_in rs-inoutanimationfield rs-layer-input-field tipsy_enabled_top" title="<?php _e("Split Animaton Text Direction",'revslider'); ?>" style="width:110px">							
+								<option value="forward" selected="selected"><?php _e("Forward",'revslider'); ?></option>
+								<option value="backward"><?php _e("Backward",'revslider'); ?></option>
+								<option value="middletoedge"><?php _e("Middle To Edge",'revslider'); ?></option>
+								<option value="edgetomiddle"><?php _e("Edge To Middle",'revslider'); ?></option>
+								<option value="random"><?php _e("Random",'revslider'); ?></option>
+						</select>
+						<span class="rs-layer-toolbar-space" style="margin-right: 10px"></span>
+
+						<i class="hide-on-sfx_in rs-mini-layer-icon rs-icon-splittext-delay rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Animation Delay between Splitted Elements",'revslider'); ?>"></i>
+						<input type="text" style="width:65px; padding-right:10px;" class="hide-on-sfx_in rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Animation Delay between Splitted Elements",'revslider'); ?>" id="layer_splitdelay" name="layer_splitdelay" value="10" disabled="disabled">
+						
+						<!-- SPECIAL EFFECTS -->
+						<span id="sfx_in" style="display:none">
+							<input id="sfx_in_effect" name="sfx_in_effect" value="" type="text"/>
+						<span>
 					</span>
 				</p>
 
-				<div id="extra_start_animation_settings" class="extra_sub_settings_wrapper" style="margin:0; background:#fff; display:none; " >
+				<div id="extra_start_animation_settings" class="hide-on-sfx_in extra_sub_settings_wrapper" style="margin:0; background:#fff; display:none; " >
 
 					<div class="anim-direction-wrapper" style="text-align: center">
 							<i class="rs-icon-schin rs-toolbar-icon" style="height:90px"></i>																
 					</div>
 
-					<div class="float_left" style="display:inline-block;padding:10px 0px;">
+					<div class="float_left" style="display:inline-block;padding:0px 0px;">
 							<div class="inner-settings-wrapper">
 								<ul class="rs-layer-animation-settings-tabs">
 									<li data-content="#anim-sub-s-offset" class="selected"><?php _e("Offset",'revslider'); ?></li>
@@ -1146,13 +1145,48 @@ $global_settings = $operations->getGeneralSettingsValues();
 									<li data-content="#anim-sub-s-skew"><?php _e("Skew",'revslider'); ?></li>
 									<li data-content="#anim-sub-s-mask"><?php _e("Masking",'revslider'); ?></li>
 									<li data-content="#anim-sub-s-filters"><?php _e("Filters",'revslider'); ?></li>
+									<li data-content="#anim-sub-s-colors"><?php _e("Colors",'revslider'); ?></li>
+									<!--<li data-content="#anim-sub-s-typo"><?php _e("Typo",'revslider'); ?></li>-->
 									<!--<li data-content="#anim-sub-s-shadow"><?php _e("Shadow",'revslider'); ?></li>-->
 									<!--li data-content="#anim-sub-s-origin"><?php _e("Origin",'revslider'); ?></li-->
 									<!--<li data-content="#anim-sub-s-perspective"><?php _e("Perspective",'revslider'); ?></li>-->
 								</ul>
 
+								<!-- TYPO -- LETTER SPACING
+								<span id="anim-sub-s-typo" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">									
+									<i class="rs-mini-layer-icon rs-icon-letterspacing rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Letter Spacing",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																	
+									<input data-suffix="px" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Letter Spacing",'revslider'); ?>"  id="letterspacing_start" name="letterspacing_start" value="0" data-selects="inherit||0||Custom||3||7" data-svalues ="inherit||0||5||3||7" data-icons="export||minus||wrench||shuffle||filter||filter">
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>									
+								</span>
+								-->
+
+								<!-- COLORS IN -->							
+								<span id="anim-sub-s-colors" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
+									<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Use Font Color Start",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>
+									<input type="checkbox" id="use_text_color_start" name="use_text_color_start" class="rs-inoutanimationfield tp-moderncheckbox"/>
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+
+									<i class="rs-mini-layer-icon rs-icon-bg rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Use BG Color Start",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>
+									<input type="checkbox" id="use_bg_color_start" name="use_bg_color_start" class="rs-inoutanimationfield tp-moderncheckbox"/>
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+									
+									<span class="use_text_color_wrap_start" style="display:none">
+										<!-- TEXT COLOR START -->																		
+										<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Font Color Start",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>
+										<input type="text" class="rs-staticcustomstylechange rs-layer-input-field tipsy_enabled_top my-color-field" title="<?php _e("Text Color From",'revslider'); ?>" style="width:150px" id="text_color_start" name="text_color_start" data-mode="single" value="transparent" />
+										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+									</span>
+
+									<span class="use_bg_color_wrap_start" style="display:none">
+										<!-- BG COLOR START -->
+										<i class="rs-mini-layer-icon rs-icon-bg rs-toolbar-icon tipsy_enabled_top" title="<?php _e("BG Color Start",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>									
+										<input type="text" class="rs-staticcustomstylechange rs-layer-input-field tipsy_enabled_top my-color-field" title="<?php _e("Text Color From",'revslider'); ?>" style="width:150px" id="bg_color_start" name="bg_color_start" data-mode="single" value="transparent" />
+										<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+									</span>
+								</span>
+
 								<!-- FILTERS IN -->							
-								<span id="anim-sub-s-filters" class="rs-layer-toolbar-box" style="display:none;border:none;">
+								<span id="anim-sub-s-filters" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 									<!-- BLUR START -->
 									<i class="rs-mini-layer-icon fa-icon-spinner rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Blur",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																	
 									<input data-suffix="px" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Blur",'revslider'); ?>"  id="blurfilter_start" name="blurfilter_start" value="0" data-selects="0||Custom||3||10" data-svalues ="0||5||3||10" data-icons="minus||shuffle||wrench||filter||filter">
@@ -1162,10 +1196,15 @@ $global_settings = $operations->getGeneralSettingsValues();
 									<i class="rs-mini-layer-icon fa-icon-adjust rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Grayscale",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																
 									<input data-suffix="%" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Grayscale",'revslider'); ?>"  id="grayscalefilter_start" name="grayscalefilter_start" value="0"  data-selects="0||Custom||25%||100%" data-svalues ="0||50||25||100" data-icons="minus||wrench||filter||filter">
 									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+
+									<!-- brightness START -->
+									<i class="rs-mini-layer-icon fa-icon-adjust rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Brightness",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																
+									<input data-suffix="%" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("brightness",'revslider'); ?>"  id="brightnessfilter_start" name="brightnessfilter_start" value="100"  data-selects="100%||Custom||50%||150%" data-svalues ="100||125||50||150" data-icons="minus||wrench||filter||filter">
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 								</span>
 
 								<!-- SHADOW IN -->							
-								<span id="anim-sub-s-shadow" class="rs-layer-toolbar-box" style="display:none;border:none;">
+								<span id="anim-sub-s-shadow" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 									<!-- DROP SHADOW -->								
 									<i class="rs-mini-layer-icon rs-icon-xoffset rs-toolbar-icon " style="margin-right:8px"></i>
 									<input data-suffix="px" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="ds_x_start" name="ds_x_start" value="0"  data-selects="0||Custom||10||20" data-svalues ="0||5||10||20" data-icons="minus||wrench||filter||filter">
@@ -1191,7 +1230,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 								</span>
 
 								<!-- MASKING IN -->							
-								<span id="anim-sub-s-mask" class="rs-layer-toolbar-box" style="display:none;border:none;">
+								<span id="anim-sub-s-mask" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 									<span class="mask-is-available">
 										<i class="rs-mini-layer-icon eg-icon-scissors rs-toolbar-icon"></i>
 										<input type="checkbox" id="masking-start" name="masking-start" class="rs-inoutanimationfield tp-moderncheckbox"/>
@@ -1207,64 +1246,64 @@ $global_settings = $operations->getGeneralSettingsValues();
 										<span class="rs-layer-toolbar-space"></span>
 										<!-- MASK Y OFFSET -->
 										<i class="rs-mini-layer-icon rs-icon-yoffset rs-toolbar-icon "  style="margin-right:4px"></i>
-										<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="mask_anim_ystart" name="mask_anim_ystart" value="0" data-reverse="on" data-selects="0||Random||Custom||Stage Top||Stage Bottom||-100%||100%||-175%||175%" data-svalues ="0||{-5,50}||50||stage_top||stage_bottom||[-100%]||[100%]||[-175%]||[175%]" data-icons="minus||shuffle||wrench||down||up||filter||filter||filter||filter">
+										<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="mask_anim_ystart" name="mask_anim_ystart" value="0" data-reverse="on" data-selects="0||Random||Custom||Stage Top||Stage Bottom||-100%||100%||-175%||175%" data-svalues ="0||{-50,50}||50||stage_top||stage_bottom||[-100%]||[100%]||[-175%]||[175%]" data-icons="minus||shuffle||wrench||down||up||filter||filter||filter||filter">
 										<span class="rs-layer-toolbar-space"></span>									
 									</span>					
 								</span>
 								
 
-								<span id="anim-sub-s-offset" class="rs-layer-toolbar-box" style="border:none;">
+								<span id="anim-sub-s-offset" class="rs-layer-toolbar-box" style="padding-top:0px;border:none;">
 									<!-- X OFFSET -->
 									<i class="rs-mini-layer-icon rs-icon-xoffset rs-toolbar-icon "  style="margin-right:8px"></i>								
-									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_xstart" name="layer_anim_xstart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Left||Stage Right||Stage Center||-100%||100%||-175%||175%" data-svalues ="inherit||{-50,50}||50||left||right||center||[-100%]||[100%]||[-175%]||[175%]" data-icons="export||shuffle||wrench||right||left||cancel||filter||filter||filter||filter">
+									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_xstart" name="layer_anim_xstart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Left||Stage Right||Stage Center||-100%||100%||-175%||175%||Cycles" data-svalues ="inherit||{-50,50}||50||left||right||center||[-100%]||[100%]||[-175%]||[175%]||[-50|50]" data-icons="export||shuffle||wrench||right||left||cancel||filter||filter||filter||filter||arrow-combo">
 									<span class="rs-layer-toolbar-space"></span>
 									<!-- Y OFFSET -->
 									<i class="rs-mini-layer-icon rs-icon-yoffset rs-toolbar-icon "  style="margin-right:4px"></i>
-									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_ystart" name="layer_anim_ystart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Top||Stage Bottom||Stage Middle||-100%||100%||-175%||175%" data-svalues ="inherit||{-5,50}||50||top||bottom||middle||[-100%]||[100%]||[-175%]||[175%]" data-icons="export||shuffle||wrench||down||up||cancel||filter||filter||filter||filter">
+									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_ystart" name="layer_anim_ystart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Top||Stage Bottom||Stage Middle||-100%||100%||-175%||175%||Cycles" data-svalues ="inherit||{-5,50}||50||top||bottom||middle||[-100%]||[100%]||[-175%]||[175%]||[-50|50]" data-icons="export||shuffle||wrench||down||up||cancel||filter||filter||filter||filter||arrow-combo">
 									<span class="rs-layer-toolbar-space"></span>
 									<!-- Z OFFSET -->
 									<i class="rs-mini-layer-icon rs-icon-zoffset rs-toolbar-icon "  style="margin-right:4px"></i>
-									<input type="text" data-suffix="px" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_zstart" name="layer_anim_zstart" value="inherit" id="layer_anim_ystart" name="layer_anim_ystart" value="inherit" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-20,20}||20" data-icons="export||shuffle||wrench">
+									<input type="text" data-suffix="px" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_zstart" name="layer_anim_zstart" value="inherit" id="layer_anim_ystart" name="layer_anim_ystart" value="inherit" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-20,20}||20||[-50|50]" data-icons="export||shuffle||wrench||arrow-combo">
 								</span>
 
-								<span id="anim-sub-s-skew" class="rs-layer-toolbar-box" style="display:none;border:none;">
+								<span id="anim-sub-s-skew" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 									<!-- SKEW X -->
 									<i class="rs-mini-layer-icon rs-icon-skewx rs-toolbar-icon "  style="margin-right:8px"></i>
-									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field  "  id="layer_skew_xstart" name="layer_skew_xstart" value="inherit"  value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-25,25}||20" data-icons="export||shuffle||wrench">
+									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field  "  id="layer_skew_xstart" name="layer_skew_xstart" value="inherit"  value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-25,25}||20||[-25|25|-20|20]" data-icons="export||shuffle||wrench||arrow-combo">
 									<span class="rs-layer-toolbar-space"></span>
 									<!-- SKEW Y -->
 									<i class="rs-mini-layer-icon rs-icon-skewy rs-toolbar-icon "  style="margin-right:8px"></i>
-									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_skew_ystart" name="layer_skew_ystart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-25,25}||20" data-icons="export||shuffle||wrench">
+									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_skew_ystart" name="layer_skew_ystart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-25,25}||20||[-25|25|-20|20]" data-icons="export||shuffle||wrench||arrow-combo">
 								</span>
 
 								
-								<span id="anim-sub-s-rotation" class="rs-layer-toolbar-box" style="display:none;border:none;">
+								<span id="anim-sub-s-rotation" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 									<!--  X  ROTATE -->
 									<i class="rs-mini-layer-icon rs-icon-rotationx rs-toolbar-icon " ></i>
-									<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_xrotate" name="layer_anim_xrotate" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-90,90}||45" data-icons="export||shuffle||wrench">
+									<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_xrotate" name="layer_anim_xrotate" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-90,90}||45||[-50|50]" data-icons="export||shuffle||wrench||arrow-combo">
 									<span class="rs-layer-toolbar-space"></span>
 									<!--  Y ROTATE -->
 									<i class="rs-mini-layer-icon rs-icon-rotationy rs-toolbar-icon " ></i>
-									<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_yrotate" name="layer_anim_yrotate" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-90,90}||45" data-icons="export||shuffle||wrench">
+									<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_yrotate" name="layer_anim_yrotate" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-90,90}||45||[-50|50]" data-icons="export||shuffle||wrench||arrow-combo">
 									<span class="rs-layer-toolbar-space"></span>
 									
 									<!--  Z ROTATE -->
 									<i class="rs-mini-layer-icon rs-icon-rotationz rs-toolbar-icon " ></i>
-									<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_zrotate" name="layer_anim_zrotate" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-360,360}||45" data-icons="export||shuffle||wrench">
+									<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_anim_zrotate" name="layer_anim_zrotate" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-360,360}||45||[-50|50]" data-icons="export||shuffle||wrench||arrow-combo">
 
 								</span>
 
-								<span id="anim-sub-s-scale" class="rs-layer-toolbar-box" style="display:none;border:none;">
+								<span id="anim-sub-s-scale" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 									<!-- SCALE X -->
 									<i class="rs-mini-layer-icon rs-icon-scalex rs-toolbar-icon "  style="margin-right:8px"></i>
-									<input data-suffix="" data-steps="0.01" data-min="0" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_scale_xstart" name="layer_scale_xstart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{0,1}||0.5" data-icons="export||shuffle||wrench">
+									<input data-suffix="" data-steps="0.01" data-min="0" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_scale_xstart" name="layer_scale_xstart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{0,1}||0.5||[1|2|0.5]" data-icons="export||shuffle||wrench||arrow-combo">
 									<span class="rs-layer-toolbar-space"></span>
 									<!-- SCALE Y -->
 									<i class="rs-mini-layer-icon rs-icon-scaley rs-toolbar-icon " style="margin-right:8px"></i>
-									<input data-suffix="" data-steps="0.01" data-min="0" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field " id="layer_scale_ystart" name="layer_scale_ystart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{0,1}||0.5" data-icons="export||shuffle||wrench">
+									<input data-suffix="" data-steps="0.01" data-min="0" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field " id="layer_scale_ystart" name="layer_scale_ystart" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{0,1}||0.5[1|2|0.5]" data-icons="export||shuffle||wrench||arrow-combo">
 								</span>
 
-								<span id="anim-sub-s-opacity" class="rs-layer-toolbar-box" style="display:none;border:none;">
+								<span id="anim-sub-s-opacity" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 									<!-- OPACITY -->
 									<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon "  style="margin-right:8px"></i>
 									<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" type="text" style="width:100px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field " id="layer_opacity_start" name="layer_opacity_start" value="inherit" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{0,1}||0.5" data-icons="export||shuffle||wrench">
@@ -1297,7 +1336,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<select class="rs-inoutanimationfield rs-layer-input-field" style="width:135px" id="layer_endanimation" name="layer_endanimation" class=" tipsy_enabled_top" title="<?php _e("Animation Template",'revslider'); ?>">
 							<?php
 							foreach($endanims as $ahandle => $aname){
-								$dis = (in_array($ahandle,array('custom',"v5s","v5","v5e","v4s","v4","v4e","vss","vs","vse"))) ? ' disabled="disabled"' : '';
+								$dis = (in_array($ahandle,array('custom',"v5s","v5","v5e","v4s","v4","v4e","vss","vs","vse","vSFXs","vSFX","vSFXe"))) ? ' disabled="disabled"' : '';
 								echo '<option value="'.$ahandle.'"'.$dis.'>'.$aname['handle'].'</option>';
 							}
 							?>
@@ -1333,9 +1372,16 @@ $global_settings = $operations->getGeneralSettingsValues();
 							<input type="text" style="width:60px; " class="rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Animation Speed (in ms)",'revslider'); ?>" id="layer_endspeed" name="layer_endspeed" value="">
 							<span class="rs-layer-toolbar-space" style="margin-right: 10px"></span>
 
+							<!-- SFX ANIMATION COLOR PICKER OUT -->
+							<span class="show-on-sfx_in">
+								<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("SFX Color Out",'revslider'); ?>"></i>
+								<input type="text" class="my-color-field rs-layer-input-field tipsy_enabled_top" title="<?php _e("SFX Color Out",'revslider'); ?>"  data-editing="SFX Color" data-mode="full"  id="sfx_color_end" name="sfx_color_end" value="#ffffff" />
+								<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+							</span>
+
 							<!-- SPLIT TEXT -->
-							<i class="rs-mini-layer-icon rs-icon-splittext rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Split Animaton Text (will not respect Html Markups !)",'revslider'); ?>"></i>
-							<select id="layer_endsplit" name="layer_endsplit" class="rs-inoutanimationfield rs-layer-input-field tipsy_enabled_top" title="<?php _e("Split Animaton Text (will not respect Html Markups !)",'revslider'); ?>" style="width:110px">
+							<i class="hide-on-sfx_out rs-mini-layer-icon rs-icon-splittext rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Split Animaton Text (will not respect Html Markups !)",'revslider'); ?>"></i>
+							<select id="layer_endsplit" name="layer_endsplit" class="hide-on-sfx_out rs-inoutanimationfield rs-layer-input-field tipsy_enabled_top" title="<?php _e("Split Animaton Text (will not respect Html Markups !)",'revslider'); ?>" style="width:110px">
 								<option value="none" selected="selected"><?php _e("No Split",'revslider'); ?></option>
 									<option value="chars"><?php _e("Char Based",'revslider'); ?></option>
 									<option value="words"><?php _e("Word Based",'revslider'); ?></option>
@@ -1343,17 +1389,33 @@ $global_settings = $operations->getGeneralSettingsValues();
 							</select>
 							<span class="rs-layer-toolbar-space" style="margin-right: 10px"></span>
 
-							<i class="rs-mini-layer-icon rs-icon-splittext-delay rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Animation Delay between Splitted Elements",'revslider'); ?>"></i>
-							<input type="text" style="width:65px; " class="rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Animation Delay between Splitted Elements",'revslider'); ?>" id="layer_endsplitdelay" name="layer_endsplitdelay" value="10" disabled="disabled">
+							<!-- SPLIT TEXT DIRECTION -->
+							<i class="hide-on-sfx_in rs-mini-layer-icon rs-icon-splittext-direction rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Split Animaton Text Direction",'revslider'); ?>"></i>
+							<select id="layer_endsplit_direction" name="layer_endsplit_direction" class="hide-on-sfx_in rs-inoutanimationfield rs-layer-input-field tipsy_enabled_top" title="<?php _e("Split Animaton Text Direction",'revslider'); ?>" style="width:110px">								
+									<option value="forward" selected="selected"><?php _e("Forward",'revslider'); ?></option>
+									<option value="backward"><?php _e("Backward",'revslider'); ?></option>
+									<option value="middletoedge"><?php _e("Middle To Edge",'revslider'); ?></option>
+									<option value="edgetomiddle"><?php _e("Edge To Middle",'revslider'); ?></option>
+									<option value="random"><?php _e("Random",'revslider'); ?></option>
+							</select>
+							<span class="rs-layer-toolbar-space" style="margin-right: 10px"></span>
+
+							<i class="hide-on-sfx_out rs-mini-layer-icon rs-icon-splittext-delay rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Animation Delay between Splitted Elements",'revslider'); ?>"></i>
+							<input type="text" style="width:65px; " class="hide-on-sfx_out rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Animation Delay between Splitted Elements",'revslider'); ?>" id="layer_endsplitdelay" name="layer_endsplitdelay" value="10" disabled="disabled">
+
+							<!-- SPECIAL EFFECTS -->
+							<span id="sfx_out" style="display:none">
+								<input id="sfx_out_effect" name="sfx_out_effect" value="" type="text"/>
+							<span>
 					</span>
 				</p>
-				<div id="extra_end_animation_settings" class="extra_sub_settings_wrapper" style="margin:0; background:#fff; display:none;">
+				<div id="extra_end_animation_settings" class="hide-on-sfx_out extra_sub_settings_wrapper" style="margin:0; background:#fff; display:none;">
 					<div class="anim-direction-wrapper" style="text-align: center">
 							<i class="rs-icon-schout rs-toolbar-icon" style="height:90px"></i>																
 					</div>
 
 
-					<div class="float_left" style="display:inline-block;padding:10px 0px;">
+					<div class="float_left" style="display:inline-block;padding:0px 0px;">
 						<div class="inner-settings-wrapper" >
 							<ul class="rs-layer-animation-settings-tabs">
 								<li data-content="#anim-sub-e-offset" class="selected"><?php _e("Offset",'revslider'); ?></li>
@@ -1363,29 +1425,66 @@ $global_settings = $operations->getGeneralSettingsValues();
 								<li data-content="#anim-sub-e-skew"><?php _e("Skew",'revslider'); ?></li>
 								<li data-content="#anim-sub-e-mask"><?php _e("Masking",'revslider'); ?></li>
 								<li data-content="#anim-sub-e-filters"><?php _e("Filters",'revslider'); ?></li>
+								<li data-content="#anim-sub-e-colors"><?php _e("Colors",'revslider'); ?></li>
+								<!--<li data-content="#anim-sub-e-typo"><?php _e("Typo",'revslider'); ?></li>-->
 								<!--<li data-content="#anim-sub-e-shadow"><?php _e("Shadow",'revslider'); ?></li>-->
 								<!--li data-content="#anim-sub-e-origin"><?php _e("Origin",'revslider'); ?></li-->
 								<!--<li data-content="#anim-sub-e-perspective"><?php _e("Perspective",'revslider'); ?></li>-->
 							</ul>
 
 
+							<!-- TYPO OUT
+							<span id="anim-sub-e-typo" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">									
+								<i class="rs-mini-layer-icon rs-icon-letterspacing rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Letter Spacing",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																	
+								<input data-suffix="px" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Letter Spacing",'revslider'); ?>"  id="letterspacing_end" name="letterspacing_end" value="0" data-selects="inherit||0||Custom||3||7" data-svalues ="inherit||0||5||3||7" data-icons="export||minus||wrench||shuffle||filter||filter">
+								<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>									
+							</span>-->
 
+							<!-- COLORS IN -->							
+							<span id="anim-sub-e-colors" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
+								<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Use Font Color End",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>
+								<input type="checkbox" id="use_text_color_end" name="use_text_color_end" class="rs-inoutanimationfield tp-moderncheckbox"/>
+								<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+
+								<i class="rs-mini-layer-icon rs-icon-bg rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Use BG Color End",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>
+								<input type="checkbox" id="use_bg_color_end" name="use_bg_color_end" class="rs-inoutanimationfield tp-moderncheckbox"/>
+								<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+								
+								<span class="use_text_color_wrap_end" style="display:none">
+									<!-- TEXT COLOR end -->																		
+									<i class="rs-mini-layer-icon rs-icon-color rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Font Color End",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>
+									<input type="text" class="rs-staticcustomstylechange rs-layer-input-field tipsy_enabled_top my-color-field" title="<?php _e("Text Color From",'revslider'); ?>" style="width:150px" id="text_color_end" name="text_color_end" data-mode="single" value="transparent" />
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+								</span>
+
+								<span class="use_bg_color_wrap_end" style="display:none">
+									<!-- BG COLOR end -->
+									<i class="rs-mini-layer-icon rs-icon-bg rs-toolbar-icon tipsy_enabled_top" title="<?php _e("BG Color End",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>									
+									<input type="text" class="rs-staticcustomstylechange rs-layer-input-field tipsy_enabled_top my-color-field" title="<?php _e("Text Color From",'revslider'); ?>" style="width:150px" id="bg_color_end" name="bg_color_end" data-mode="single" value="transparent" />
+									<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+								</span>
+							</span>
 
 							<!-- FILTERS OUT -->							
-							<span id="anim-sub-e-filters" class="rs-layer-toolbar-box" style="display:none;border:none;">
-								<!-- BLUR START -->
+							<span id="anim-sub-e-filters" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
+								<!-- BLUR End -->
 								<i class="rs-mini-layer-icon fa-icon-spinner rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Blur",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																	
 								<input data-suffix="px" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Blur",'revslider'); ?>"  id="blurfilter_end" name="blurfilter_end" value="0" data-selects="0||Custom||3||10||0" data-svalues ="0||5||3||10" data-icons="minus||shuffle||wrench||filter||filter">
 								<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 
-								<!-- grayscale START -->
+								<!-- grayscale End -->
 								<i class="rs-mini-layer-icon fa-icon-adjust rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Grayscale",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																
 								<input data-suffix="%" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Grayscale",'revslider'); ?>"  id="grayscalefilter_end" name="grayscalefilter_end" value="0"  data-selects="0||Custom||25||100" data-svalues ="0||50||25||100" data-icons="minus||wrench||filter||filter">
+								<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
+
+								<!-- brightness END -->
+								<i class="rs-mini-layer-icon fa-icon-adjust rs-toolbar-icon tipsy_enabled_top" title="<?php _e("Brightness",'revslider'); ?>"  style="margin-right:8px;font-size:20px;line-height:26px"></i>																
+								<input data-suffix="%" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field tipsy_enabled_top" title="<?php _e("Brightness",'revslider'); ?>"  id="brightnessfilter_end" name="brightnessfilter_end" value="100"  data-selects="100%||Custom||50%||150%" data-svalues ="100||125||50||150" data-icons="minus||wrench||filter||filter">
 								<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>
 							</span>
 
 							<!-- SHADOW OUT -->							
-							<span id="anim-sub-e-shadow" class="rs-layer-toolbar-box" style="display:none;border:none;">
+							<span id="anim-sub-e-shadow" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 								<!-- DROP SHADOW -->								
 								<i class="rs-mini-layer-icon rs-icon-xoffset rs-toolbar-icon " style="margin-right:8px"></i>
 								<input data-suffix="px" type="text" style="width:105px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="ds_x_end" name="ds_x_end" value="0"  data-selects="0||Custom||10||20" data-svalues ="0||5||10||20" data-icons="minus||wrench||filter||filter">
@@ -1414,7 +1513,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 
 
 							<!-- MASKING IN -->							
-							<span id="anim-sub-e-mask" class="rs-layer-toolbar-box" style="display:none;border:none;">
+							<span id="anim-sub-e-mask" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 								<span class="mask-is-available">
 									<i class="rs-mini-layer-icon eg-icon-scissors rs-toolbar-icon"></i>
 									<input type="checkbox" id="masking-end" name="masking-end" class="rs-inoutanimationfield tp-moderncheckbox"/>
@@ -1430,64 +1529,64 @@ $global_settings = $operations->getGeneralSettingsValues();
 									<span class="rs-layer-toolbar-space"></span>
 									<!-- MASK Y OFFSET -->
 									<i class="rs-mini-layer-icon rs-icon-yoffset rs-toolbar-icon "  style="margin-right:4px"></i>
-									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="mask_anim_yend" name="mask_anim_yend" value="0" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Top||Stage Bottom||Stage Middle||-100%||100%||-175%||175%" data-svalues ="inherit||{-5,50}||50||top||bottom||middle||[-100%]||[100%]||[-175%]||[175%]" data-icons="export||shuffle||wrench||down||up||cancel||filter||filter||filter||filter">
+									<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="mask_anim_yend" name="mask_anim_yend" value="0" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Top||Stage Bottom||Stage Middle||-100%||100%||-175%||175%" data-svalues ="inherit||{-50,50}||50||top||bottom||middle||[-100%]||[100%]||[-175%]||[175%]" data-icons="export||shuffle||wrench||down||up||cancel||filter||filter||filter||filter">
 									<span class="rs-layer-toolbar-space"></span>
 								</span>					
 							</span>
 
 
-							<span id="anim-sub-e-offset" class="rs-layer-toolbar-box" style="border:none;">
+							<span id="anim-sub-e-offset" class="rs-layer-toolbar-box" style="padding-top:0px;border:none;">
 								<!-- X OFFSET END-->
 								<i class="rs-mini-layer-icon rs-icon-xoffset rs-toolbar-icon"  style="margin-right:8px"></i>								
-								<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_xend" name="layer_anim_xend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Left||Stage Right||Stage Center||-100%||100%||-175%||175%" data-svalues ="inherit||{-50,50}||50||left||right||center||[-100%]||[100%]||[-175%]||[175%]" data-icons="export||shuffle||wrench||right||left||cancel||filter||filter||filter||filter">
+								<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_xend" name="layer_anim_xend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Left||Stage Right||Stage Center||-100%||100%||-175%||175%||Cycles" data-svalues ="inherit||{-50,50}||50||left||right||center||[-100%]||[100%]||[-175%]||[175%]||[-100|100]" data-icons="export||shuffle||wrench||right||left||cancel||filter||filter||filter||filter||arrow-combo">
 								<span class="rs-layer-toolbar-space"></span>
 								<!-- Y OFFSET END-->
 								<i class="rs-mini-layer-icon rs-icon-yoffset rs-toolbar-icon"  style="margin-right:4px"></i>
-								<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_yend" name="layer_anim_yend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Top||Stage Bottom||Stage Middle||-100%||100%||-175%||175%" data-svalues ="inherit||{-5,50}||50||top||bottom||middle||[-100%]||[100%]||[-175%]||[175%]" data-icons="export||shuffle||wrench||down||up||cancel||filter||filter||filter||filter">
+								<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_yend" name="layer_anim_yend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Stage Top||Stage Bottom||Stage Middle||-100%||100%||-175%||175%||Cycles" data-svalues ="inherit||{-50,50}||50||top||bottom||middle||[-100%]||[100%]||[-175%]||[175%]||[-100|100]" data-icons="export||shuffle||wrench||down||up||cancel||filter||filter||filter||filter||arrow-combo">
 								<span class="rs-layer-toolbar-space"></span>
 								<!-- Z OFFSET END-->
 								<i class="rs-mini-layer-icon rs-icon-zoffset rs-toolbar-icon"  style="margin-right:4px"></i>
-								<input type="text" data-suffix="px" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_zend" name="layer_anim_zend" value="inherit" value="0" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-20,20}||20" data-icons="export||shuffle||wrench">
+								<input type="text" data-suffix="px" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_zend" name="layer_anim_zend" value="inherit" value="0" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-20,20}||20||[-100|100]" data-icons="export||shuffle||wrench||arrow-combo">
 							</span>
 
 
-							<span id="anim-sub-e-skew" class="rs-layer-toolbar-box" style="display:none;border:none;">
+							<span id="anim-sub-e-skew" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 								<!-- SKEW X -->
 								<i class="rs-mini-layer-icon rs-icon-skewx rs-toolbar-icon"  style="margin-right:8px"></i>
-								<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_skew_xend" name="layer_skew_xend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-25,25}||20" data-icons="export||shuffle||wrench">
+								<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_skew_xend" name="layer_skew_xend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-25,25}||20||[--25|25]" data-icons="export||shuffle||wrench||arrow-combo">
 								<span class="rs-layer-toolbar-space"></span>
 								<!-- SKEW Y -->
 								<i class="rs-mini-layer-icon rs-icon-skewy rs-toolbar-icon"  style="margin-right:8px"></i>
-								<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_skew_yend" name="layer_skew_yend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-25,25}||20" data-icons="export||shuffle||wrench">
+								<input data-suffix="px" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_skew_yend" name="layer_skew_yend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-25,25}||20||[-25|25]" data-icons="export||shuffle||wrench||arrow-combo">
 							</span>
 
 				
-							<span id="anim-sub-e-rotation" class="rs-layer-toolbar-box" style="display:none;border:none;">
+							<span id="anim-sub-e-rotation" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 								<!--  X  ROTATE -->
 								<i class="rs-mini-layer-icon rs-icon-rotationx rs-toolbar-icon" ></i>
-								<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_xrotate_end" name="layer_anim_xrotate_end" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-90,90}||45" data-icons="export||shuffle||wrench">
+								<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_xrotate_end" name="layer_anim_xrotate_end" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-90,90}||45||[-75|75]" data-icons="export||shuffle||wrench||arrow-combo">
 								<span class="rs-layer-toolbar-space"></span>
 								<!--  Y ROTATE END -->
 								<i class="rs-mini-layer-icon rs-icon-rotationy rs-toolbar-icon" ></i>
-								<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_yrotate_end" name="layer_anim_yrotate_end" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-90,90}||45" data-icons="export||shuffle||wrench">
+								<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_yrotate_end" name="layer_anim_yrotate_end" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-90,90}||45||[-75|75]" data-icons="export||shuffle||wrench||arrow-combo">
 								<span class="rs-layer-toolbar-space"></span>
 								
 								<!--  Z ROTATE END -->
 								<i class="rs-mini-layer-icon rs-icon-rotationz rs-toolbar-icon" ></i>
-								<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_zrotate_end" name="layer_anim_zrotate_end" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{-360,360}||45" data-icons="export||shuffle||wrench">
+								<input data-suffix="deg" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field"  id="layer_anim_zrotate_end" name="layer_anim_zrotate_end" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{-360,360}||45||[-75|75]" data-icons="export||shuffle||wrench||arrow-combo">
 							</span>
 
-							<span id="anim-sub-e-scale" class="rs-layer-toolbar-box" style="display:none;border:none;">
+							<span id="anim-sub-e-scale" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 								<!-- SCALE X -->
 								<i class="rs-mini-layer-icon rs-icon-scalex rs-toolbar-icon "  style="margin-right:8px"></i>
-								<input data-suffix="" data-steps="0.01" data-min="0" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_scale_xend" name="layer_scale_xend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{0,1}||0.5" data-icons="export||shuffle||wrench">
+								<input data-suffix="" data-steps="0.01" data-min="0" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field "  id="layer_scale_xend" name="layer_scale_xend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{0,1}||0.5||[0.5|2]" data-icons="export||shuffle||wrench||arrow-combo">
 								<span class="rs-layer-toolbar-space"></span>
 								<!-- SCALE Y -->
 								<i class="rs-mini-layer-icon rs-icon-scaley rs-toolbar-icon " style="margin-right:8px"></i>
-								<input data-suffix="" data-steps="0.01" data-min="0" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field " id="layer_scale_yend" name="layer_scale_yend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{0,1}||0.5" data-icons="export||shuffle||wrench">
+								<input data-suffix="" data-steps="0.01" data-min="0" type="text" style="width:175px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field " id="layer_scale_yend" name="layer_scale_yend" value="inherit" data-reverse="on" data-selects="Inherit||Random||Custom||Cycles" data-svalues ="inherit||{0,1}||0.5||[0.5|2]" data-icons="export||shuffle||wrench||arrow-combo">
 							</span>
 
-							<span id="anim-sub-e-opacity" class="rs-layer-toolbar-box" style="display:none;border:none;">
+							<span id="anim-sub-e-opacity" class="rs-layer-toolbar-box" style="padding-top:0px;display:none;border:none;">
 								<!-- OPACITY -->
 								<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon "  style="margin-right:8px"></i>
 								<input data-suffix="" data-steps="0.05" data-min="0" data-max="1" type="text" style="width:100px;" class="input-deepselects rs-inoutanimationfield textbox-caption rs-layer-input-field " id="layer_opacity_end" name="layer_opacity_end" value="inherit" data-selects="Inherit||Random||Custom" data-svalues ="inherit||{0,1}||0.5" data-icons="export||shuffle||wrench">
@@ -2029,7 +2128,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 							//fetch key of the last element of the array.
 							$lastElementKey = key($arrSlideNames);
 							foreach($arrSlideNames as $sid => $sparams){
-								if($lastElementKey == $sid) break; //break on the last element
+								if($lastElementKey == $sid && count($arrSlideNames) > 1) break; //break on the last element
 								?>
 								<option value="<?php echo $si; ?>"><?php echo $si; ?></option>
 								<?php
@@ -2141,6 +2240,10 @@ $global_settings = $operations->getGeneralSettingsValues();
 							<input type="checkbox" id="on_all_devices_lineheight" name="on_all_devices_lineheight" class="rs-set-device-chk tp-moderncheckbox"  />
 						</div>
 						<div class="rs-set-style-on-device-row">
+							<label style="width: 100px"><?php _e("Letter Spacing",'revslider'); ?></label>
+							<input type="checkbox" id="on_all_devices_letterspacing" name="on_all_devices_letterspacing" class="rs-set-device-chk tp-moderncheckbox"  />
+						</div>
+						<div class="rs-set-style-on-device-row">
 							<label style="width: 100px"><?php _e("Font Weight",'revslider'); ?></label>
 							<input type="checkbox" id="on_all_devices_fontweight" name="on_all_devices_fontweight" class="rs-set-device-chk tp-moderncheckbox"  />
 						</div>
@@ -2175,9 +2278,9 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<span id="button_delete_layer" class="ho_column_ layer-short-tool revred"><i class="rs-lighttrash"></i></span>
 						<span id="button_duplicate_layer" class="ho_column_ layer-short-tool revyellow" data-isstatic="<?php echo $add_static; ?>"><i class="rs-lightcopy"></i></span>				
 						<span style="display:none;"  id="tp-addiconbutton" class="layer-short-tool revblue"><i class="eg-icon-th"></i></span>
-						<?php if($slider_type != 'gallery'){ ?>
+						<?php //if($slider_type != 'gallery'){ ?>
 							<span id="linkInsertTemplate"  style="display:none" class="layer-short-tool revyellow"><i class="eg-icon-filter"></i></span>					
-						<?php } ?>
+						<?php // } ?>
 						<span style="display:none" id="hide_layer_content_editor"  class="layer-short-tool revgreen" ><i class="eg-icon-check"></i></span>					
 						<span class="quick-layer-view layer-short-tool revdarkgray"><i class="eg-icon-eye"></i></span>
 						<span class="quick-layer-lock layer-short-tool revdarkgray"><i class="eg-icon-lock-open"></i></span>										
@@ -2305,16 +2408,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 		<div id="hor-css-linear-cover-left"></div>
 		<div id="hor-css-linear-cover-right"></div>
 		<div id="ver-css-linear-cover"></div>
-		<?php
-			//show/hide layers of specific slides
-			$add_static = 'false';
-			if($slide->isStaticSlide()){
-				$add_static = 'true';
-			}
-		?>
 		
-
-
 		<div id="divLayers-wrapper" style="overflow: hidden;<?php echo $style.$maxbgwidth; ?>" class="slide_wrap_layers" >
 			<div id="divbgholder" style="<?php echo $style_wrapper.$divbgminwidth.$maxbgwidth ?>" class="<?php echo $class_wrapper; ?>">
 				<div class="oldslotholder" style="overflow:hidden;width:100%;height:100%;position:absolute;top:0px;left:0px;z-index:0;">
@@ -2786,13 +2880,8 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<label><?php _e("Background",'revslider'); ?></label>
 						</div>					
 						<!-- COLOR -->					
-						<input type="text" class="rs-layer-input-field my-color-field" style="width:150px" name="adbutton-color-1" value="#000000" />
+						<input type="text" class="rs-layer-input-field my-color-field" style="width:150px" name="adbutton-color-1" data-editing="Button Background" value="rgba(0,0,0,0.75)" />
 						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>
-
-						<!-- OPACITY -->
-						<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon " style="margin-right:5px"></i>
-						<input data-suffix="" class="adb-input rs-layer-input-field "  style="width:45px" type="text" name="adbutton-opacity-1" value="0.75">
-						
 
 						
 						<!-- TEXT / ICON -->
@@ -2801,13 +2890,10 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<label><?php _e("Color",'revslider'); ?></label>
 						</div>					
 						<!-- TEXT COLOR -->					
-						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Color 2",'revslider'); ?>" style="width:150px" name="adbutton-color-2" value="#ffffff" />
+						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Color 2",'revslider'); ?>" style="width:150px" data-editing="Button Idle Color" data-mode="single" name="adbutton-color-2" value="rgba(255,255,255,1)" />
 						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>					
 
-						<!-- TEXT OPACITY -->
-						<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon "  style="margin-right:5px"></i>
-						<input class="adb-input rs-layer-input-field "  style="width:45px" type="text" name="adbutton-opacity-2" value="1">
-						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>
+						
 
 						
 						<!-- BORDER -->
@@ -2816,13 +2902,9 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<label><?php _e("Border",'revslider'); ?></label>
 						</div>					
 						<!-- BORDER COLOR -->					
-						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Border Color",'revslider'); ?>" style="width:150px" name="adbutton-border-color" value="#000000" />
+						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Border Color",'revslider'); ?>" style="width:150px" data-editing="Button Border Color" data-mode="single" name="adbutton-border-color" value="rgba(0,0,0,1)" />
 						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>					
-
-						<!-- BORDER OPACITY -->
-						<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon " title="<?php _e("Border Opacity",'revslider'); ?>" style="margin-right:5px"></i>
-						<input class="adb-input rs-layer-input-field " title="<?php _e("Border Opacity",'revslider'); ?>" style="width:45px" type="text" name="adbutton-border-opacity" value="1">
-						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>
+						
 
 						<!-- BORDER WIDTH-->
 						<i class="rs-mini-layer-icon rs-icon-borderwidth rs-toolbar-icon " title="<?php _e("Border Width",'revslider'); ?>" style="margin-right:5px"></i>
@@ -2852,13 +2934,9 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<label><?php _e("Background",'revslider'); ?></label>
 						</div>					
 						<!-- COLOR -->					
-						<input type="text" class="rs-layer-input-field my-color-field" style="width:150px" name="adbutton-color-1-h" value="#FFFFFF" />
+						<input type="text" class="rs-layer-input-field my-color-field" style="width:150px" name="adbutton-color-1-h" data-editing="Button Background Hover Color" value="rgba(255,255,255,1)" />
 						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>
-
-						<!-- OPACITY -->
-						<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon " style="margin-right:5px"></i>
-						<input data-suffix="" class="adb-input rs-layer-input-field "  style="width:45px" type="text" name="adbutton-opacity-1-h" value="1">
-						
+												
 						<!-- TEXT / ICON -->
 						<div style="width:100%;height:5px"></div>
 						<div class="add-lbl-wrapper">
@@ -2866,29 +2944,19 @@ $global_settings = $operations->getGeneralSettingsValues();
 						</div>	
 						
 						<!-- TEXT COLOR -->					
-						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Color 2",'revslider'); ?>" style="width:150px" name="adbutton-color-2-h" value="#000000" />
+						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Color 2",'revslider'); ?>" style="width:150px" data-editing="Button Hover Color" data-mode="single" name="adbutton-color-2-h" value="rgba(0,0,0,1)" />
 						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>					
 
-						<!-- TEXT OPACITY -->
-						<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon "  style="margin-right:5px"></i>
-						<input class="adb-input rs-layer-input-field "  style="width:45px" type="text" name="adbutton-opacity-2-h" value="1">
-						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>
-
-						
+												
 						<!-- BORDER -->
 						<div style="width:100%;height:5px"></div>
 						<div class="add-lbl-wrapper">
 						<label><?php _e("Border",'revslider'); ?></label>
 						</div>					
 						<!-- BORDER COLOR -->					
-						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Border Color",'revslider'); ?>" style="width:150px" name="adbutton-border-color-h" value="#000000" />
+						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Border Color",'revslider'); ?>" style="width:150px" data-editing="Button Border Hover Color" data-mode="single" name="adbutton-border-color-h" value="rgba(0,0,0,1)" />
 						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>					
-
-						<!-- BORDER OPACITY -->
-						<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon " title="<?php _e("Border Opacity",'revslider'); ?>" style="margin-right:5px"></i>
-						<input class="adb-input rs-layer-input-field " title="<?php _e("Border Opacity",'revslider'); ?>" style="width:45px" type="text" name="adbutton-border-opacity-h" value="1">
-						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>
-
+						
 						<!-- BORDER WIDTH-->
 						<i class="rs-mini-layer-icon rs-icon-borderwidth rs-toolbar-icon " title="<?php _e("Border Width",'revslider'); ?>" style="margin-right:5px"></i>
 						<input class="adb-input text-sidebar rs-layer-input-field " title="<?php _e("Border Width",'revslider'); ?>" style="width:45px" type="text" name="adbutton-border-width-h" value="0">
@@ -3011,12 +3079,9 @@ $global_settings = $operations->getGeneralSettingsValues();
 						<label><?php _e("Background",'revslider'); ?></label>
 						</div>					
 						<!-- COLOR -->					
-						<input type="text" class="rs-layer-input-field my-color-field" style="width:150px" name="adshape-color-1" value="#000000" />
+						<input type="text" class="rs-layer-input-field my-color-field" style="width:150px" data-editing="Shape Background Color" name="adshape-color-1" value="rgba(0,0,0,0.5)" />
 						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>
 
-						<!-- OPACITY -->
-						<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon " style="margin-right:5px"></i>
-						<input data-suffix="" class="ads-input rs-layer-input-field "  style="width:45px" type="text" name="adshape-opacity-1" value="0.5">
 						
 						<!-- BORDER -->
 						<div style="width:100%;height:5px"></div>
@@ -3025,13 +3090,9 @@ $global_settings = $operations->getGeneralSettingsValues();
 						</div>					
 
 						<!-- BORDER COLOR -->					
-						<input type="text" class="rs-layer-input-field  my-color-field" title="<?php _e("Border Color",'revslider'); ?>" style="width:150px" name="adshape-border-color" value="#000000" />
-						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>					
-
-						<!-- BORDER OPACITY -->
-						<i class="rs-mini-layer-icon rs-icon-opacity rs-toolbar-icon " title="<?php _e("Border Opacity",'revslider'); ?>" style="margin-right:5px"></i>
-						<input class="ads-input rs-layer-input-field " title="<?php _e("Border Opacity",'revslider'); ?>" style="width:45px" type="text" name="adshape-border-opacity" value="0.5">
-						<span class="rs-layer-toolbar-space" style="margin-right:0px"></span>
+						<input type="text" class="rs-layer-input-field  my-color-field" data-editing="Shape Border Color" title="<?php _e("Border Color",'revslider'); ?>" style="width:150px" data-mode="single" name="adshape-border-color" value="rgba(0,0,0,0.5)" />
+						<span class="rs-layer-toolbar-space" style="margin-right:15px"></span>					
+						
 
 						<!-- BORDER WIDTH-->
 						<i class="rs-mini-layer-icon rs-icon-borderwidth rs-toolbar-icon " title="<?php _e("Border Width",'revslider'); ?>" style="margin-right:5px"></i>
@@ -3192,6 +3253,11 @@ $global_settings = $operations->getGeneralSettingsValues();
 				<option <# if( data['link_type'] == 'jquery' ){ #>selected="selected" <# } #>value="jquery"><?php _e("jQuery Link",'revslider'); ?></option>
 				<option <# if( data['link_type'] == 'a' ){ #>selected="selected" <# } #>value="a"><?php _e("a Tag Link",'revslider'); ?></option>
 			</select>
+
+			<select name="<# if(data['edit'] == false){ #>no_<# } #>layer_link_follow[]" class="<# if(data['edit'] == false){ #>rs_disabled_field <# } #>rs-layer-input-field" style="width:150px; margin-right:10px">
+				<option <# if( data['link_follow'] == 'follow' ){ #>selected="selected" <# } #>value="follow"><?php _e("follow",'revslider'); ?></option>
+				<option <# if( data['link_follow'] == 'nofollow' ){ #>selected="selected" <# } #>value="nofollow"><?php _e("nofollow",'revslider'); ?></option>
+			</select>
 		</span>
 
 
@@ -3262,14 +3328,33 @@ $global_settings = $operations->getGeneralSettingsValues();
 			</select>
 		</span>
 
-		<?php do_action( 'rs_action_add_layer_action_details',$slider ); ?>
-
-		<span class="action-delay-wrapper" style="display: none; white-space:nowrap">			
+		<span class="action-delay-wrapper" style="display: none; white-space:nowrap">
 			<!--<span><?php _e("Delay",'revslider'); ?></span>
 			<span class="rs-layer-toolbar-space"></span>-->
 			<input type="text" style="width:60px;margin-top:-2px" placeholder="<?php _e("Delay",'revslider'); ?>" class="<# if(data['edit'] == false){ #>rs_disabled_field <# } #>textbox-caption rs-layer-input-field" name="<# if(data['edit'] == false){ #>no_<# } #>layer_action_delay[]" value="{{ data['action_delay'] }}"> <?php _e('ms', 'revslider'); ?>
 		</span>
-
+		
+		<!-- EASING -->
+		<span class="action-easing-wrapper" style="display:none;">
+			<!--<span><?php _e("Easing",'revslider'); ?></span>
+			<span class="rs-layer-toolbar-space" ></span>-->
+			<select name="<# if(data['edit'] == false){ #>no_<# } #>layer-action-easing[]" class="<# if(data['edit'] == false){ #>rs_disabled_field <# } #>rs-layer-input-field" style="width:150px; margin-right:10px">
+				<?php
+				foreach($easings as $ehandle => $ename){
+					echo '<option value="'.$ehandle.'" <# if( data[\'action_easing\'] == \''.$ehandle.'\' ){ #>selected="selected" <# } #>>'.$ename.'</option>';
+				}
+				?>
+			</select>
+		</span>
+		
+		<!-- SPEED -->
+		<span class="action-speed-wrapper" style="display:none;">
+			<!--<span><?php _e("Speed",'revslider'); ?></span>
+			<span class="rs-layer-toolbar-space" ></span>-->
+			<input type="text" style="width:60px;margin-top:-2px" placeholder="<?php _e("Speed",'revslider'); ?>" class="<# if(data['edit'] == false){ #>rs_disabled_field <# } #>textbox-caption rs-layer-input-field"  name="<# if(data['edit'] == false){ #>no_<# } #>layer_action_speed[]" value="{{ data['action_speed'] }}"> <?php _e('ms', 'revslider'); ?>
+		</span>
+		
+		<?php do_action( 'rs_action_add_layer_action_details',$slider ); ?>
 
 	</li>
 </script>
@@ -3289,14 +3374,18 @@ $global_settings = $operations->getGeneralSettingsValues();
 
 		var getButtonExampleValues = function() {
 			var o = new Object();
-			o.bgc = local_cHex(jQuery('input[name="adbutton-color-1"]').val(), jQuery('input[name="adbutton-opacity-1"]').val());
-			o.col = local_cHex(jQuery('input[name="adbutton-color-2"]').val(), jQuery('input[name="adbutton-opacity-2"]').val());
-			o.borc = local_cHex(jQuery('input[name="adbutton-border-color"]').val(), jQuery('input[name="adbutton-border-opacity"]').val());
+
+			o.bgc = window.RevColor.get(jQuery('input[name="adbutton-color-1"]').val());
+			o.col = window.RevColor.get(jQuery('input[name="adbutton-color-2"]').val());
+			o.borc = window.RevColor.get(jQuery('input[name="adbutton-border-color"]').val());
+			o.bgch = window.RevColor.get(jQuery('input[name="adbutton-color-1-h"]').val());
+			o.colh = window.RevColor.get(jQuery('input[name="adbutton-color-2-h"]').val());
+			o.borch = window.RevColor.get(jQuery('input[name="adbutton-border-color-h"]').val());
+
+
 			o.borw = parseInt(jQuery('input[name="adbutton-border-width"]').val(),0)+"px";
 			o.borwh = parseInt(jQuery('input[name="adbutton-border-width-h"]').val(),0)+"px";
-			o.bgch = local_cHex(jQuery('input[name="adbutton-color-1-h"]').val(), jQuery('input[name="adbutton-opacity-1-h"]').val());
-			o.colh = local_cHex(jQuery('input[name="adbutton-color-2-h"]').val(), jQuery('input[name="adbutton-opacity-2-h"]').val());
-			o.borch = local_cHex(jQuery('input[name="adbutton-border-color-h"]').val(), jQuery('input[name="adbutton-border-opacity-h"]').val());
+			
 			o.ff = jQuery('input[name="adbutton-fontfamily"]').val();
 			return o;
 		}
@@ -3329,7 +3418,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 				b.hover(function() {
 					var b = jQuery(this),
 					o = getButtonExampleValues();				
-					b.css({backgroundColor:o.bgch,color:o.colh});
+					b.css({background:o.bgch,color:o.colh});
 					b.find('i').css({color:o.colh});					
 					if (b.hasClass("rev-bordered"))
 						b.css({borderColor:o.borch,borderWidth:o.borwh,borderStyle:"solid"});
@@ -3337,7 +3426,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 				function() {
 					var b = jQuery(this),
 					o = getButtonExampleValues();				
-					b.css({backgroundColor:o.bgc,color:o.col});
+					b.css({background:o.bgc,color:o.col});
 					b.find('i').css({color:o.col});					
 					if (b.hasClass("rev-bordered"))
 						b.css({borderColor:o.borc,borderWidth:o.borw,borderStyle:"solid"});
@@ -3350,10 +3439,12 @@ $global_settings = $operations->getGeneralSettingsValues();
 			var p = jQuery('.addshape-examples-wrapper'),
 				o = new Object();
 			
-			o.bgc = local_cHex(jQuery('input[name="adshape-color-1"]').val(), jQuery('input[name="adshape-opacity-1"]').val());
+			o.bgc = window.RevColor.get(jQuery('input[name="adshape-color-1"]').val());
+			o.borc = window.RevColor.get(jQuery('input[name="adshape-border-color"]').val());
+
 			o.w = parseInt(jQuery('input[name="shape_width"]').val(),0);
 			o.h = parseInt(jQuery('input[name="shape_height"]').val(),0);
-			o.borc = local_cHex(jQuery('input[name="adshape-border-color"]').val(), jQuery('input[name="adshape-border-opacity"]').val());
+			
 			o.borw = parseInt(jQuery('input[name="adshape-border-width"]').val(),0)+"px";			
 			o.fw = jQuery('input[name="shape_fullwidth"]').is(':checked');
 			o.fh = jQuery('input[name="shape_fullheight"]').is(':checked');	
@@ -3407,7 +3498,7 @@ $global_settings = $operations->getGeneralSettingsValues();
 				p.append('<div class="example-shape-wrapper"><div class="example-shape"></div></div>');
 			var e = p.find('.example-shape');
 
-			e.css({backgroundColor:o.bgc, 
+			e.css({background:window.RevColor.get(o.bgc), 
 				   padding:o.pad,				   
 				   borderStyle:"solid", borderWidth:o.borw, borderColor:o.borc, borderRadius:o.br});
 			e.parent().css({

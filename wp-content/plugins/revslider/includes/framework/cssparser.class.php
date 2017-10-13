@@ -333,6 +333,12 @@ class RevSliderCssParser{
 	
 	
 	public static function parseStaticArrayToCss($cssArray, $nl = "\n"){
+		$css = RevSliderCssParser::parseSimpleArrayToCss();
+		return $css;
+	}
+	
+	
+	public static function parseSimpleArrayToCss($cssArray, $nl = "\n"){
 		$css = '';
 		foreach($cssArray as $class => $styles){
 			$css.= $class." {".$nl;
@@ -346,6 +352,7 @@ class RevSliderCssParser{
 		}
 		return $css;
 	}
+	
 	
 	
 	public static function parseDbArrayToArray($cssArray, $handle = false){
@@ -630,11 +637,14 @@ class RevSliderCssParser{
 	public static function clear_media_block($css){
 		
 		$start = 0;
-		if($start = strpos($css, '@media', $start) !== false){
+		if(strpos($css, '@media', $start) !== false){
+			$start = strpos($css, '@media', 0);
+
 			$i = strpos($css, '{', $start) + 1;
 			
 			//remove @media ... first {
 			$remove = substr($css, $start - 1, $i - $start + 1);
+			
 			$css = str_replace($remove, '', $css);
 			
 			//remove last }

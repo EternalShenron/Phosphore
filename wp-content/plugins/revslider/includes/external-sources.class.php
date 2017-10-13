@@ -67,7 +67,8 @@ class RevSliderFacebook {
 	public function get_photo_sets($user_id,$item_count=10,$app_id,$app_secret){
 		//photoset params
 		$oauth = wp_remote_fopen("https://graph.facebook.com/oauth/access_token?type=client_cred&client_id=".$app_id."&client_secret=".$app_secret);
-		$url = "https://graph.facebook.com/$user_id/albums?".$oauth;
+    $oauth = json_decode($oauth);
+		$url = "https://graph.facebook.com/$user_id/albums?access_token=".$oauth->access_token;
 		$photo_sets_list = json_decode(wp_remote_fopen($url));
 		//echo '<pre>';
 		//print_r($photo_sets_list);
@@ -87,7 +88,8 @@ class RevSliderFacebook {
 	 */
 	public function get_photo_set_photos($photo_set_id,$item_count=10,$app_id,$app_secret){
     $oauth = wp_remote_fopen("https://graph.facebook.com/oauth/access_token?type=client_cred&client_id=".$app_id."&client_secret=".$app_secret);
-    $url = "https://graph.facebook.com/$photo_set_id/photos?fields=photos&".$oauth."&fields=id,from,message,picture,link,name,icon,privacy,type,status_type,object_id,application,created_time,updated_time,is_hidden,is_expired,comments.limit(1).summary(true),likes.limit(1).summary(true)";
+    $oauth = json_decode($oauth);
+    $url = "https://graph.facebook.com/$photo_set_id/photos?fields=photos&access_token=".$oauth->access_token."&fields=id,from,message,picture,link,name,icon,privacy,type,status_type,object_id,application,created_time,updated_time,is_hidden,is_expired,comments.limit(1).summary(true),likes.limit(1).summary(true)";
 
 		$transient_name = 'revslider_' . md5($url);
 
@@ -138,7 +140,8 @@ class RevSliderFacebook {
 	 */
 	public function get_photo_feed($user,$app_id,$app_secret,$item_count=10){
 		$oauth = wp_remote_fopen("https://graph.facebook.com/oauth/access_token?type=client_cred&client_id=".$app_id."&client_secret=".$app_secret);
-		$url = "https://graph.facebook.com/$user/feed?".$oauth."&fields=id,from,message,picture,link,name,icon,privacy,type,status_type,object_id,application,created_time,updated_time,is_hidden,is_expired,comments.limit(1).summary(true),likes.limit(1).summary(true)";
+    $oauth = json_decode($oauth);
+    $url = "https://graph.facebook.com/$user/feed?access_token=".$oauth->access_token."&fields=id,from,message,picture,link,name,icon,privacy,type,status_type,object_id,application,created_time,updated_time,is_hidden,is_expired,comments.limit(1).summary(true),likes.limit(1).summary(true)";
 
 		$transient_name = 'revslider_' . md5($url);
 		if ($this->transient_sec > 0 && false !== ($data = get_transient( $transient_name)))
@@ -541,9 +544,9 @@ class RevSliderInstagram {
 
 		$rsp = json_decode(wp_remote_fopen($url));
 
-	    for($i=0;$i<$count;$i++) {
+	 for($i=0;$i<$count;$i++) {
 	      	$return[] = $rsp->items[$i];
-	    }
+	 }
     
 		if(isset($rsp->items)){
 			$rsp->items = $return;
@@ -561,21 +564,26 @@ class RevSliderInstagram {
 	 */
 	public function get_tag_photos($search_tag,$count){
 		//call the API and decode the response
-		$url = "https://api.instagram.com/v1/tags/".$search_tag."/media/recent?count=".$count."&access_token=".$this->api_key;
-
-		$transient_name = 'revslider_' . md5($url);
-		if ($this->transient_sec > 0 && false !== ($data = get_transient( $transient_name)))
+		$url = "https://www.instagram.com/explore/tags/".$search_tag."/?__a=1";
+    
+    $transient_name = 'revslider_' . md5($url);
+		/*if ($this->transient_sec > 0 && false !== ($data = get_transient( $transient_name)))
 			return ($data);
-
+*/
 		$rsp = json_decode(wp_remote_fopen($url));
 
+    var_dump($rsp);
 
-
-		if(isset($rsp->data)){
-			set_transient( $transient_name, $rsp->data, $this->transient_sec );
-			return $rsp->data;
-		}
-		else return '';
+      for($i=0;$i<$count;$i++) {
+          $return[] = $rsp->tag->media->nodes[$i];
+      }
+    
+    if(isset($rsp->tag->media->nodes)){
+      $rsp->tag->media->nodes = $return;
+      set_transient( $transient_name, $rsp->tag->media->nodes, $this->transient_sec );
+      return $rsp->tag->media->nodes;
+    }
+    else return '';
 	}
 }	// End Class
 
