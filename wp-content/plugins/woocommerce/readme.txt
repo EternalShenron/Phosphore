@@ -3,7 +3,7 @@ Contributors: automattic, mikejolley, jameskoster, claudiosanches, jshreve, code
 Tags: ecommerce, e-commerce, store, sales, sell, shop, cart, checkout, downloadable, downloads, paypal, storefront, woo commerce
 Requires at least: 4.4
 Tested up to: 4.8
-Stable tag: 3.2.0
+Stable tag: 3.2.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -160,6 +160,28 @@ Yes you can! Join in on our [GitHub repository](http://github.com/woocommerce/wo
 
 == Changelog ==
 
+= 3.2.1 - 2017-10-13 =
+* Fix - Made grouped products display in the saved order, vs the menu order.
+* Fix - Made variations with 'same as parent' tax class calculate taxes correctly.
+* Fix - Fixed tax rate reverting to 0 when the tax rate itself is not changed and the row is saved.
+* Fix - Made tax rates sort correctly when defining postcodes and cities.
+* Fix - Made guided tour help tab videos lazy-load to prevent performance issues.
+* Fix - Added SelectWoo dependency to admin meta box scripts.
+* Fix - Fixed cart subtotal 1p rounding error.
+* Fix - Fixed discount logic to also look at variation parent categories when validating coupons.
+* Fix - Product import filename based matching, and full URL based matching where the date part would still be present.
+* Fix - Fixed storage of cart discounts when prices include tax.
+* Fix - Added styling for screen-reader-text for themes which do not define it.
+* Fix - Fixed legacy cart `prices_include_tax` variable.
+* Fix -  Hide cat-parent class when category will show no children due to the new depth setting.
+* Fix - Make sure image zoom is enable for calling initZoomForTarget.
+* Fix - {blogname} email placeholder.
+* Fix - API - Use edit context when updating prices.
+* Tweak - Clearly describe when a feature is powered by WooCommerce Services in the setup wizard.
+* Tweak - Restored discount total line in order screen when discounts are present.
+* Tweak - Add back option to send admin new order email, and include order number and customer email in order emails.
+* Tweak - Replace settings screenshot on wp.org listing.
+
 = 3.2.0 - 2017-10-11 =
 * Feature - Coupons can now be applied and removed in admin when editing unpaid orders.
 * Feature - Simplified the ability to resend order details to customers with a single "Resend Order Details" action.
@@ -199,20 +221,20 @@ Yes you can! Join in on our [GitHub repository](http://github.com/woocommerce/wo
 * Fix - Fixed WC_Emails::wrap_message hooks .
 * Fix - Load up gateways on ajax order status transitions so PayPal funds capture when order is completed.
 * Fix - Replace wistia videos with youtube.
-* Fix - Handle sale dates on the fly in case of missed cron schedule. 
+* Fix - Handle sale dates on the fly in case of missed cron schedule.
 * Fix - If sorting by date in the REST API, fallback to ID so searches are consistant.
-* Fix - Do not apply custom sorting to product feeds. 
+* Fix - Do not apply custom sorting to product feeds.
 * Fix - Make importer columns case-insensitive.
 * Dev - Make parse_date_for_wp_query public.
 * Dev - API - Creating webhooks uses the current API version rather than the latest API version.
-* Dev - Product CRUD search helpers. 
+* Dev - Product CRUD search helpers.
 * Dev - Refactor shipping rate to include instance IDs, and pass instance IDs through filters.
 * Dev - New attribute helper functions.
 * Dev - Order note helper functions.
 * Dev - Added the "Terms and conditions" page to the api system status report.
 * Dev - Made date inputs reusable.
 * Dev - Added option for merging when using 'Order Again' via filter `woocommerce_empty_cart_when_order_again`.
-* Dev - Added system status tool for re-populating order address search indexes. 
+* Dev - Added system status tool for re-populating order address search indexes.
 * Dev - Added system status tool for clearing webhook logs.
 * Dev - Added woocommerce_get_asset_url filter.
 * Dev - Show notice when internal meta props are accessed directly.
@@ -224,7 +246,7 @@ Yes you can! Join in on our [GitHub repository](http://github.com/woocommerce/wo
 * Dev - Refactored cart to use new WC_Cart_Session/WC_Cart_Totals/WC_Cart_Fees/WC_Discounts classes.
 * Dev - New `WC_Shortcode_Products` class to handle all product based shortcodes.
 * Theming - Display downloads in their own table, universally, using a new template file.
-* Theming - Checkout: Order pay template 
+* Theming - Checkout: Order pay template
 * Localization - Added cantons of Switzerland.
 * Localization - Updated XAF and XOF currency codes.
 * Localization - Added rtl support for activation.css.

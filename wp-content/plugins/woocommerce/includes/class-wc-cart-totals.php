@@ -423,7 +423,7 @@ final class WC_Cart_Totals {
 	 * @return object
 	 */
 	protected function adjust_non_base_location_price( $item ) {
-		$base_tax_rates = WC_Tax::get_base_tax_rates( $item->product->get_tax_class( 'edit' ) );
+		$base_tax_rates = WC_Tax::get_base_tax_rates( $item->product->get_tax_class( 'unfiltered' ) );
 
 		if ( $item->tax_rates !== $base_tax_rates ) {
 			// Work out a new base price without the shop's base tax.
@@ -726,8 +726,13 @@ final class WC_Cart_Totals {
 		$this->coupon_discount_totals              = (array) $discounts->get_discounts_by_item( true );
 		$this->coupon_discount_tax_totals          = $coupon_discount_tax_amounts;
 
-		$this->set_total( 'discounts_total', array_sum( $this->coupon_discount_totals ) );
-		$this->set_total( 'discounts_tax_total', array_sum( $this->coupon_discount_tax_totals ) );
+		if ( wc_prices_include_tax() ) {
+			$this->set_total( 'discounts_total', array_sum( $this->coupon_discount_totals ) - array_sum( $this->coupon_discount_tax_totals ) );
+			$this->set_total( 'discounts_tax_total', array_sum( $this->coupon_discount_tax_totals ) );
+		} else {
+			$this->set_total( 'discounts_total', array_sum( $this->coupon_discount_totals ) );
+			$this->set_total( 'discounts_tax_total', array_sum( $this->coupon_discount_tax_totals ) );
+		}
 
 		$this->cart->set_coupon_discount_totals( wc_remove_number_precision_deep( $coupon_discount_amounts ) );
 		$this->cart->set_coupon_discount_tax_totals( wc_remove_number_precision_deep( $coupon_discount_tax_amounts ) );
@@ -775,7 +780,7 @@ final class WC_Cart_Totals {
 	protected function calculate_totals() {
 		$this->set_total( 'total', round( $this->get_total( 'items_total', true ) + $this->get_total( 'fees_total', true ) + $this->get_total( 'shipping_total', true ) + array_sum( $this->get_merged_taxes( true ) ) ) );
 
-		// Add totals to cart object.
+		// Add totals to cart object. Note: Discount total for cart is excl tax.
 		$this->cart->set_discount_total( $this->get_total( 'discounts_total' ) );
 		$this->cart->set_discount_tax( $this->get_total( 'discounts_tax_total' ) );
 		$this->cart->set_total_tax( array_sum( $this->get_merged_taxes( false ) ) );

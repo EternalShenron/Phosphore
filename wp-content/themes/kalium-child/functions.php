@@ -30,3 +30,42 @@ function my_acf_show_admin( $show ) {
    
 }
 /*add_filter('acf/settings/show_admin', '__return_true');*/
+
+/* POST TYPES */
+
+add_action( 'init', 'register_exemple' );
+    function register_exemple() {
+        $labels = array(
+            'name' => __( 'Exemples' ),
+            'singular_name' => __( 'Exemple' ),
+            'add_new' => _x( 'Ajouter', 'exemple' ),
+            'add_new_item' => _x( 'Ajouter un exemple', 'exemple' ),
+            'edit_item' => _x( 'Modifier la fiche exemple', 'exemple' ),
+            'new_item' => _x( 'Nouveau exemple', 'exemple' ),
+            'view_item' => _x( 'Voir le exemple', 'exemple' ),
+            'search_items' => _x( 'Rechercher un exemple', 'exemple' ),
+            'not_found' => _x( 'Aucun exemple trouvé', 'exemple' ),
+            'not_found_in_trash' => _x( 'Aucun exemple dans la corbeille', 'exemple' ),
+            'parent_item_colon' => _x( 'Exemple parent :', 'exemple' ),
+            'menu_name' => _x( 'Exemples', 'exemple' ),
+        );
+        $args = array (
+            'labels' => $labels,
+            'hierarchical' => false,
+            'description' => 'Les exemples',
+            'supports' => array( 'revisions', 'title', 'thumbnail', 'editor' ),
+            'public' => true,
+            'show_ui' => true,
+            'show_in_menu' => true,
+            'menu_position' => 5,
+            'show_in_nav_menus' => true,
+            'publicly_queryable' => true,
+            'exclude_from_search' => false,
+            'has_archive' => true,
+            'query_var' => true,
+            'can_export' => true,
+            'rewrite' => true,
+            'capability_type' => 'post'
+        );
+      register_post_type( 'exemples', $args);
+}
