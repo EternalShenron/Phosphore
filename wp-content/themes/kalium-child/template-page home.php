@@ -19,8 +19,8 @@ get_header();
 
     <div class="container-fluid">
         <div class="row">
-            <div class="col-sm-12">le slider
-                <?php putRevSlider("homeslider", "homepage") ?>
+            <div class="col-sm-12">
+                <?php putRevSlider("PostBasedSlider", "homepage") ?>
             </div>
         </div>
     </div>
