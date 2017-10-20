@@ -10,3 +10,112 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Template: kalium
 Text Domain: kalium
 */
+
+/* TEMP */
+
+
+#log {
+	display: none;
+	position: fixed;
+	top: 100px;
+	left: 30px;
+	background: #fff;
+	padding: 20px;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.23);
+	z-index: 99999;
+}
+
+/* ENDTEMP */
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+	font-family: 'Alegreya Sans SC', sans-serif !important;
+}
+
+.site-header  {
+	background: #fff!important;
+}
+
+.page-cover {
+	position: relative;
+	text-align: center;
+	-webkit-background-size: cover;
+	background-size: cover;
+	padding: 12em 0;
+	top: 0;
+}
+
+.page-cover:after {
+	content: '';
+	position: absolute;
+	top: 0;right: 0;bottom: 0;left: 0;
+	background-color: rgba(25, 43, 53, 0.4);
+}
+
+.page-cover .page-title-group {
+	position: relative;
+	z-index: 9;
+	text-shadow: 0 0 50px #000;
+}
+
+.page-cover .page-title {
+	/* letter-spacing: 0.1em; */
+}
+
+.page-cover .parent-page {
+	font-weight: 400;
+	letter-spacing: 0.1em!important;
+}
+
+.page-cover .page-title-group > * {
+	margin: 0;
+}
+
+.page-cover .parent-page:after {
+	content: '';
+	display: block;
+	width: 30px;
+	margin: 10px auto 5px;
+	border-bottom: 1px solid orange;
+}
+
+.page-cover, .page-multiple-cover {
+	color: #fff;
+	-webkit-background-size: cover;
+	background-size: cover;
+	background-position: center;
+}
+
+.page-multiple-cover {
+	width: 20em;
+}
+
+
+.page-cover.affix {
+	padding: 15px 0;
+	left: 0;
+	right: 0;
+	text-align: left;
+	z-index: 99;
+	transition: top 0.3s ease-in-out 0s;
+}
+
+.page-cover.affix .page-title-group {
+	top: 0!important;
+	left: 0!important;
+}
+
+.page-cover.affix .parent-page:after {
+	display: none;
+}
+
+.page-cover.affix .page-title {
+	font-size: 30px;
+}
+
+.page-cover + #page-cover-maintainer {
+	display: none;
+}
+
+.page-cover.affix + #page-cover-maintainer {
+	display: block;
+}

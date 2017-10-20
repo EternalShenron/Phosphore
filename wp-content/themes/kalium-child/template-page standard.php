@@ -19,26 +19,39 @@ get_header();
     <?php
 /*Sub header personnalisÃ©*/ ?>
 
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-4 hidden-xs hidden-sm">4 colonnes</div>
-                <div class="col-xs-12 col-md-4" style="background: url(<?php 
-echo get_the_post_thumbnail_url( $post_id, 'small'); ?>) ;background-repeat:no-repeat; height:10em !important;">
-                    <?php the_title() ?>
-                </div>
-                <div class="col-md-4 hidden-xs hidden-sm"> 4 colonnes</div>
-            </div>
-        </div>
+<?php
+$args = array(
+    'post_type'      => 'page',
+    'posts_per_page' => 3,
+    'post_parent'    => get_post()->ID,
+    'order'          => 'ASC',
+    'orderby'        => 'menu_order'
+ );
+?>
 
 
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8">8 colonnes contenu de l'article
-                    <?php the_content()?>
-                </div>
-                <div class="col-lg-4">4 colonnes le sous menu </div>
-            </div>
+<div class="container-fluid">
+    <div class="row">
+        <?php  
+            $parent = new WP_Query( $args );
+            if ( $parent->have_posts() ) : ?>
+                <?php while ( $parent->have_posts() ) : $parent->the_post(); ?>
+                    <div class="col-md-4 page-multiple-cover" style="height: 20em; background-image: url(<?php the_post_thumbnail_url() ?>)">4 colonnes</div>
+                <?php endwhile; ?>
+            <?php endif; wp_reset_query();
+        ?>
+    </div>
+</div>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">8 colonnes contenu de l'article
+            <?php the_content()?>
         </div>
+        <div class="col-lg-4">4 colonnes le sous menu </div>
+    </div>
+</div>
 
 
         <?php get_footer() ?>

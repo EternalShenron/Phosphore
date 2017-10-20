@@ -14,15 +14,26 @@ function kalium_child_after_setup_theme() {
 
 add_action( 'after_setup_theme', 'kalium_child_after_setup_theme' );
 
-// This will enqueue style.css of child theme
-function kalium_child_wp_enqueue_scripts() {
-	wp_enqueue_style( 'kalium-child', get_stylesheet_directory_uri() . '/style.css' );
-}
-
-add_action( 'wp_enqueue_scripts', 'kalium_child_wp_enqueue_scripts', 100 );
 
 
 add_filter('acf/settings/show_admin', 'my_acf_show_admin');
+
+
+/* ENQUEUES */
+
+function kalium_child_enqueue_style() {
+    wp_enqueue_style( 'kalium-child', get_stylesheet_directory_uri() . '/style.css' );
+    wp_enqueue_style( 'fonts', 'https://fonts.googleapis.com/css?family=Alegreya+Sans+SC:400,500,700' );
+}
+
+function kalium_child_enqueue_script() {
+    wp_enqueue_script( 'scripts', get_stylesheet_directory_uri() . '/assets/js/scripts.js', 'jquery', null, true );
+}
+
+add_action( 'wp_enqueue_scripts', 'kalium_child_enqueue_style' );
+add_action( 'wp_enqueue_scripts', 'kalium_child_enqueue_script' );
+
+
 
 function my_acf_show_admin( $show ) {
    
