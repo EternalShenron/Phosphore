@@ -1,0 +1,22 @@
+#aol_ad_metas label, #app_form_fields label{
+    display: inline-block;
+    min-width: 100px;
+    text-transform: capitalize;
+}
+
+.app_form_fields table{border-spacing: 0; border-collapse: collapse; }
+#app_form_fields input[type="text"]{min-width: 180px;}
+table #app_form_fields tr{background: #EEE; border: 3px solid #FFF;}
+table #app_form_fields tr td{padding: 5px 10px}
+#app_form_fields label .dashicons{color: #CCC; font-size: 20px; vertical-align: middle; }
+#app_form_fields label .dashicons:hover{color: #AAA;}
+tr.ui-state-highlight { height: 40px; line-height: 40px; background-color: #fdff77 !important;}
+
+.table {display:table;}
+.row {display:table-row;}
+.cell{display:table-cell;}
+
+.app_form_fields .adapp_group{padding-bottom: 20px;}
+
+.post-type-aol_applications .widefat td, .post-type-aol_applications .widefat th{min-width: 120px; vertical-align: middle}
+input.closed, .closed {color: #E00;}
