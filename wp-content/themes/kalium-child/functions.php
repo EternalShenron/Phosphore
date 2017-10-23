@@ -25,10 +25,13 @@ function kalium_child_enqueue_style() {
     wp_enqueue_style( 'fonts', 'https://fonts.googleapis.com/css?family=Alegreya+Sans+SC:400,500,700' );
     wp_enqueue_style( 'nav-style', get_stylesheet_directory_uri() . '/nav.css' );
     wp_enqueue_style( 'kalium-child', get_stylesheet_directory_uri() . '/style.css' );
+    wp_enqueue_style( 'owl-carousel-style', 'https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/assets/owl.carousel.min.css' );
+    wp_enqueue_style( 'owl-carousel-theme', 'https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/assets/owl.theme.default.min.css' );
 }
 
 function kalium_child_enqueue_script() {
     wp_enqueue_script( 'scripts', get_stylesheet_directory_uri() . '/assets/js/scripts.js', 'jquery', null, true );
+    wp_enqueue_script( 'owl-carousel-scripts', 'https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/owl.carousel.min.js', 'jquery', null, true );
 }
 
 add_action( 'wp_enqueue_scripts', 'kalium_child_enqueue_style' );

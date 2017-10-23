@@ -54,7 +54,6 @@
                 </div>  
             </div>
         </div>
-
         
         <?php $i = 0 ?>
         <?php if( have_rows('sections') ): ?>
