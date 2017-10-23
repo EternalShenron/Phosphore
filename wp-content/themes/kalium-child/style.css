@@ -310,7 +310,6 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     background-attachment: fixed;
     -webkit-background-size: cover;
     background-size: cover;
-	filter: brightness(1.5);
 	opacity: 0.1;
 }
 
