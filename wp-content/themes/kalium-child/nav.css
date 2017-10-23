@@ -1,0 +1,33 @@
+#toc {
+	display: none;
+}
+
+@media screen and (min-width: 768px) {
+
+	#toc {
+		display: block;
+		position: fixed;
+		right: 0;
+		top: 270px;
+		text-align: right;
+		font-family: 'Alegreya Sans SC', sans-serif;
+	}
+
+	.toc-item {
+		list-style: none;
+	}
+
+	.toc-item.active a {
+		background: #eb9f69;
+		color: #fff;
+		transition: all .25s;
+	}
+
+	.toc-item a {
+		padding: 5px 8px;
+		background: #fff;
+		margin-bottom: 2px;
+	}
+
+
+}

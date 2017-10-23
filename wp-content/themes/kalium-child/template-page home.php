@@ -19,7 +19,7 @@ get_header();
 
     <div class="container-fluid">
         <div class="row">
-            <div class="col-sm-12">le slider
+            <div class="col-sm-12">
                 <?php putRevSlider("homeslider", "homepage") ?>
             </div>
         </div>
@@ -39,8 +39,46 @@ get_header();
         </div>
     </div>
 
-    <div class="container-fluid">
         
+    
+    <?php $i = 0 ?>
+    <?php if( have_rows('section_de_home') ): ?>
+        <section class="zigzag-sections">
+        <?php while( have_rows('section_de_home') ): the_row(); 
+            $i = $i+1;
+            if ($i % 2 == 0) {
+                $altern = 'even';
+            } else {
+                $altern = 'odd';
+            }
+            $titre_section_home = get_sub_field('titre');
+            $resume = get_sub_field('resume');
+            $image = get_sub_field('image')['sizes']['medium_large'];
+            $id = get_field('lien_vers_article');
+            ?>
+            <div id="home-subsection-<?php echo $i ?>" class="home-subsection subsection-<?php echo($altern) ?>">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-6 subsection-image-column">
+                            <div class="subsection-image" <?php if ($image) { echo 'style=background-image:url("' . $image . '")'; } ; ?>></div>
+                        </div>
+                        <div class="col-sm-6 subsection-content-column">
+                            <div class="subsection-title">
+                                <h3><?php echo $titre_section_home; ?></h3>
+                            </div>
+                            <div class="subsection-content">
+                                <?php echo $resume; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endwhile; ?>
+        </section>
+    <?php endif; ?>
+
+
+
         <div class="row" style="height:10em">
             <div class="col-md-6 hidden-xs hidden-sm">image</div>
             <div class="col-xs-12 col-md-6">
@@ -62,7 +100,7 @@ get_header();
             <?php the_field (resume_career, 21); ?>
             </div>
         </div>
-    </div>
+
 
     <div class="container-fluid">
         <div class="row">

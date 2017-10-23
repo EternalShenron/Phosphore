@@ -75,7 +75,14 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	display: block;
 	width: 30px;
 	margin: 10px auto 5px;
-	border-bottom: 1px solid orange;
+	border-bottom: 1px solid #eb9f69;
+}
+
+.page-multiple-cover-container {
+	position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
 }
 
 .page-cover, .page-multiple-cover {
@@ -86,9 +93,46 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 .page-multiple-cover {
-	width: 20em;
 }
 
+.page-cover .h3 {
+	display: none;
+	transform: translateY(-50px);
+	transition: transform 0.25s;
+}
+
+.page-cover .h3 a {
+	color: #fff;
+	font-size: 19px;
+}
+
+.page-cover .h3 a:hover {
+	color: #fff!important;
+}
+
+.sibling-pages a {
+	opacity: 0.7;
+	transition: opacity 0.25s;
+}
+
+.sibling-pages a:hover {
+	opacity: 1;
+}
+
+.page-cover .h3.sibling-pages:before {
+	content: '';
+	display: inline-block;
+	width: 4px;
+	height: 4px;
+	background: orange;
+	border-radius: 50%;
+	position: relative;
+	margin: 5px 10px;
+}
+
+.h3:first-of-type { 
+	display: none!important;
+}
 
 .page-cover.affix {
 	padding: 15px 0;
@@ -109,7 +153,22 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 .page-cover.affix .page-title {
-	font-size: 30px;
+	display: none;
+}
+
+.page-cover.affix .h3 {
+	display: inline-block;
+	font-size: 21px;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+}
+
+.page-cover.affix .h3 {
+	transform: translateY(0);
+}
+
+.page-cover .h3:first-child {
+	display: none!important;
 }
 
 .page-cover + #page-cover-maintainer {
@@ -118,4 +177,121 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 .page-cover.affix + #page-cover-maintainer {
 	display: block;
+}
+
+.page-section {
+	padding: 30px 0;
+	font-size: 17px;
+	line-height: 1.6;
+	letter-spacing: -0.01em;
+}
+
+.section-even {
+	background: #f8f8f8;
+}
+
+.page-section {
+	position: relative;
+}
+
+.page-section-title {
+	margin-bottom: 30px;
+}
+
+.page-section-bg {
+	position: absolute;
+	top: 0; right: 0; bottom: 0; left: 0;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    background-size: cover;
+	filter: brightness(1.5);
+	opacity: 0.1;
+}
+
+
+/* ELEMENTS */
+
+blockquote {
+    font-size: 18px;
+    font-style: italic;
+    line-height: 2!important;
+    text-align: left;
+    border-left: 3px solid #64aad2!important;
+    margin-bottom: 50px!important;
+    background: #fafafa;
+    padding: 30px!important;
+    font-family: Georgia,"Times New Roman",Times,serif;
+}
+
+.page-section hr {
+	margin-top: 19px;
+    margin-bottom: 19px;
+    border: 0;
+    border-top: 1px solid orange;
+    border-color: orange!important;
+    width: 20%;
+    display: inline-block;
+}
+
+.container.quarter {
+	margin: 0;
+}
+
+@media screen and (min-width: 768px) {
+
+	.home-subsection {
+		position: relative;
+		padding: 5em;
+	}
+
+	.subsection-image-column {
+		position: static!important;
+	}
+
+	.subsection-image {
+		position: absolute;
+		top: 0; bottom: 0; 
+		-webkit-background-size: cover;
+		background-size: cover;
+		background-position: ;
+	}
+
+	.subsection-odd .subsection-image {
+		right: 50%; 
+		left: 0;
+	}
+
+	.subsection-even .subsection-image {
+		right: 0; 
+		left: 50%;
+	}
+
+	.subsection-even .subsection-content-column {
+		left: -50%!important;
+	}
+
+	.container.quarter {
+		width: 188px;
+	}
+
+	.page-section {
+		padding: 60px 0;
+	}
+
+}
+
+@media screen and (min-width: 992px) {
+
+	.container.quarter {
+		width: 245px;
+	}
+
+}
+
+@media screen and (min-width: 1170px) {
+
+	.container.quarter {
+		width: 885px;
+	}
+
 }

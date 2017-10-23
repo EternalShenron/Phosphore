@@ -22,8 +22,9 @@ add_filter('acf/settings/show_admin', 'my_acf_show_admin');
 /* ENQUEUES */
 
 function kalium_child_enqueue_style() {
-    wp_enqueue_style( 'kalium-child', get_stylesheet_directory_uri() . '/style.css' );
     wp_enqueue_style( 'fonts', 'https://fonts.googleapis.com/css?family=Alegreya+Sans+SC:400,500,700' );
+    wp_enqueue_style( 'nav-style', get_stylesheet_directory_uri() . '/nav.css' );
+    wp_enqueue_style( 'kalium-child', get_stylesheet_directory_uri() . '/style.css' );
 }
 
 function kalium_child_enqueue_script() {
@@ -79,4 +80,37 @@ add_action( 'init', 'register_exemple' );
             'capability_type' => 'post'
         );
       register_post_type( 'exemples', $args);
+}
+
+
+/* Font size dans editeur WYSIWYG */
+
+function wpc_boutons_tinymce($buttons) {
+  $buttons[] = 'sub';
+  $buttons[] = 'sup';
+  $buttons[] = 'fontselect';
+  $buttons[] = 'fontsizeselect';
+  return $buttons;
+}
+add_filter("mce_buttons_2", "wpc_boutons_tinymce");
+
+$buttons[] = 'Taille';
+
+
+// on exécute la fonction avant initialisation de l'éditeur
+add_filter( 'tiny_mce_before_init', 'juiz_custom_tinymce' );
+ 
+// la fonction est déclarée si elle n'existe pas déjà
+if ( !function_exists('juiz_custom_tinymce')) {
+    function juiz_custom_tinymce( $tools ) {
+        // on ajoute "styleselect" à une liste d'outils séparés par une virgule
+        // on complète ici la seconde ligne d'outils (buttons2)
+        $tools['theme_advanced_buttons2'] = 'styleselect,'.$tools['theme_advanced_buttons2'];
+ 
+        // on ajoute des commandes en ligne ou en bloc (box) à notre sélecteur
+        $tools['theme_advanced_styles'] = __('Bouton').'=button, '.__('Télécharger').'=download, '.__('Démonstration').'=demo, '.__('Boîte de boutons').'=buttons-box, '.__('Exergue').'=highlight';
+ 
+        // on retourne notre liste d'outils complétée
+        return $tools; 
+    }
 }
