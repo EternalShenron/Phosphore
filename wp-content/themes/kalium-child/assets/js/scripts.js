@@ -32,11 +32,13 @@ sliderSection.css('height', sliderSectionHeight)
   //Init the carousel
   initSlider();
 
+
   function initSlider() {
+  time = 10000
     $('.owl-carousel').owlCarousel({
       items: 1,
       loop: true,
-      autoplayTimeout: 6000,
+      autoplayTimeout: time,
       animateOut: 'fadeOut',
       autoplay: true,
       onInitialized: startProgressBar,
@@ -49,7 +51,7 @@ sliderSection.css('height', sliderSectionHeight)
     // apply keyframe animation 
     $('.slide-progress').css({
       'width': '100%',
-      'transition': 'width 5000ms'
+      'transition': 'width ' + time + 'ms'
     });
   }
 

@@ -14,10 +14,7 @@ get_header();
 
 // the_content();
 /*note small device, les images doivent disparaitre sauf le slider*/
-
 ?>
-
-
 
             <?php 
             // args
