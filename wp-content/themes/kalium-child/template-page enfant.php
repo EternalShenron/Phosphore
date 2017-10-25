@@ -26,28 +26,44 @@
                             ?>
                         </div>
                         <h1 class="page-title wow animated fadeInUp"><?php the_title() ?></h1>
-                        
-                        <div class="h3 wow animated fadeInDown" data-wow-duration="0.2s"><a href="<?php the_permalink() ?>"><?php the_title() ?></a></div>
+
+
+
+                        <!-- CRÉATION DU MENU DES PAGES SOEURS -->
+
+                        <!-- On affiche le titre de la page actuelle avant d'appeler les pages soeurs  -->
+                        <div class="h3 wow animated fadeInDown" data-wow-duration="0.2s">
+                            <a href="<?php the_permalink() ?>"><?php the_title() ?></a>
+                        </div>
                         <?php 
-
-
-                        // args
+                        // Requête pour aller chercher les pages soeurs
+                        //
+                        // Paramètres de la requête
                         $sibling_pages = array(
-                            'post_parent' => $post->post_parent,
-                            'post_type' => 'page',
-                            'post__not_in' => array($current)
-                        );
+                            'post_parent' => $post->post_parent,    // Param. 1 : Pages dont le parent est le même que la page actuelle
+                            'post_type' => 'page',                  // Param. 2 : Seulement les publications de type "page"
+                            'post__not_in' => array($current)       // Param. 3 : On exclue la page actuelle
+                        ); 
 
-                        // the query
-                        $the_query = new WP_Query( $sibling_pages ); ?>
-                        <?php $i = 1 ?>
-                        <?php if ( $the_query->have_posts() ) : ?>
-                            <!-- the loop -->
-                            <?php while ( $the_query->have_posts() ) : $the_query->the_post(); ?>
-                                <div class="h3 sibling-pages wow animated fadeInDown" data-wow-duration="0.3s" data-wow-delay="<?php echo $i * 0.12 . 's' ?>"><a href="<?php the_permalink() ?>"><?php the_title(); ?></a></div>
-                                <?php $i = $i+1 ?>
+                        // Requête des pages soeurs
+                        $sibling_pages_query = new WP_Query( $sibling_pages ); ?>
+                        <?php $i = 1 // Initialisation d'une variable $i en vue d'une incrémentation ?>
+                        <?php if ( $sibling_pages_query->have_posts() ) : ?>
+                            <!-- La Boucle -->
+                            <?php while ( $sibling_pages_query->have_posts() ) : $sibling_pages_query->the_post(); ?>
+
+                                <!-- 
+                                On affiche les titres des pages soeurs 
+                                on incrémente le délai de l'animation pour que les titres s'affichent joliment les uns après les autres
+                                -->
+                                <div class="h3 sibling-pages wow animated fadeInDown" data-wow-duration="0.3s" data-wow-delay="<?php echo $i * 0.12 . 's' ?>">
+                                    <a href="<?php the_permalink() ?>"><?php the_title(); ?></a>
+                                </div>
+
+                                <?php $i = $i+1 // Incrémentation ?>
+
                             <?php endwhile; ?>
-                            <!-- end of the loop -->
+                            <!-- Fin de la Boucle -->
                             <?php wp_reset_postdata(); ?>
                         <?php endif; ?>
                     </div>

@@ -38,7 +38,7 @@ get_header();
                         $excerpt = get_field('excerpt') 
                         ?>
 
-                        <div class="slide" style="background-image: url(<?php the_post_thumbnail_url('full') ?>)">
+                        <div class="slide" style="background-image: url(<?php the_post_thumbnail_url('slider-size') ?>)">
                             <div class="container">
                                 <div class="slide-content">
                                     <div class="post-info">
@@ -68,7 +68,7 @@ get_header();
         <section class="text-center">
             <div class="row">
                 <div class="col-md-12">
-                    <div class="homepage-byline h4">
+                    <div class="homepage-byline h4 wow animated fadeIn">
                         <?php if (get_field('punchline')): ?>
                             <?php the_field('punchline') ?>
                         <?php endif ?> 
@@ -97,14 +97,16 @@ get_header();
             $libelle_bouton = get_sub_field('libelle_bouton');
             ?>
 
-            <div id="home-subsection-<?php echo $i ?>" class="home-subsection subsection-<?php echo($altern) ?>">
+            <?php // var_dump(get_sub_field('image')) ?>
+
+            <div id="home-subsection-<?php echo $i ?>" class="home-subsection subsection-<?php echo($altern) ?> wow animated fadeIn">
                 <div class="container">
                     <div class="row">
-                        <div class="col-sm-6 subsection-image-column">
+                        <div class="col-sm-6 subsection-image-column wow animated fadeIn">
                             <div class="subsection-image" <?php if ($image) { echo 'style=background-image:url("' . $image . '")'; } ; ?>></div>
                         </div>
                         <div class="col-sm-6 subsection-content-column">
-                            <div class="subsection-content">
+                            <div class="subsection-content wow animated fadeInUp" data-wow-duration="0.7s" data-wow-delay="-0.3s" data-wow-offset="100">
                                 <div class="subsection-title">
                                     <h2><?php echo $titre_section_home; ?></h2>
                                 </div>
@@ -122,21 +124,54 @@ get_header();
     <?php endif; ?>
 
 
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-12">la section exemples</div>
-            <div class="row" style="padding:5em">
-                <div class="col-lg-4">4 colonnes</div>
-                <div class="col-lg-4">4 colonnes</div>
-                <div class="col-lg-4">4 colonnes</div>
+        <?php 
+        // args
+        $slider_examples = array(
+            'post_type' => 'exemples',
+            'posts_per_page' => 12,
+            'orderby' => 'menu_order'
+        );
+        // the query
+        $home_example_slider_query = new WP_Query( $slider_examples ); ?>
+
+        <?php if ( $home_example_slider_query->have_posts() ) : ?>
+        <section id="home-examples-slider-section" class="text-center">
+            <h2 class="text-center">Examples</h2>
+            <div class="container">
+
+                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                    <div id="examples-slider" class="owl-carousel owl-theme wow animated fadeIn">
+                        <?php $i = 1 ?>
+                        <!-- the loop -->
+                        <?php while ( $home_example_slider_query->have_posts() ) : $home_example_slider_query->the_post(); ?>
+                                <div class="example-item wow animated fadeIn" data-wow-delay="<?php echo $i * 0.12 . 's' ?>">
+                                    <div class="panel-heading" role="tab" id="heading-<?php echo $i ?>">
+                                        <a class="example-link" role="button" data-toggle="collapse" href="#example-detail-<?php echo $i ?>" aria-expanded="false" aria-controls="example-detail-<?php echo $i ?>">
+                                          <h4><?php the_title() ?></h4>
+                                        </a>
+                                    </div>
+
+
+                                    <div class="collapse example-detail" id="example-detail-<?php echo $i ?>" aria-expanded="false" style="height: 0px;">
+                                        <?php the_content() ?>                                        
+                                    </div>
+                                </div>
+
+                                <?php $i++ ?>
+                            
+                        <?php endwhile; ?>
+                        <!-- end of the loop -->
+                        <?php wp_reset_postdata(); ?>
+                    </div>
+
+                </div>
+
             </div>
-            <div class="col-lg-12 hidden-xs hidden-sm">la sous section exemple</div>
-            <div class="row hidden-xs hidden-sm" style="padding:5em">
-                <div class="col-lg-4">4 colonnes</div>
-                <div class="col-lg-4">4 colonnes</div>
-                <div class="col-lg-4">4 colonnes</div>
-            </div>
-        </div>
-    </div>
+            
+            <div id="details"><div class="container text-left"></div></div>
+            
+        </section>
+        <?php endif; ?>
+
 
     <?php get_footer() ?>

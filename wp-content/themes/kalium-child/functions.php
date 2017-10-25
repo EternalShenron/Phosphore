@@ -14,7 +14,10 @@ function kalium_child_after_setup_theme() {
 
 add_action( 'after_setup_theme', 'kalium_child_after_setup_theme' );
 
-
+function new_excerpt_more( $more ) {
+    return ' <a class="read-more" href="'. get_permalink( get_the_ID() ) . '">' . __('Read More', 'your-text-domain') . '</a>';
+}
+add_filter( 'excerpt_more', 'new_excerpt_more' );
 
 add_filter('acf/settings/show_admin', 'my_acf_show_admin');
 
@@ -24,9 +27,9 @@ add_filter('acf/settings/show_admin', 'my_acf_show_admin');
 function kalium_child_enqueue_style() {
     wp_enqueue_style( 'fonts', 'https://fonts.googleapis.com/css?family=Alegreya+Sans+SC:400,500,700' );
     wp_enqueue_style( 'nav-style', get_stylesheet_directory_uri() . '/nav.css' );
-    wp_enqueue_style( 'kalium-child', get_stylesheet_directory_uri() . '/style.css' );
     wp_enqueue_style( 'owl-carousel-style', 'https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/assets/owl.carousel.min.css' );
     wp_enqueue_style( 'owl-carousel-theme', 'https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/assets/owl.theme.default.min.css' );
+    wp_enqueue_style( 'kalium-child', get_stylesheet_directory_uri() . '/style.css', 'bootstrap-css' );
 }
 
 function kalium_child_enqueue_script() {
@@ -116,4 +119,9 @@ if ( !function_exists('juiz_custom_tinymce')) {
         // on retourne notre liste d'outils complétée
         return $tools; 
     }
-}
+};
+
+// Image sizes
+add_image_size( 'medium', 300, 200, true );
+add_image_size( 'post-thumb', 360, 240, true );
+add_image_size( 'slider-size', 1366, 800, true );
