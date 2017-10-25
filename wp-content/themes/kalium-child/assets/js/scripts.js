@@ -106,7 +106,7 @@ $('#page-cover-maintainer').css({
 
 
 
-if ($('body').hasClass('page-template-template-pageenfant')) {
+if ($('body').hasClass('page-template-template-pageenfant') || $('body').hasClass('page-template-template-pagelocations')) {
 
 	$(window).on('scroll', parallax).scroll()
 
