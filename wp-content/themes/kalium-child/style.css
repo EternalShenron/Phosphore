@@ -25,14 +25,7 @@ Text Domain: kalium
 	z-index: 99999;
 }
 
-.btn {
-	background: #eb9f69;
-	display: inline-block;
-	padding: 8px 15px!important;
-	color: #fff;
-	text-transform: uppercase;
-	font-size: 13px;
-}
+
 
 .slide-progress {
   width: 0;
@@ -47,12 +40,41 @@ Text Domain: kalium
 }
 /* ENDTEMP */
 
+/* GENERAL */
+
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	font-family: 'Alegreya Sans SC', sans-serif !important;
 }
 
 .site-header  {
 	background: #fff!important;
+}
+
+/* BUTTONS */
+
+.btn {
+	background: #eb9f69;
+	display: inline-block;
+	padding: 8px 15px!important;
+	color: #fff;
+	text-transform: uppercase;
+	font-size: 13px;
+}
+
+.btn.download {
+	padding-left: 25px!important;
+	position: relative;
+}
+
+.btn.download.pdf:before {
+	content: '';
+	position: absolute;
+	display: block;
+	left: -12px;
+	top: -6px;
+	width: 24px;
+	height: 24px;
+	background-image: url('assets/img/pdf.png')
 }
 
 /* HOMEPAGE */
@@ -108,11 +130,11 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 	.subsection-odd .subsection-image {
 		right: 50%; 
-		left: 15px;
+		left: 0;
 	}
 
 	.subsection-even .subsection-image {
-		right: 15px; 
+		right: 0; 
 		left: 50%;
 	}
 
@@ -122,6 +144,19 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 }
 
+@media screen and (min-width: 992px) {
+
+
+	.subsection-odd .subsection-image {
+		left: 15px;
+	}
+
+	.subsection-even .subsection-image {
+		right: 15px; 
+	}
+
+
+}
 
 /* SLIDER */
 
@@ -402,6 +437,11 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 .section-even {
 	background: #f8f8f8;
+}
+
+.page-section.section-even .section-content,
+.page-section.section-even .section-content p {
+	color: #111;
 }
 
 .page-section {

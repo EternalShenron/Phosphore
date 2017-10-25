@@ -87,37 +87,37 @@ if ( have_posts() ) :
 			</div>
 
 
-			<div class="container">
 
-				<div class="row">
+			<article id="post-<?php the_ID(); ?>" <?php post_class( 'post' ); ?>>
+				<div class="container">
 
-					<div class="col-xs-12 col-md-8">
-						<article id="post-<?php the_ID(); ?>" <?php post_class( 'post' ); ?>>
-							
-							<?php the_content() ?>	
+					<div class="row">
 
-						</article>
-					</div>
-					<div class="col-xs-12 col-md-3 col-md-push-1">
-						<div class="post-sidebar">
-							<aside class="widget">
-								<a href="#" class="btn btn-primary">Download</a>
-							</aside>
-							<?php if (get_field('commentaires')): ?>
-							<aside class="widget">
-								<h3>Comment</h3>
-								<div class="post-comment"><?php the_field('commentaires') ?></div>
-							</aside>
-							<?php endif ?>
-							<aside class="widget">
-								<a href="#" class="btn btn-primary">Contact us</a>
-							</aside>
+						<div class="col-xs-12 col-md-8">
+							<div class="post-content">
+								<?php the_content() ?>
+							</div>
+						</div>
+						<div class="col-xs-12 col-md-3 col-md-push-1">
+							<div class="post-sidebar">
+								<aside class="widget">
+									<?php $file = get_field('fichier_a_telecharger');?>
+									<a href="<?php echo $file['url'] ?>" download="<?php the_title() ?>" class="btn btn-primary download pdf">Download</a>
+								</aside>
+								<?php if (get_field('commentaires')): ?>
+								<aside class="widget">
+									<h3>Comment</h3>
+									<div class="post-comment"><?php the_field('commentaires') ?></div>
+								</aside>
+								<?php endif ?>
+								<aside class="widget">
+									<a href="#" class="btn btn-primary">Contact us</a>
+								</aside>
+							</div>
 						</div>
 					</div>
 				</div>
-
-			</div>
-				
+			</article>				
 
 			<?php 		
 			}		
