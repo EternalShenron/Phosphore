@@ -41,15 +41,6 @@ $args = array(
                         $grandparent = $grandparent_get->post_parent;
                     ?>
                     <div class="page-title-group">
-                        <div class="h6 parent-page wow animated fadeInDown">
-                            <?php 
-                                if ($root_parent = get_the_title($grandparent) !== $root_parent = get_the_title($current)) {
-                                    echo get_the_title($grandparent); 
-                                } else {
-                                    echo get_the_title($parent); 
-                                }
-                            ?>
-                        </div>
                         <h1 class="page-title wow animated fadeInUp"><?php the_title() ?></h1>
 
                         <?php 

@@ -27,7 +27,7 @@ if ( have_posts() ) :
 		
 			?>
 			<div <?php kalium_blog_single_container_class(); ?>>
-				
+
 				<div class="container">
 				
 					<div class="row">

@@ -3,7 +3,7 @@ Theme Name: Kalium - Child Theme
 Theme URI: https://laborator.co/themes/kalium/
 Author: Laborator
 Author URI: https://laborator.co/
-Description: Start creating that amazing website that you have always wanted, only with Kalium — Connect with Laborator:  <a href="https://themeforest.net/user/laborator">Envato</a>, <a href="https://twitter.com/thelaborator">Twitter</a> or <a href="https://www.facebook.com/laboratorcreative">Facebook</a>.
+Description: Start creating that amazing website that you have always wanted, only with Kalium â€” Connect with Laborator:  <a href="https://themeforest.net/user/laborator">Envato</a>, <a href="https://twitter.com/thelaborator">Twitter</a> or <a href="https://www.facebook.com/laboratorcreative">Facebook</a>.
 Version: 2.1
 License: GNU General Public License version 3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -28,6 +28,7 @@ Text Domain: kalium
 .btn {
 	background: #eb9f69;
 	display: inline-block;
+	padding: 8px 15px!important;
 	color: #fff;
 	text-transform: uppercase;
 	font-size: 13px;
@@ -66,10 +67,68 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	padding: 0;
 }
 
+.home-subsection .subsection-title:after {
+	content: '';
+	display: block;
+	width: 30px;
+	margin: 15px 0;
+	border-bottom: 3px solid #eb9f69;
+}
+
+@media screen and (min-width: 768px) {
+
+	.home-subsection {
+		position: relative;
+	}
+
+	.subsection-image {
+		position: absolute;
+		top: 0; bottom: 0; right: 0; left: 0;
+		-webkit-background-size: cover;
+		background-size: cover;
+		background-position: ;
+	}
+
+	.subsection-content {
+		z-index: 999;
+	}
+
+	.subsection-content	{
+		padding: 2em 1em;
+	}
+
+	.subsection-resume {
+		font-size: 16px;
+		line-height: 1.6;
+	}
+
+	.subsection-image-column {
+		position: static!important;
+	}
+
+	.subsection-odd .subsection-image {
+		right: 50%; 
+		left: 15px;
+	}
+
+	.subsection-even .subsection-image {
+		right: 15px; 
+		left: 50%;
+	}
+
+	.subsection-even .subsection-content-column {
+		left: -50%!important;
+	}
+
+}
+
+
 /* SLIDER */
 
 #home-slider-section {
 	position: relative;
+	max-width: 1366px;
+	margin: 0 auto;
 }
 
 .home-posts-slider .slide {
@@ -96,6 +155,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .home-posts-slider .post-info {
 	position: absolute;
 	bottom: 30px;
+	transition: all 0.25s;
 }
 
 .home-posts-slider .post-info > * {
@@ -113,7 +173,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	max-width: 400px;
 }
 
-.post-excerpt {
+.home-posts-slider .post-excerpt {
     display: inline;
     font-size: 17px;
     line-height: 1.16;
@@ -122,15 +182,19 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     color: #fff;
 }
 
-.owl-nav {
+.home-posts-slider .owl-nav {
 	position: absolute;
 	right: 0;
 	bottom: 0;
 	color: #fff;
 }
 
-.owl-dots {
+.home-posts-slider .owl-dots {
 	position: absolute;
+	bottom: 0;
+	width: 100px;
+	left: 50%;
+	margin-left: -50px;
 }
 
 /* SLIDER ANIMATIONS */
@@ -138,6 +202,46 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .home-posts-slider {
 }
 
+/* EXAMPLES SLIDER */
+
+#home-examples-slider-section {
+	padding: 70px 0;
+	background: #eee;
+}
+
+.collapse, .collapsing, .collapsed {
+	overflow: hidden;
+	transition: height 0.25s;
+}
+
+.collapse, .collapsing {
+}
+
+.example-link {
+	display: block!important;
+	padding: 40px;
+	background: #3d6983;
+	color: #fff;
+	cursor: pointer;
+	font-family: 'Alegreya Sans SC', sans-serif;
+}
+
+.example-link:after {
+	display: none!important;
+}
+
+.example-link:hover, .example-link:focus {
+	background: #35596f;
+	color: #fff!important;
+}
+
+.example-item .example-content {
+	display: none;
+}
+
+#details {
+	background: #fff;
+}
 
 /* STANDARD PAGES */
 
@@ -221,6 +325,10 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	transition: opacity 0.25s;
 }
 
+.page-cover .h3 a:after, .sibling-pages a:after {
+	background: #fff!important;
+}
+
 .sibling-pages a:hover {
 	opacity: 1;
 }
@@ -230,7 +338,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	display: inline-block;
 	width: 4px;
 	height: 4px;
-	background: orange;
+	background: #eb9f69;
 	border-radius: 50%;
 	position: relative;
 	margin: 5px 10px;
@@ -306,11 +414,14 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 .page-section-bg {
 	position: absolute;
-	top: 0; right: 0; bottom: 0; left: 0;
-    background-attachment: fixed;
-    -webkit-background-size: cover;
-    background-size: cover;
-	opacity: 0.1;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-attachment: fixed;
+	-webkit-background-size: cover;
+	background-size: cover;
+	opacity: 0.3;
 }
 
 
@@ -332,8 +443,8 @@ blockquote {
 	margin-top: 19px;
     margin-bottom: 19px;
     border: 0;
-    border-top: 1px solid orange;
-    border-color: orange!important;
+    border-top: 1px solid #eb9f69;
+    border-color: #eb9f69!important;
     width: 20%;
     display: inline-block;
 }
@@ -342,50 +453,204 @@ blockquote {
 	margin: 0;
 }
 
+/* POSTS */
+
+.post-cover {
+	position: relative;
+	background: #3d6983;
+	-webkit-background-size: cover;
+	background-size: cover;
+	text-align: center;
+	background-image: url('http://localhost/rams/phosphore/wp-content/uploads/2017/10/Cropping-Brazil-1.jpg');
+	background-position: center;
+}
+
+.post-cover:after {
+	content: '';
+	position: absolute;
+	top: 0; bottom: 0; right: 0; left: 0;
+	background: rgba(0, 32, 56, 0.4);
+	z-index: 0;
+}
+
+.post-cover * {
+	color: #fff;
+}
+
+.post-subtitle {
+	position: relative;
+	font-size: 18px!important;
+	padding: 15px 0 0;
+	margin-bottom: 0!important;
+	letter-spacing: 0.032em;
+	font-weight: 400!important;
+	z-index: 1;
+}
+
+.single-post .post-cover .post-image {
+	position: relative;
+	display: inline-block;
+	margin-bottom: 0;
+	bottom: -35px;
+	z-index: 2;
+}
+
+.single-post .row .post-image {
+	padding: 0!important;
+}
+
+.single-post .post-cover .post-image:before {
+	content: '';
+	display: block;
+	position: absolute;
+	background: #fff;
+	top: -5px; right: 7px; bottom: 5px; left: -5px;
+	z-index: -1;
+
+}
+
+.post-cover .post-info {
+	position: relative;
+	color: #333;
+	background: #fff;
+	margin: 0 -20px;
+	padding: 40px 20px 0 20px;
+	z-index: 1;
+}
+
+.post-cover .post-info * {
+	color: #333;
+}
+
+.post-title {
+	margin-top: 10px;
+	margin-bottom: 0;
+	font-size: 30px;
+}
+
+.post-cover .post-excerpt {
+	padding: 5px 20px;
+}
+
+.post-meta-group {
+	margin: 5px 0 0;
+}
+
+.post-cover .post-meta {
+	display: block;
+	margin: 0 5px;
+	font-size: 14px;
+}
+
+.post-cover .post-meta, .post-cover .post-meta * {
+	color: #aaa;
+}
+
+.post-cover a:hover {
+	color: #aaa;
+}
+
+.post-meta i {
+	color: #eb9f69!important;
+	margin-right: 5px;
+}
+
+.single-post .post {
+	margin-top: 20px;
+	padding-top: 20px;
+	border-top: 1px solid #eee;
+}
+
+@media screen and (max-width: 991px) {
+
+	.single-post .post-cover .container {
+		width: 100%;
+	}
+
+}
+
+@media screen and (min-width: 576px) {
+
+	.post-cover .post-excerpt {
+		padding: 5px 60px;
+	}
+
+}
+
 @media screen and (min-width: 768px) {
 
-	.home-subsection {
+	.post-cover .post-info {
+		padding: 40px 20px 0 20px;
+	}
+
+	.post-cover .post-excerpt {
+		padding: 5px 120px;
+	}
+
+}
+
+@media screen and (min-width: 992px) {
+
+
+	.post-cover {
+		text-align: left;
+		padding: 20px 0;
+	}
+
+	.post-header {
 		position: relative;
+	    bottom: -40px;
+	    left: 30px;
 	}
 
-	.subsection-image {
-		position: absolute;
-		top: 0; bottom: 0; right: 0; left: 0;
-		-webkit-background-size: cover;
-		background-size: cover;
-		background-position: ;
+	.post-header .col-md-4 {
+		width: auto;
 	}
 
-	.subsection-content	{
-		padding: 2em 1em;
+	.single-post .post-cover .post-image {
+		display: block;
+		float: left;
+		text-align: center;
+		bottom: 0;
 	}
 
-	.subsection-resume {
-		font-size: 16px;
-		line-height: 1.6;
+	.post-cover .post-info {
+		padding: 10px 20px 0;
+		background: transparent;
+		color: #fff;
 	}
 
-.subsection-image-column {
-	position: static!important;
+	.post-cover .post-title {
+		font-size: 40px;
+	}
+
+	.post-cover .post-info * {
+		color: #fff;
+		text-shadow: 0 0 10px #000;
+	}
+
+	.post-cover .post-excerpt {
+		padding: 10px 0;
+	}
+
+	.post-cover .post-meta {
+		display: block;
+		margin-bottom: 3px;
+		color: #fff;
+	}
+
+	.wrapper .post-cover a:hover {
+		color: #fff;
+	}
+
+	.wrapper .post-cover a:after {
+		background: #fff;
+	}
+
 }
 
-.subsection-odd .subsection-image {
-	right: 50%; 
-	left: 15px;
-}
 
-.subsection-even .subsection-image {
-	right: 15px; 
-	left: 50%;
-}
-
-	.subsection-even .subsection-content-column {
-		left: -50%!important;
-	}
-
-	.container.quarter {
-		width: 188px;
-	}
+@media screen and (min-width: 768px) {
 
 	.page-section {
 		padding: 60px 0;

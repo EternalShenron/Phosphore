@@ -26,8 +26,9 @@ $('.page-multiple-cover').css('height', $('.page-multiple-cover').parents('.page
 // Home slider
 
 sliderSection = $('#home-slider-section, .slide-content')
-sliderSectionHeight = $(window).outerHeight() - $('.site-header').outerHeight() * 2
+sliderSectionHeight = ($(window).outerHeight() - $('.site-header').outerHeight()) / 100 * 80;
 sliderSection.css('height', sliderSectionHeight)
+console.log(sliderSectionHeight)
 
   //Init the carousel
   initSlider();
@@ -35,7 +36,7 @@ sliderSection.css('height', sliderSectionHeight)
 
   function initSlider() {
   time = 10000
-    $('.owl-carousel').owlCarousel({
+    $('.home-posts-slider').owlCarousel({
       items: 1,
       loop: true,
       autoplayTimeout: time,
@@ -62,10 +63,48 @@ sliderSection.css('height', sliderSectionHeight)
     });
   }
 
+// Slider examples
+
+$('#examples-slider').owlCarousel({
+	margin: 15,
+	loop: true,
+	mouseDrag: false,
+	toucheDrag: false,
+	responsive : {
+	    // breakpoint from 0 up
+	    0 : {
+	        items : 1
+	    },
+	    768 : {
+	        items : 3
+	    }
+	},
+	dots: false,
+	nav: true
+});
+
+
+
+$('.example-item .example-detail').each(function() {
+	$(this).appendTo('#details .container')
+})
+
+
+
+collapseButtons = $('.example-item [data-toggle=collapse]')
+collapseButtons.click(function(){
+	controledID = ($(this).attr('aria-controls'))
+	$('#details .collapse.in').collapse('hide')
+})
+
+
+// Sticky second header
 
 $('#page-cover-maintainer').css({
     'height' : $('.page-cover').outerHeight()
 })
+
+
 
 if ($('body').hasClass('page-template-template-pageenfant')) {
 
@@ -139,8 +178,9 @@ if ($('body').hasClass('page-template-template-pageenfant')) {
 $('.toc-item a').on('click', function() { // Au clic sur un élément
 	var page = $(this).attr('href'); // Page cible
 	var speed = 250; // Durée de l'animation (en ms)
-	$('html, body').animate( { scrollTop: $(page).offset().top }, speed ); // Go
+	$('html, body').animate( { scrollTop: $(page).offset().top - 500 }, speed ); // Go
 	return false;
+	console.log($(page).offset().top - 500)
 });
 
 
