@@ -13,6 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Direct access not allowed.
 }
 ?>
+<div class="container">xx</div>
+
 <li <?php post_class( 'post' ); ?>>
 
 	<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>">
@@ -39,6 +41,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 				 */
 				do_action( 'kalium_blog_loop_post_details' );
 			?>
+            <div class="post-excerpt"> <?php the_field('excerpt') ?></div>
+            
+            <a class="btn" href="<?php the_permalink() ?>" role="button">Read more</a>
 			
 		</div>
 		
