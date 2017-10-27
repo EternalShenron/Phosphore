@@ -493,6 +493,18 @@ blockquote {
 	margin: 0;
 }
 
+section.page-heading{
+margin-top:0px;
+margin-bottom:20px;
+padding-top:100px;
+padding-bottom:100px;
+height:400px;
+background-position: center 0px;
+background-attachment: fixed;
+background-size: cover;
+background-repeat:no-repeat;
+}
+
 /* POSTS */
 
 .post-cover {

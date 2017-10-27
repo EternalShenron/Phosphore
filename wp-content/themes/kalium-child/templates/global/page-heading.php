@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Direct access not allowed.
 }
 ?>
-<section class="page-heading" role="heading">
+<section class="page-heading" role="heading"  style="background-image: url(<?php the_post_thumbnail_url() ?>)">
 	
 	<div class="container">
 		
