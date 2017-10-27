@@ -7,16 +7,13 @@ function log(log) {
 }
 
 // Fonction exécutée au redimensionnement
+var device; 
 $(window).resize(function(){
-    if(window.matchMedia("(max-width:767px)").matches) {  }
-    if (window.matchMedia("(min-width:768px)").matches) {  }
-    if (window.matchMedia("(min-width:992px)").matches) {  }
-    if (window.matchMedia("(min-width:1200px)").matches) {  }
-
-
-/*$('.page-multiple-cover').css({
-	'height' : $(this).parent('.page-cover').outerHeight()
-})*/
+    if (window.matchMedia("(max-width:576px)").matches) { device = 'Phone' }
+    if (window.matchMedia("(min-width:576px)").matches) { device = 'Phablet' }
+    if (window.matchMedia("(min-width:768px)").matches) { device = 'Tablet' }
+    if (window.matchMedia("(min-width:992px)").matches) { device = 'Small Desktop' }
+    if (window.matchMedia("(min-width:1200px)").matches) { device = 'Large Desktop' }
 
 $('.page-multiple-cover').css('height', $('.page-multiple-cover').parents('.page-cover').outerHeight())
 
@@ -28,7 +25,6 @@ $('.page-multiple-cover').css('height', $('.page-multiple-cover').parents('.page
 sliderSection = $('#home-slider-section, .slide-content')
 sliderSectionHeight = ($(window).outerHeight() - $('.site-header').outerHeight()) / 100 * 80;
 sliderSection.css('height', sliderSectionHeight)
-console.log(sliderSectionHeight)
 
   //Init the carousel
   initSlider();
@@ -85,17 +81,66 @@ $('#examples-slider').owlCarousel({
 
 
 
-$('.example-item .example-detail').each(function() {
-	$(this).appendTo('#details .container')
-})
 
 
+
+	if ($('body').hasClass('page-template-template-page-examples')) {
+
+		if (window.matchMedia("(min-width:768px)").matches) {
+
+			exampleItem = $('#page-examples-list .example-item')
+			exampleItem.parent().addClass('example-col')
+			ExampleSection = $('#page-examples').html()
+
+				var divs = $(".example-col");
+				for(var i = 0; i < divs.length; i+=3) {
+				  divs.slice(i, i+3).wrapAll("<div class='example-group'></div>");
+				}
+
+				$('.example-group').each(function(){
+					$(this).append('<div class="details-receiver"></div>')
+				})
+
+				exampleItem.each(function() {
+					exampleDetail = $(this).find('.example-detail')
+					exampleDetail.appendTo($(this).parents('.example-group').find('.details-receiver'))
+				})
+				
+		}
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if ($('body').hasClass('page-template-template-pagehome')) {
+
+	$('.example-item .example-detail').each(function() {
+		detailsContainer = $('.details .container')
+		$(this).appendTo(detailsContainer)
+	})
+
+}
 
 collapseButtons = $('.example-item [data-toggle=collapse]')
 collapseButtons.click(function(){
 	controledID = ($(this).attr('aria-controls'))
-	$('#details .collapse.in').collapse('hide')
+	$('.collapse.in').collapse('hide')
 })
+
+
 
 
 // Sticky second header
@@ -106,7 +151,7 @@ $('#page-cover-maintainer').css({
 
 
 
-if ($('body').hasClass('page-template-template-pageenfant') || $('body').hasClass('page-template-template-pagelocations')) {
+if ($('body').hasClass('page-template-template-pageenfant') || $('body').hasClass('page-template-template-pagelocations') || $('body').hasClass('page-template-template-page-examples') )  {
 
 	$(window).on('scroll', parallax).scroll()
 
@@ -180,7 +225,6 @@ $('.toc-item a').on('click', function() { // Au clic sur un élément
 	var speed = 250; // Durée de l'animation (en ms)
 	$('html, body').animate( { scrollTop: $(page).offset().top - 500 }, speed ); // Go
 	return false;
-	console.log($(page).offset().top - 500)
 });
 
 

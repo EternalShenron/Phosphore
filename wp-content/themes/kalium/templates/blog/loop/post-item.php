@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				 */
 				do_action( 'kalium_blog_loop_post_details' );
 			?>
-			
+
 		</div>
 		
 		<?php
