@@ -100,10 +100,13 @@ if ( have_posts() ) :
 						</div>
 						<div class="col-xs-12 col-md-3 col-md-push-1">
 							<div class="post-sidebar">
+								<?php 
+								$file = get_field('fichier_a_telecharger');
+								if ($file): ?>
 								<aside class="widget">
-									<?php $file = get_field('fichier_a_telecharger');?>
 									<a href="<?php echo $file['url'] ?>" download="<?php the_title() ?>" class="btn btn-primary download pdf">Download</a>
 								</aside>
+								<?php endif	; ?>
 								<?php if (get_field('commentaires')): ?>
 								<aside class="widget">
 									<h3>Comment</h3>

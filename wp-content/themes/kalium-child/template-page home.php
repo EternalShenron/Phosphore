@@ -168,7 +168,7 @@ get_header();
 
             </div>
             
-            <div id="details"><div class="container text-left"></div></div>
+            <div class="details"><div class="container text-left"></div></div>
             
         </section>
         <?php endif; ?>

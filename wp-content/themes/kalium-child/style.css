@@ -113,6 +113,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 	.subsection-content {
 		z-index: 999;
+		background: #fff;
 	}
 
 	.subsection-content	{
@@ -277,6 +278,13 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 #details {
 	background: #fff;
 }
+
+/* EXAMPLES PAGE */
+
+.details-receiver {
+	float: left;
+}
+
 
 /* STANDARD PAGES */
 
@@ -706,6 +714,29 @@ background-repeat:no-repeat;
 		border-top: 0;
 	}
 
+}
+
+/* EXAMPLES */
+
+.example-item + .post-edit-link {
+	position: absolute;
+	left: 20px;top: 20px;
+	font-size: 12px;
+	color: #fff;
+	opacity: 0
+}
+
+.example-item + .post-edit-link:hover {
+	color: #fff;
+	opacity: 1;
+}
+
+.example-item + .post-edit-link:after {
+	background-color: #fff;
+}
+
+.page-template-template-page-examples .example-item {
+	margin: 15px 0;
 }
 
 
