@@ -19,6 +19,14 @@ $('.page-multiple-cover').css('height', $('.page-multiple-cover').parents('.page
 
 })
 
+// Match height
+
+$(function() {
+	options = {
+		byRow: false
+	}
+	$('.match-height').matchHeight(options);
+});
 
 // Home slider
 
@@ -141,7 +149,17 @@ collapseButtons.click(function(){
 })
 
 
+collapseProfile = $('.profile-item [data-toggle=collapse]')
+collapseProfile.click(function(){
+	coucou = ($(this).attr('aria-controls'))
+	$('.collapse.in').collapse('hide')
+	$('.collapse.in').css('height', 0)
+})
 
+$('.profile-item [data-toggle=collapse], .profile-detail').hover(function(){
+	$(this).parents('.profile').toggleClass('active-profile')
+	$(this).click()
+})
 
 // Sticky second header
 
@@ -223,7 +241,7 @@ if ($('body').hasClass('page-template-template-pageenfant') || $('body').hasClas
 $('.toc-item a').on('click', function() { // Au clic sur un élément
 	var page = $(this).attr('href'); // Page cible
 	var speed = 250; // Durée de l'animation (en ms)
-	$('html, body').animate( { scrollTop: $(page).offset().top - 500 }, speed ); // Go
+	$('html, body').animate( { scrollTop: $(page).offset().top - 90 }, speed ); // Go
 	return false;
 });
 

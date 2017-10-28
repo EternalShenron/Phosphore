@@ -35,6 +35,7 @@ function kalium_child_enqueue_style() {
 function kalium_child_enqueue_script() {
     wp_enqueue_script( 'scripts', get_stylesheet_directory_uri() . '/assets/js/scripts.js', 'jquery', null, true );
     wp_enqueue_script( 'owl-carousel-scripts', 'https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.2.1/owl.carousel.min.js', 'jquery', null, true );
+    wp_enqueue_script( 'match-height', 'https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight-min.js', 'jquery', null, true );
 }
 
 add_action( 'wp_enqueue_scripts', 'kalium_child_enqueue_style' );

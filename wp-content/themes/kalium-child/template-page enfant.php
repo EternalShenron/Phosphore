@@ -70,12 +70,11 @@
                 </div>  
             </div>
         </div>
-        
-        <?php $i = 0 ?>
+     
+        <?php $i = 1 ?>
         <?php if( have_rows('sections') ): ?>
             <div class="sections">
             <?php while( have_rows('sections') ): the_row(); 
-                $i = $i+1;
                 if ($i % 2 == 0) {
                     $altern = 'even';
                 } else {
@@ -97,8 +96,68 @@
                                 <div class="section-content wow animated fadeIn"><?php echo $contenu_section; ?></div>
                             </div>
                         </div>
-                    </div>
+                        <?php if (get_the_ID() == 39 && $i == 3): ?>
+                            <div class="row">
+                                <div class="col-sm-11">
+
+                                    <?php $j = 1 ?>
+                                    
+                                    <?php if( have_rows('profile') ): ?>
+
+                                        <?php while( have_rows('profile') ): the_row(); ?>
+                                            <div class="profile">
+                                                <div class="row">
+                                                    <div class="col-sm-6">
+                                                        <div class="trigger-group">
+                                                            <div class="row">
+                                                                <div class="col-sm-6">
+                                                                    <div class="typical-recruit">
+                                                                        <div><?php the_sub_field('typical_recruit') ?></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-sm-6">
+                                                                    <div class="panel-heading profile-item profile-item-<?php echo $j ?>">
+                                                                        <a class="profile-link box position" role="button" data-toggle="collapse" href="#profile-detail-<?php echo $j ?>" aria-expanded="false" aria-controls="profile-detail-<?php echo $j ?>">
+                                                                          <h4><?php the_sub_field('position') ?></h4>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6 profile-detail-container">
+                                                        <div class="collapse profile-detail" id="profile-detail-<?php echo $j ?>" aria-expanded="false" style="height: 0px;">
+                                                            <div class="row">
+                                                                <div class="col-sm-6">
+                                                                    <div class="box team-project-role">
+                                                                        <h5>Team project role</h5>
+                                                                        <?php the_sub_field('team__project_role') ?>
+                                                                    </div>
+                                                                </div>    
+                                                                <div class="col-sm-6">
+                                                                    <div class="box client-role">
+                                                                        <h5>Client role</h5>
+                                                                        <?php the_sub_field('client_role') ?>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>                                   
+                                            </div>
+                                            <?php $j++ ?>
+
+                                        <?php endwhile; ?>
+
+                                    <?php endif; ?>
+
+                                </div>
+                            </div>
+
+                        <?php endif ?>
+                        </div>
                 </section>
+                <?php $i++; ?>
             <?php endwhile; ?>
             </div>
         <?php endif; ?>

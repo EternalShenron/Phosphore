@@ -3,7 +3,7 @@ Theme Name: Kalium - Child Theme
 Theme URI: https://laborator.co/themes/kalium/
 Author: Laborator
 Author URI: https://laborator.co/
-Description: Start creating that amazing website that you have always wanted, only with Kalium â€” Connect with Laborator:  <a href="https://themeforest.net/user/laborator">Envato</a>, <a href="https://twitter.com/thelaborator">Twitter</a> or <a href="https://www.facebook.com/laboratorcreative">Facebook</a>.
+Description: Start creating that amazing website that you have always wanted, only with Kalium Ã¢â‚¬â€ Connect with Laborator:  <a href="https://themeforest.net/user/laborator">Envato</a>, <a href="https://twitter.com/thelaborator">Twitter</a> or <a href="https://www.facebook.com/laboratorcreative">Facebook</a>.
 Version: 2.1
 License: GNU General Public License version 3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -364,7 +364,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 }
 
 .sibling-pages a {
-	opacity: 0.7;
+	opacity: 0.8;
 	transition: opacity 0.25s;
 }
 
@@ -469,7 +469,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 	background-attachment: fixed;
 	-webkit-background-size: cover;
 	background-size: cover;
-	opacity: 0.3;
+	opacity: 0.15;
 }
 
 
@@ -760,5 +760,58 @@ background-repeat:no-repeat;
 }
 
 @media screen and (min-width: 1170px) {
+
+}
+
+
+/* CAREER PATH */
+
+.box {
+	padding: 10px;
+	background: #eee;
+}
+
+
+.box.position {
+	background: #eb9f69;
+	color: #fff;
+	width: 100%;
+}
+
+.team-project-role, .client-role {
+	font-size: 12px;
+}
+
+.profile-link {
+	display: block;
+	float: left;
+}
+
+@media screen and (min-width: 768px) {
+	
+	.profile {
+		margin-bottom: 10px;
+	}
+
+	.profile-detail {
+		display: none;
+		position: absolute;
+		overflow: hidden;
+		background: #eee;
+		left: 15px;
+		z-index: 2;
+	}
+
+	.active-profile .profile-detail, .focused-profile .profile-detail {
+		display: block;
+	}
+
+	.profile-detail-container {
+		left: -30px;
+	}
+
+	.profile-detai[aria-expanded=false] * {
+		display: none;
+	}
 
 }
