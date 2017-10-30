@@ -149,17 +149,72 @@ collapseButtons.click(function(){
 })
 
 
-collapseProfile = $('.profile-item [data-toggle=collapse]')
-collapseProfile.click(function(){
-	coucou = ($(this).attr('aria-controls'))
-	$('.collapse.in').collapse('hide')
-	$('.collapse.in').css('height', 0)
+
+var profiles = $('.profile');
+
+profiles.each(function(){
+	profileGroup = $(this).attr('data-profile-group')
+	if ( $(this).parent().hasClass('profile-group') == false ) {
+		$('.profile[data-profile-group=' + profileGroup + ']').wrapAll('<div class="profile-group">');
+	}
+
 })
 
-$('.profile-item [data-toggle=collapse], .profile-detail').hover(function(){
-	$(this).parents('.profile').toggleClass('active-profile')
-	$(this).click()
+
+$(window).resize(function(){
+
+	if (window.matchMedia("(max-width:991px)").matches) {
+		$('.profile-detail').collapse('hide')
+		$('.profile-group-title').css('padding-top', 0)
+	} else if (window.matchMedia("(min-width:992px)").matches) {
+		$('.profile-detail').collapse('show')
+		$('.profile-group-title').each(function(){
+			groupTitleHeight = $(this).find('.typical-recruit').outerHeight()
+			$(this).css('padding-top', ($(this).outerHeight() - groupTitleHeight) / 2 )
+		})
+	}
+
+
+	collapseProfile = $('.profile-item [data-toggle=collapse]')
+	collapseProfile.click(function(){
+		if (window.matchMedia("(max-width:991px)").matches) {
+			$('.collapse.in').collapse('hide')
+			$('.collapse.in').css('height', 0)
+		} else {
+			$('.profile-detail').collapse('show')
+		}
+	})
+
+
+
 })
+
+
+$('.profile-item [data-toggle=collapse]').each(function(){
+	$(this).hover(function(){
+		$(this).parents('.profile').toggleClass('active-profile')
+	})
+	$(this).on( 'click', function(e){
+		e.preventDefault();
+	})
+})
+
+var i = 1
+$('.profile-link').each(function(){
+	$(this).addClass('profile-link-' + i)
+	i++
+})
+
+$('.profile-group').each(function(){
+	profileGroupName = $(this).find('.typical-recruit').first()
+	if (profileGroupName.length > 0) {
+		$(this).prepend('<div class="h5 profile-group-title"></div>')
+		profileGroupTitleContainer = $(this).find('.profile-group-title')
+		profileGroupName.appendTo(profileGroupTitleContainer)
+	}
+})
+
+
 
 // Sticky second header
 
