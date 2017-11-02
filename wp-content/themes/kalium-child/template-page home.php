@@ -42,14 +42,16 @@ get_header();
                             <div class="container">
                                 <div class="slide-content">
                                     <div class="post-info">
-                                        <h2 class="post-title"><?php the_title(); ?></h2>
-                                        <div class="post-excerpt-container">
-                                            <div class="post-excerpt">
-                                                <?php if ($excerpt): ?>
-                                                    <?php echo $excerpt ?>
-                                                <?php endif ?>
+                                        <div class="post-title-container">
+                                            <h2 class="post-title"><span><?php the_title(); ?></span></h2>
+                                        </div>
+                                        <?php if ($excerpt): ?>
+                                        <div class="post-excerpt-container padded-multiline">
+                                            <div class="post-excerpt highlighted">
+                                                <span><?php echo $excerpt ?></span>
                                             </div>
                                         </div>
+                                        <?php endif ?>
                                         <a href="<?php the_permalink() ?>" class="btn">Read more</a>
                                     </div>
                                 </div>
@@ -60,18 +62,22 @@ get_header();
                     <!-- end of the loop -->
                     <?php wp_reset_postdata(); ?>
                 </div>
-                    <div class="slide-progress"></div>
+                <div id="home-slider-nav"><div class="container"></div></div>
+                <div id="home-slider-dots"></div>
+                <div class="slide-progress"></div>
             </section>
             <?php endif; ?>
             
 
         <section class="text-center">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="homepage-byline h4 wow animated fadeIn">
-                        <?php if (get_field('punchline')): ?>
-                            <?php the_field('punchline') ?>
-                        <?php endif ?> 
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="homepage-byline h4 wow animated fadeIn">
+                            <?php if (get_field('punchline')): ?>
+                                <?php the_field('punchline') ?>
+                            <?php endif ?> 
+                        </div>
                     </div>
                 </div>
             </div>
@@ -136,7 +142,8 @@ get_header();
 
         <?php if ( $home_example_slider_query->have_posts() ) : ?>
         <section id="home-examples-slider-section" class="text-center">
-            <h2 class="text-center">Examples</h2>
+            <div class="section-bg"><?php echo wp_get_attachment_image(362, 'full') ?></div>
+            <h2 class="section-title text-center">Examples</h2>
             <div class="container">
 
                 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -153,7 +160,44 @@ get_header();
 
 
                                     <div class="collapse example-detail" id="example-detail-<?php echo $i ?>" aria-expanded="false" style="height: 0px;">
-                                        <?php the_content() ?>                                        
+                                        <div class="detail-content">
+                                            <div class="row">
+                                                <div class="col-xs-12 col-sm-4">
+                                                    <?php if (get_field('industrie')): ?>   
+                                                        <div class="example-industry">
+                                                            <h4>Industry</h4>
+                                                            <p><?php the_field('industrie') ?></p>
+                                                        </div>
+                                                        <div class="divider"></div>
+                                                    <?php endif ?>
+
+                                                    <?php if( have_rows('business_issues') ): ?>
+                                                        <h4>Business issues</h4>
+                                                        <ul class="business-issues">
+                                                        <?php while( have_rows('business_issues') ): the_row(); 
+                                                            $business_issue = get_sub_field('business_issue');
+                                                            ?>
+                                                            <li class="business-issue">
+                                                                <?php echo $business_issue ?>
+                                                            </li>
+                                                        <?php endwhile; ?>
+                                                        </ul>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <?php if (get_field('our_impact')): ?>
+                                                    <div class="col-xs-12 col-sm-4">
+                                                        <h4>Our impact</h4>
+                                                        <?php the_field('our_impact') ?>
+                                                    </div>
+                                                <?php endif ?>
+                                                <?php if (get_field('our_approach')): ?>
+                                                    <div class="col-xs-12 col-sm-4">
+                                                        <h4>Our approach</h4>
+                                                        <?php the_field('our_approach') ?>
+                                                    </div>
+                                                <?php endif ?>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -170,6 +214,8 @@ get_header();
             
             <div class="details"><div class="container text-left"></div></div>
             
+            <a href="examples" class="btn" style="margin-top: 30px">See all examples</a>
+
         </section>
         <?php endif; ?>
 

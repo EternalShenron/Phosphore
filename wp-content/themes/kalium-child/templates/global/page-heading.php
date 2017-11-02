@@ -15,48 +15,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Direct access not allowed.
 }
 ?>
-<section class="page-heading" role="heading"  style="background-image: url(<?php the_post_thumbnail_url() ?>)">
-	
-	<div class="container">
-		
-		<div class="row">
-			
-			<?php
-				/**
-				 * Before page heading title hooks
-				 */
-				do_action( 'page_heading_title_section_before' );
-			?>
-	
-			<div class="page-heading--title-section">
-			
-				<?php if ( $title ) : ?>
-					
-					<<?php echo $heading_tag; ?> class="page-heading--title"><?php echo $title; ?></<?php echo $heading_tag; ?>>
-					
-				<?php endif; ?>
-				
-				<?php if ( $description ) : ?>
-				
-					<div class="page-heading--description">
-						
-						<?php echo wpautop( $description ); ?>
-						
-					</div>
-					
-				<?php endif; ?>
-				
-			</div>
-			
-			<?php
-				/**
-				 * After page heading title hooks
-				 */
-				do_action( 'page_heading_title_section_after' );
-			?>
-		
-		</div>
-	
-	</div>
+<section>
+
+        <div id="page-cover-maintainer">
+            <div class="page-cover wow animated fadeIn" style="background-image: url(<?php echo get_the_post_thumbnail_url( 19, 'large'); ?>)">
+                <div class="container">
+                    <?php 
+                        $current = $post->ID;
+                        $parent = $post->post_parent;
+                        $grandparent_get = get_post($parent);
+                        $grandparent = $grandparent_get->post_parent;
+                    ?>
+                    <div class="page-title-group">
+                        <h1 class="page-title wow animated fadeInUp"><?php echo get_the_title(19) ?></h1>
+                    </div>
+                    <p class="subtitle">An open-pit to our deep experience</p>
+                </div>  
+            </div>
+        </div>
+
+
 	
 </section>

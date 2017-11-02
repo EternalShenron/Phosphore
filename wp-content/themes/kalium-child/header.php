@@ -24,7 +24,7 @@ $main_menu_type = get_data( 'main_menu_type' );
 
 	<?php wp_head(); ?>
 </head>
-<body <?php body_class();?> data-spy="scroll" data-target="#toc" data-offset="150">
+<body id="post-<?php the_ID() ?>" <?php body_class();?> data-spy="scroll" data-target="#toc" data-offset="150">
 
 	<?php
 

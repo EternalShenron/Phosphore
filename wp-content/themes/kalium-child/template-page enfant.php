@@ -32,7 +32,7 @@
                         <!-- CRÉATION DU MENU DES PAGES SOEURS -->
 
                         <!-- On affiche le titre de la page actuelle avant d'appeler les pages soeurs  -->
-                        <div class="h3 wow animated fadeInDown" data-wow-duration="0.2s">
+                        <div class="h3" data-wow-duration="0.2s">
                             <a href="<?php the_permalink() ?>"><?php the_title() ?></a>
                         </div>
                         <?php 
@@ -56,7 +56,7 @@
                                 On affiche les titres des pages soeurs 
                                 on incrémente le délai de l'animation pour que les titres s'affichent joliment les uns après les autres
                                 -->
-                                <div class="h3 sibling-pages wow animated fadeInDown" data-wow-duration="0.3s" data-wow-delay="<?php echo $i * 0.12 . 's' ?>">
+                                <div class="h3 sibling-pages" data-wow-duration="0.3s" data-wow-delay="<?php echo $i * 0.12 . 's' ?>">
                                     <a href="<?php the_permalink() ?>"><?php the_title(); ?></a>
                                 </div>
 
@@ -71,6 +71,8 @@
             </div>
         </div>
      
+
+
         <?php $i = 1 ?>
         <?php if( have_rows('sections') ): ?>
             <div class="sections">
@@ -92,94 +94,21 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-xs-12 col-md-10 wow animated fadeIn">
-                                <h2 class="page-section-title wow animated fadeIn"><?php echo $titre_section; ?></h2>
+                                <?php if ($titre_section): ?>
+                                    <h2 class="page-section-title wow animated fadeIn"><?php echo $titre_section; ?></h2>
+                                <?php endif ?>
                                 <div class="section-content wow animated fadeIn"><?php echo $contenu_section; ?></div>
                             </div>
                         </div>
+                        
                         <?php if (get_the_ID() == 39 && $i == 3): ?>
-                            <div class="row">
-                                <div class="col-md-11">
-                                    
-                                    <?php if( have_rows('profile') ): ?>
-
-                                        <?php 
-                                            $j = 1;
-                                            $k = 0;
-                                            $prev_typical_recruit = '';
-                                        ?>
-
-                                        <?php while( have_rows('profile') ): the_row(); ?>
-                                            <?php $typical_recruit = get_sub_field('typical_recruit'); ?>
-                                            <?php if ($typical_recruit != $prev_typical_recruit): ?>
-                                                <?php $k++; ?>
-                                            <?php endif ?>
-                                            <div class="profile" data-profile-group="<?php echo 'profile-group-' . $k ?>">
-                                                <div class="row">
-                                                    <div class="col-md-5">
-                                                        <div class="trigger-group">
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                        <?php 
-                                                                        $typical_recruit = get_sub_field('typical_recruit');
-                                                                        if ($typical_recruit && $typical_recruit != $prev_typical_recruit): ?>
-                                                                            <div class="typical-recruit">
-                                                                                <?php the_sub_field('typical_recruit'); ?>
-                                                                            </div>
-                                                                        <?php endif ?>                                                                            
-                                                                                
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <div class="panel-heading profile-item profile-item-<?php echo $j ?> wow animated fadeIn">
-                                                                        <a class="profile-link box position" role="button" data-toggle="collapse" href="#profile-detail-<?php echo $j ?>" aria-expanded="false" aria-controls="profile-detail-<?php echo $j ?>">
-                                                                          <div class="h4"><?php the_sub_field('position') ?></div>
-                                                                        </a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-5 profile-detail-container">
-                                                        <div class="collapse profile-detail" id="profile-detail-<?php echo $j ?>" aria-expanded="false" style="height: 0px;">
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <div class="box team-project-role">
-                                                                        <h5>Team project role</h5>
-                                                                        <?php the_sub_field('team__project_role') ?>
-                                                                    </div>
-                                                                </div>    
-                                                                <div class="col-md-6">
-                                                                    <div class="box client-role">
-                                                                        <h5>Client role</h5>
-                                                                        <?php the_sub_field('client_role') ?>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div> 
-                                                <?php $typical_track = get_sub_field('typical_track') ?>
-                                                <?php if ($typical_track): ?>
-                                                    <?php if ($typical_track < 1) {
-                                                        $typical_track = 0;
-                                                    } ?>
-                                                    
-                                                    <div class="xp-level small"><?php echo $typical_track . ' years'; ?></div>
-                                                <?php endif ?>
-                                            </div>
-                                            <?php $j++ ;
-                                            $prev_typical_recruit = $typical_recruit;
-                                            ?>
-
-                                        <?php endwhile; ?>
-                                        
-                                        <div class="xp-axis"></div>
-
-                                    <?php endif; ?>
-
-                                </div>
-                            </div>
-
+                            <?php get_template_part('element-profiles') ?>
                         <?php endif ?>
+                        
+                        <?php if (get_the_ID() == 23 && $i == 2): ?>
+                            <?php get_template_part('element-cost-excellence') ?>
+                        <?php endif ?>
+
                         </div>
                 </section>
                 <?php $i++; ?>

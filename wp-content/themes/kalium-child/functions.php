@@ -124,5 +124,6 @@ if ( !function_exists('juiz_custom_tinymce')) {
 
 // Image sizes
 add_image_size( 'medium', 300, 200, true );
+add_image_size( 'home-section', 570, 370, true );
 add_image_size( 'post-thumb', 360, 240, true );
 add_image_size( 'slider-size', 1366, 800, true );

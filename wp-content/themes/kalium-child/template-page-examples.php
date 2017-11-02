@@ -89,33 +89,69 @@ get_header(); ?>
         $home_example_slider_query = new WP_Query( $slider_examples ); ?>
 
         <?php if ( $home_example_slider_query->have_posts() ) : ?>
-        <section id="page-examples-list" class="text-center">
-            <h2 class="text-center">Examples</h2>
-
+        <section id="page-examples-list" class="">
             <div class="container">
+                <div class="h4 text-center">The followings are some examples of topics and results we worked on for our clients.</div>
                 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                     <div class="row wow animated fadeIn">
                         <?php $i = 1 ?>
                         <?php while ( $home_example_slider_query->have_posts() ) : $home_example_slider_query->the_post(); ?>
-								<div class="col-xs-12 col-sm-4">
-	                                <div class="example-item wow animated fadeIn" data-wow-delay="<?php echo $i * 0.12 . 's' ?>">
-	                                    <div class="panel-heading" role="tab" id="heading-<?php echo $i ?>">
-	                                        <a class="example-link" role="button" data-toggle="collapse" href="#example-detail-<?php echo $i ?>" aria-expanded="false" aria-controls="example-detail-<?php echo $i ?>">
-	                                          <h4><?php the_title() ?></h4>
-	                                        </a>
-	                                    </div>
-	                                    <div class="collapse example-detail" id="example-detail-<?php echo $i ?>" aria-expanded="false" style="height: 0px;">
-	                                        <?php if (get_field('our_imapct')): ?>
-                                                <?php the_field('our_imapct') ?>
-                                            <?php else: ?>
-                                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae velit ducimus consequatur id, animi facilis dolor doloremque, corrupti impedit, odio cum sed quam deserunt ipsam quia consequuntur perspiciatis repudiandae voluptatibus pariatur itaque magni quod consectetur. Amet dolor, ex quos. Numquam iure voluptatem consectetur atque quae perferendis nulla iste, distinctio dolorum voluptas asperiores perspiciatis magni unde sed aperiam fugiat fuga enim. Adipisci reprehenderit vitae quasi ducimus ullam itaque maiores perferendis quis fuga quia, sed possimus officia, iste, illum eveniet iure quaerat cumque ipsam obcaecati dolores asperiores! Vel ullam fugit commodi nihil nobis sed qui excepturi labore tempora odio eius numquam, necessitatibus, eveniet a culpa aperiam esse. Ex ullam, dignissimos, modi sit, corrupti asperiores cumque id enim magnam reprehenderit unde totam necessitatibus qui expedita ad blanditiis libero praesentium tenetur. Eligendi molestias deleniti maxime perspiciatis inventore maiores velit ea aliquam culpa perferendis, nobis ab exercitationem possimus quam ipsam. Quaerat nihil facilis, eveniet nemo? Ipsam nam animi facere iusto, ab, quas excepturi, aperiam culpa sed repudiandae ipsa minima in repellat libero perspiciatis dolores sapiente! Officia tempora placeat culpa similique quod ratione nulla unde quam hic perferendis aut nam inventore dolor corrupti numquam odio, facere enim cumque commodi eveniet labore porro accusamus dolorem. Laudantium incidunt, dolorem. Laudantium placeat velit illum expedita animi sapiente enim, sequi obcaecati laboriosam reiciendis vel corporis sit facere ex soluta cupiditate molestias debitis. Iste mollitia hic tempora illo quod necessitatibus, labore cumque ea nemo pariatur dicta inventore, vitae, distinctio reiciendis quo, molestias quas libero! Tenetur necessitatibus dolores id natus mollitia dicta, quo fugit velit maiores debitis incidunt vero facilis veritatis reprehenderit inventore ratione cum veniam, pariatur aliquid consequuntur deleniti non illo commodi eum temporibus! Ab repudiandae, ducimus obcaecati consequuntur doloribus et quaerat esse quia sint eligendi, saepe quod, provident aliquam! In minus tempora saepe facilis cumque quaerat. Ut eius, natus quaerat?</p>
-                                            <?php endif ?>
+							<div class="col-xs-12 col-sm-3">
+                                <div class="example-item wow animated fadeIn text-center" data-wow-delay="<?php echo $i * 0.12 . 's' ?>" data-wow-offset="100">
+                                    <div class="panel-heading" role="tab" id="heading-<?php echo $i ?>">
+                                        <a class="example-link" role="button" data-toggle="collapse" href="#example-detail-<?php echo $i ?>" aria-expanded="false" aria-controls="example-detail-<?php echo $i ?>">
+                                          <h4><?php the_title() ?></h4>
+                                        </a>
+	                                </div>
+                                    <div class="collapse example-detail" id="example-detail-<?php echo $i ?>" aria-expanded="false" style="height: 0px;">
+	                                    <div class="detail-content col-xs-12">
+                                            <div class="row">
+                                                        <div class="col-xs-12 col-sm-4">
+                                                            <?php if (get_field('industrie')): ?>   
+                                                                <div class="example-industry">
+                                                                    <h4>Industry</h4>
+                                                                    <p><b><?php the_field('industrie') ?></b></p>
+                                                                </div>
+                                                                <div class="divider"></div>
+                                                            <?php endif ?>
 
+                                                            <?php if( have_rows('business_issues') ): ?>
+                                                                <h4>Business issues</h4>
+                                                                <ul class="business-issues">
+                                                                <?php while( have_rows('business_issues') ): the_row(); 
+                                                                    $business_issue = get_sub_field('business_issue');
+                                                                    ?>
+                                                                    <li class="business-issue">
+                                                                        <?php echo $business_issue ?>
+                                                                    </li>
+                                                                <?php endwhile; ?>
+                                                                </ul>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <?php if (get_field('our_impact')): ?>
+                                                            <div class="col-xs-12 col-sm-4">
+                                                                <div class="our-impact">
+                                                                    <h4>Our impact</h4>
+                                                                    <div class="our-impact-content">
+                                                                        <?php the_field('our_impact') ?>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <?php endif ?>
+                                                        <?php if (get_field('our_approach')): ?>
+                                                            <div class="col-xs-12 col-sm-4">
+                                                                <div class="our-approach">
+                                                                    <h4>Our approach</h4>
+                                                                    <?php the_field('our_approach') ?>
+                                                                </div>
+                                                            </div>
+                                                        <?php endif ?>
+                                                    </div>
 	                                    </div>
 	                                </div>
-	                                <?php edit_post_link() ?>
+                                    <?php edit_post_link() ?>
                                 </div>
-
+                            </div>
                                 <?php $i++ ?>
                             
                         <?php endwhile; ?>

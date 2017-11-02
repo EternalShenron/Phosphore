@@ -1,3 +1,4 @@
+
 #toc {
 	display: none;
 }
@@ -11,6 +12,7 @@
 		top: 270px;
 		text-align: right;
 		font-family: 'Alegreya Sans SC', sans-serif;
+		z-index: 99;
 	}
 
 	.toc-item {
@@ -24,10 +26,15 @@
 	}
 
 	.toc-item a {
-		padding: 5px 8px;
+		padding: 3px 5px;
 		background: #fff;
 		margin-bottom: 2px;
 	}
+
+	.menu a:after {
+		background-color: #eb9f69!important;
+	}
+
 
 
 }
