@@ -106,7 +106,6 @@ if ( have_posts() ) :
 						</div>
 						<div class="col-xs-12 col-md-3 col-md-push-1">
 							<div class="post-sidebar">
-								<h3>Read full article</h3>
 								<?php 
 								$file = get_field('fichier_a_telecharger');
 								if ($file): ?>
