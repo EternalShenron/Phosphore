@@ -104,6 +104,7 @@ if ( have_posts() ) :
 								$file = get_field('fichier_a_telecharger');
 								if ($file): ?>
 								<aside class="widget">
+									<h3>Read full article</h3>
 									<a href="<?php echo $file['url'] ?>" download="<?php the_title() ?>" class="btn btn-primary download pdf">Download</a>
 								</aside>
 								<?php endif	; ?>
@@ -114,7 +115,7 @@ if ( have_posts() ) :
 								</aside>
 								<?php endif ?>
 								<aside class="widget">
-									<a href="#" class="btn btn-primary">Contact us</a>
+									<a href="http://polygraph.fr/rams/contact-us/" class="btn btn-primary">Contact us</a>
 								</aside>
 							</div>
 						</div>
