@@ -74,11 +74,11 @@ if ( have_posts() ) :
 								<div class="post-info">
 								<h1 class="post-title wow animated fadeIn" data-wow-delay="0.2s"><?php the_title() ?></h1>
 									<div class="post-excerpt wow animated fadeInRight" data-wow-duration="0.9s" data-wow-delay="-0.35s">
-                                                <div class="post-excerpt-container padded-multiline">
-                                                    <div class="post-excerpt highlighted">
-                                                        <span><?php the_field('excerpt') ?></span>
-                                                    </div>
-                                                </div>
+                                        <div class="post-excerpt-container padded-multiline">
+                                            <div class="post-excerpt highlighted">
+                                                <span><?php the_field('excerpt') ?></span>
+                                            </div>
+                                        </div>
 									</div>
 									<div class="post-meta-group">
 										<div class="wow animated fadeInRight" data-wow-duration="0.9s" data-wow-delay="-0.3s"><?php kalium_blog_post_date() ?></div>

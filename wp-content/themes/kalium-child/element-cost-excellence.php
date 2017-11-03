@@ -7,26 +7,38 @@
 		$image = get_sub_field('schema_image');
 		$description = get_sub_field('schema_description');
 		?>
-
+<!--  -->
 			<?php if ($i == 1): ?>
-				<div class="col-md-4 col-center">
+				<div class="col-md-5 col-center">
 			<?php elseif ($i == 2): ?>
-					<div class="col-md-4">
+				<div class="col-md-5">
 			<?php elseif ($i == 3): ?>
-				<div class="col-md-4 col-md-push-4">
+				<div class="col-md-5">
 			<?php elseif ($i == 4): ?>
-				<div class="col-md-4 col-md-push-2" style="clear: both">
+				<div class="col-md-5" style="clear: both">
 			<?php elseif ($i == 5): ?>
-				<div class="col-md-4 col-md-push-2">
+				<div class="col-md-5">
 			<?php endif ?>
-					
-					<?php if ($image): ?>
-						<img src="<?php echo $image['url']; ?>" alt="<?php echo $image['alt'] ?>" />
-					<?php else: ?>				
-						<div style="width: 100%; height: 300px; background: #ddd"><div class="benefit-step-number h1"><?php echo $i; ?></div></div>
-					<?php endif ?>
 
-				    <div class="benefit-step-description"><?php echo $description;; ?></div>
+				<div class="benefit-step">
+
+					<div class="benefit-step-content">
+						<div class="benefit-step-graphic">
+							<?php if ($image): ?>
+								<img src="<?php echo $image['url']; ?>" alt="<?php echo $image['alt'] ?>" />
+							<?php else: ?>				
+								<div class="benefit-step-placeholder"><!-- <div class="benefit-step-number h1"><?php echo $i; ?></div> --></div>
+							<?php endif ?>
+						</div>
+					    <div class="benefit-step-description-container">
+						    <div class="benefit-step-description">
+						    	<?php echo $description;; ?>
+						    </div>
+						</div>
+
+					</div>
+
+				</div>
 			</div>
 
 

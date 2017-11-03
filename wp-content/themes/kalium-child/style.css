@@ -3,7 +3,7 @@ Theme Name: Kalium - Child Theme
 Theme URI: https://laborator.co/themes/kalium/
 Author: Laborator
 Author URI: https://laborator.co/
-Description: Start creating that amazing website that you have always wanted, only with Kalium ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Connect with Laborator:  <a href="https://themeforest.net/user/laborator">Envato</a>, <a href="https://twitter.com/thelaborator">Twitter</a> or <a href="https://www.facebook.com/laboratorcreative">Facebook</a>.
+Description: Start creating that amazing website that you have always wanted, only with Kalium. Connect with Laborator:  <a href="https://themeforest.net/user/laborator">Envato</a>, <a href="https://twitter.com/thelaborator">Twitter</a> or <a href="https://www.facebook.com/laboratorcreative">Facebook</a>.
 Version: 2.1
 License: GNU General Public License version 3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -44,14 +44,15 @@ Text Domain: kalium
   width: 300px;
   margin: 20px auto;
 }
-.padded-multiline .highlighted { 
+.padded-multiline .highlighted {
 	position: relative;
-  background-color: #fff;
-  padding: 4px 0;
-  display: inline;
-  margin: 0; 
-  left: 18px;
-  z-index: 2;
+	background-color: #fff;
+	padding: 4px 0;
+	display: inline;
+	margin: 0;
+	left: 18px;
+	z-index: 2;
+	opacity: 0.95;
 }
 
 .padded-multiline .highlighted:before {
@@ -183,7 +184,7 @@ section > .section-bg {
 		top: 0; bottom: 0; right: 0; left: 0;
 		-webkit-background-size: cover;
 		background-size: cover;
-		background-position: ;
+		background-position: center;
 	}
 
 	.subsection-content {
@@ -274,11 +275,11 @@ section > .section-bg {
 }
 
 .home-posts-slider .post-info > * {
-	margin: 5px 0;
+	margin: 16px 0;
 }
 
 .post-title-container {
-	margin-bottom: 14px!important;
+	/* margin-bottom: 14px!important; */
 }
 
 .home-posts-slider .post-title {
@@ -289,7 +290,7 @@ section > .section-bg {
 
 .home-posts-slider .post-title span {
 	padding: 0 8px;
-	background-color: rgba(0, 32, 56, 0.6);
+	background-color: rgba(0, 32, 56, 0.65);
 	box-sizing: content-box;
 }
 
@@ -376,7 +377,8 @@ section > .section-bg {
 @media screen and (min-width: 768px) {
 
 	.home-posts-slider .post-title {
-		font-size: 50px;
+		font-size: 60px;
+		display: inline-block;
 	}
 
 	.home-posts-slider .post-info {
@@ -391,7 +393,7 @@ section > .section-bg {
 	.padded-multiline {
 		padding: 2px 0;
 		width: 360px;
-		margin: 20px 0;
+		margin-bottom: 0!important;
 	}
 
 }
@@ -416,7 +418,7 @@ section > .section-bg {
 
 .example-item .panel-heading {
 	display: table!important;
-	height: 150px;
+	height: 180px;
 	width: 100%;
 }
 
@@ -659,13 +661,6 @@ section > .section-bg {
 	border-bottom: 1px solid #eb9f69;
 }
 
-.page-multiple-cover-container {
-	position: absolute;
-    top: 0;
-    height: 100%;
-    width: 100%;
-}
-
 .page-cover, .page-multiple-cover {
 	color: #fff;
 	-webkit-background-size: cover;
@@ -673,13 +668,21 @@ section > .section-bg {
 	background-position: center;
 }
 
-.page-cover *, .page-multiple-cover * {
+.page-cover > * {
 	position: relative;
-	color: #fff;
 	z-index: 1;
 }
 
-.page-multiple-cover {
+.page-cover * {
+	color: #fff;
+}
+
+.page-multiple-cover-container {
+	position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 0;
 }
 
 .page-cover .h3 {
@@ -1334,13 +1337,117 @@ section.page-heading{
 
 /* RESTRUCTURATING BENEFIT CYCLE */
 
+.benefit-step-graphic {
+	text-align: center;
+	background: #fff;
+	overflow: hidden;
+	border-radius: 5px;
+}
+
+.benefit-step-graphic > * {
+	display: inline-block!important;
+	width: auto!important;
+	height: 230px;
+	background: #eee;
+	position: relative;
+	z-index: 9;
+}
+
+.benefit-step-placeholder {
+	width: 100%;
+}
+
 .benefit-cycle {
 	position: relative;
 	z-index: 2;
 }
 
-.benefit-step-description {
-	display: none;
+@media screen and (min-width: 992px) {
+	
+	.benefit-step {
+		padding: 0 10px;
+		position: relative;
+	}
+
+	.benefit-step:hover {
+		cursor: default;
+		z-index: 99;
+	}
+
+	.benefit-step {
+		transition: transform 0.35s 0s;
+		margin-bottom: 20px;
+	}
+
+	.benefit-step:hover {
+		transform: scale(1.2) translateY(-50px);
+		transition: transform 0.35s 0s;
+	}
+
+	.benefit-cycle > div:nth-child(1) {
+		top: 0px;
+	}
+
+	.benefit-cycle > div:nth-child(3) {
+		left: 16.6666667%;
+	}
+
+	.benefit-cycle > div:nth-child(4) {
+		left: 8.33333335%;
+	}
+
+	.benefit-cycle > div:nth-child(5) {
+		left: 8.33333335%;
+	}
+
+	.benefit-step-graphic {
+		border-radius: 5px 5px 0 0;
+	}
+
+	.benefit-step-graphic > img {
+		max-width: 100%;
+	}
+
+
+	.benefit-step-description-container {
+		position: absolute;
+		top: 230px;
+		left: 10px;
+		right: 10px;
+	}
+
+	.benefit-step-description {
+		transform: scaleY(0) translateY(-200px);
+		overflow: hidden;
+		opacity: 0;
+		padding: 10px 15px 5px;
+		transition: all 0.35s 0.15s;
+		font-size: 75%;
+		background: #f8f8f8;
+		border-top: 1px solid #e8e8e8;
+		line-height: 1.3;
+		border-radius: 0 0 5px 5px;
+	}
+
+	.benefit-step:hover .benefit-step-description {
+		opacity: 1;
+		transform: scaleY(1) translateY(0);
+		height: auto;
+	}
+
+}
+
+@media screen and (min-width: 1200px) {
+
+	.benefit-step {
+		padding: 0 40px;
+	}
+
+	.benefit-step-description-container {
+		left: 40px;
+		right: 40px;
+	}
+
 }
 
 /* INSIGHTS PAGE */

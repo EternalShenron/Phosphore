@@ -42,39 +42,6 @@ $args = array(
                     ?>
                     <div class="page-title-group">
                         <h1 class="page-title wow animated fadeInUp"><?php the_title() ?></h1>
-
-                        <?php 
-
-
-                        // args
-                        $sibling_pages = array(
-                            'post_parent' => $post->post_parent,
-                            'post_type' => 'page',
-                            'post__not_in' => array($current)
-                        );
-
-                        // the query
-                        $the_query = new WP_Query( $sibling_pages ); ?>
-
-                        <?php if ( $the_query->have_posts() ) : ?>
-
-                            <!-- pagination here -->
-
-                            <!-- the loop -->
-                            <?php while ( $the_query->have_posts() ) : $the_query->the_post(); ?>
-                                <div class="h3 sibling-pages wow animated fadeInDown"><a href="<?php the_permalink() ?>"><?php the_title(); ?></a></div>
-                            <?php endwhile; ?>
-                            <!-- end of the loop -->
-
-                            <!-- pagination here -->
-
-                            <?php wp_reset_postdata(); ?>
-
-                        <?php else : ?>
-                            <p><?php esc_html_e( 'Sorry, no posts matched your criteria.' ); ?></p>
-                        <?php endif; ?>
-
-
                     </div>
                 </div>  
                 <div class="page-multiple-cover-container">

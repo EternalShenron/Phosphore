@@ -38,7 +38,7 @@ get_header();
                         $excerpt = get_field('excerpt') 
                         ?>
 
-                        <div class="slide" style="background-image: url(<?php the_post_thumbnail_url('slider-size') ?>)">
+                        <div class="slide" style="background-image: url(<?php the_post_thumbnail_url('full') ?>)">
                             <div class="container">
                                 <div class="slide-content">
                                     <div class="post-info">
@@ -97,7 +97,7 @@ get_header();
             }
             $titre_section_home = get_sub_field('titre');
             $resume = get_sub_field('resume');
-            $image = get_sub_field('image')['sizes']['medium_large'];
+            $image = get_sub_field('image')['sizes']['home-section'];
             $page_en_lien = get_sub_field('page_en_lien');
             $id_page_en_lien = get_sub_field('page_en_lien')->ID;
             $libelle_bouton = get_sub_field('libelle_bouton');
