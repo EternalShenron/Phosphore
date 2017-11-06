@@ -811,6 +811,10 @@ section > .section-bg {
 	opacity: 0.15;
 }
 
+.page-section-bg + .container {
+	position: relative;	
+}
+
 @media screen and (min-width: 768px) {
 
 	.page-cover {
@@ -1385,7 +1389,7 @@ section.page-heading{
 	}
 
 	.benefit-step:hover {
-		transform: scale(1.2) translateY(-50px);
+		transform: scale(1.1) translateY(-50px);
 		transition: transform 0.35s 0s;
 	}
 
@@ -1473,4 +1477,52 @@ section.page-heading{
 
 .post-details .post-excerpt {
 	display: block;
+}
+
+/* INDUSTRIES */
+
+#industries-section > .row > .col-lg-2 {
+	width: 14.2857143%;
+}
+
+.group {
+	margin-bottom: 15px;
+	padding-left: 10px;
+	position: relative;
+}
+
+.group.linked:before {
+	content: '';
+	position: absolute;
+	top: 18px;
+	bottom: 18px;
+	left: 0;
+	border-left: 2px solid #aaa;
+}
+
+.industry.h4 {
+	position: relative;
+	font-size: 16px;
+	color: #fff;
+	padding: 8px 10px;
+	margin: 3px 0;
+}
+
+.group.linked .industry:before {
+	content: '';
+	position: absolute;
+	border-bottom: 2px solid #aaa;
+	top: 50%;
+	margin-top: -1px;
+	left: -10px;
+	width: 10px;
+}
+
+.industry.Dark {
+	background: #4883a7;
+}
+
+.industry.Light {
+    background: #a9e0ff;
+    color: #22526f;
 }

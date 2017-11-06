@@ -19,7 +19,7 @@ function new_excerpt_more( $more ) {
 }
 
 add_filter( 'excerpt_more', 'new_excerpt_more' );
-add_filter('acf/settings/show_admin', 'my_acf_show_admin');
+add_filter( 'acf/settings/show_admin', 'my_acf_show_admin');
 
 
 /* ENQUEUES */
