@@ -33,11 +33,18 @@ $(function() {
 // Home slider
 
 sliderSection = $('#home-slider-section, .slide-content')
+adminBar = $('#wpadminbar')
+if (adminBar.length > 0) {
+	adminBarHeight = adminBar.outerHeight()
+} else {
+	adminBarHeight = 0
+}
+adminBarHeight = adminBar.outerHeight()
 postInfo = $('#home-slider-section, .post-info')
 $(window).resize(function(){
 	postInfoHeight = postInfo.outerHeight()
 	if (window.matchMedia("(min-width:992px)").matches) {
-		sliderSectionHeight = ($(window).outerHeight() - $('.site-header').outerHeight() * 1.8 );
+		sliderSectionHeight = ($(window).outerHeight() - $('.site-header').outerHeight() - adminBarHeight );
 	} else if (window.matchMedia("(max-width:991px)").matches) {
 		sliderSectionHeight = $(window).outerWidth() / 3 * 2
 	}
@@ -58,9 +65,9 @@ $(window).resize(function(){
 	  items: 1,
 	  loop: true,
 	  autoplayTimeout: time,
-	  /*animateOut: 'fadeOut',
-	  animateIn: 'fadeIn',*/
-	  autoplay: false,
+	  animateOut: 'fadeOut',
+	  animateIn: 'fadeIn',
+	  autoplay: true,
 	  nav: true,
 	  navContainer: '#home-slider-nav>.container',
 	  dotsContainer: '#home-slider-dots',
@@ -115,8 +122,6 @@ function closeAllCollapse() {
 		$('#home-examples-slider-section .details .collapse.in').collapse('hide')
 	}
 }
-
-
 
 
 if ($('body').hasClass('page-template-template-page-examples')) {

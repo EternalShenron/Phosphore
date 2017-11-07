@@ -17,9 +17,9 @@ add_action( 'after_setup_theme', 'kalium_child_after_setup_theme' );
 function new_excerpt_more( $more ) {
     return ' <a class="read-more" href="'. get_permalink( get_the_ID() ) . '">' . __('Read More', 'your-text-domain') . '</a>';
 }
-add_filter( 'excerpt_more', 'new_excerpt_more' );
 
-add_filter('acf/settings/show_admin', 'my_acf_show_admin');
+add_filter( 'excerpt_more', 'new_excerpt_more' );
+add_filter( 'acf/settings/show_admin', 'my_acf_show_admin');
 
 
 /* ENQUEUES */
