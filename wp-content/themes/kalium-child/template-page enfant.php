@@ -110,7 +110,7 @@
                         <?php endif ?>
                         
                         <?php if (get_the_ID() == 29 && $i == 2): ?>
-                            <?php get_template_part('industries') ?>
+                            <?php get_template_part('element-industries') ?>
                         <?php endif ?>
 
                         </div>

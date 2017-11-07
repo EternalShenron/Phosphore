@@ -28,31 +28,38 @@ $(function() {
 	$('.match-height').matchHeight(options);
 });
 
-
-
-// Home slider
-
-sliderSection = $('#home-slider-section, .slide-content')
-adminBar = $('#wpadminbar')
-if (adminBar.length > 0) {
-	adminBarHeight = adminBar.outerHeight()
-} else {
-	adminBarHeight = 0
-}
-adminBarHeight = adminBar.outerHeight()
-postInfo = $('#home-slider-section, .post-info')
-$(window).resize(function(){
-	postInfoHeight = postInfo.outerHeight()
-	if (window.matchMedia("(min-width:992px)").matches) {
-		sliderSectionHeight = ($(window).outerHeight() - $('.site-header').outerHeight() - adminBarHeight );
-	} else if (window.matchMedia("(max-width:991px)").matches) {
-		sliderSectionHeight = $(window).outerWidth() / 3 * 2
+$(function() {
+	byRow = {
+		byRow: true
 	}
-	sliderSection.css({
-		'height': sliderSectionHeight,
-		'min-height': postInfoHeight
+	$('.match-height-by-row').matchHeight(byRow);
+});
+
+
+
+	// Home slider
+
+	sliderSection = $('#home-slider-section, .slide-content')
+	adminBar = $('#wpadminbar')
+	if (adminBar.length > 0) {
+		adminBarHeight = adminBar.outerHeight()
+	} else {
+		adminBarHeight = 0
+	}
+	adminBarHeight = adminBar.outerHeight()
+	postInfo = $('#home-slider-section, .post-info')
+	$(window).resize(function(){
+		postInfoHeight = postInfo.outerHeight()
+		if (window.matchMedia("(min-width:992px)").matches) {
+			sliderSectionHeight = ($(window).outerHeight() - $('.site-header').outerHeight() - adminBarHeight );
+		} else if (window.matchMedia("(max-width:991px)").matches) {
+			sliderSectionHeight = $(window).outerWidth() / 3 * 2
+		}
+		sliderSection.css({
+			'height': sliderSectionHeight,
+			'min-height': postInfoHeight
+		})
 	})
-})
 
 
   //Init the carousel
@@ -126,27 +133,59 @@ function closeAllCollapse() {
 
 if ($('body').hasClass('page-template-template-page-examples')) {
 
-	if (window.matchMedia("(min-width:768px)").matches) {
+	$(window).resize(function(){
 
-		exampleItem = $('#page-examples-list .example-item')
-		exampleItem.parent().addClass('example-col')
-		ExampleSection = $('#page-examples').html()
+		// Si le device est plus grand que 768px
+		if (window.matchMedia("(min-width:768px)").matches) {
 
+			exampleItem = $('#page-examples-list .example-item')
+			exampleItem.parent().addClass('example-col')
+			ExampleSection = $('#page-examples').html()
+
+			// On rassemble les éléments par groupes de 4
 			var divs = $(".example-col");
-			for(var i = 0; i < divs.length; i+=4) {
-			  divs.slice(i, i+4).wrapAll("<div class='example-group'></div>");
+			if ($('.example-group').length == 0) {
+				for(var i = 0; i < divs.length; i+=4) {
+			  		divs.slice(i, i+4).wrapAll("<div class='example-group'></div>");
+				}
 			}
 
-			$('.example-group').each(function(){
-				$(this).append('<div class="details-receiver"></div>')
+			// A la fin de chaque groupe, on insère l'élément qui recevra les détails
+			$('.example-group').each(function() {
+				if ($(this).find('.details-receiver').length == 0) {
+					$(this).append('<div class="details-receiver"></div>')
+				}
 			})
 
+			// On déplace chaque détail dans le receveur correspondant
 			exampleItem.each(function() {
 				exampleDetail = $(this).find('.example-detail')
 				exampleDetail.appendTo($(this).parents('.example-group').find('.details-receiver'))
 			})
-			
-	}
+				
+		} else {
+
+			$('.details-receiver').each(function(){
+
+				i = 1
+
+				$(this).find('.example-detail').each(function(){
+
+					$(this).appendTo($(this).parents('.example-group').children('.example-col:nth-child(' + i + ')').children('.example-item'))
+
+					console.log($(this).attr('id'))
+
+					i++
+
+				})
+
+				$(this).remove()
+
+			})
+
+		}
+
+	})
 
 }
 
@@ -178,6 +217,24 @@ profiles.each(function(){
 	}
 
 })
+
+industryLink = $('.industry-link')
+
+$(window).resize(function(){
+
+	if (window.matchMedia("(min-width:992px)").matches) {
+		$('.industry-detail').collapse('show')
+		industryLink.attr('href', '')
+	} else {
+		$('.industry-detail').collapse('hide')
+		industryLink.each(function(){
+			industryLinkTarget = $(this).attr('data-href')
+			$(this).attr('href', industryLinkTarget)
+		})
+	}
+
+})
+
 
 
 $(window).resize(function(){
