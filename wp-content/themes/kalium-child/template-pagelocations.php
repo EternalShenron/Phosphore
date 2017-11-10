@@ -73,22 +73,11 @@ get_header(); ?>
             </div>
         </div>
 
-                    <!--punchline location-->
-            <section class="text-center">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="homepage-byline h4">
-                            <?php if (get_field('location')): ?>
-                            <?php the_field('location') ?>
-                            <?php endif ?>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        
+
         
         <!-- affichage des champs acf location-->
         <?php $i = 0 ?>
+
         <?php if( have_rows('section_location') ): ?>
         <div class="sections">
             <?php while( have_rows('section_location') ): the_row(); 
@@ -108,22 +97,32 @@ get_header(); ?>
             <!--affichage des sections location avec background alterné-->
             <section id="section-<?php echo $i ?>" class="page-section section-<?php echo($altern) ?>">
 
+
                 <?php if ($altern == 'even'): ?>
-                <div class="page-section-bg" style="background-image: url(<?php echo get_the_post_thumbnail_url( $post_id, 'large'); ?>)">
-                </div>
+                <div class="page-section-bg" style="background-image: url(<?php echo get_the_post_thumbnail_url( $post_id, 'large'); ?>)"></div>
                 <?php endif ?>
 
                 <div class="container">
                     <div class="row">
-                        <div class="col-xs-12 col-md-8 wow animated fadeIn" style="background-image: url(<?php echo($image) ?>); background-repeat:no-repeat">
-                            <h2 class="page-section-title wow animated fadeIn" style="text-align:center; color:#ffffff">
-                                <?php echo $titre_section; ?>
-                            </h2>
-                            <div class="section-content wow animated fadeIn">
-                                <?php echo $contenu_section; ?>
+                        <div class="col-md-9 col-center text-center">
+                            <?php if ($i == 1): ?>
+                                
+                                <?php if (get_field('location')): ?>
+                                    <div class="location-intro">
+                                        <div class="h4">
+                                            <?php the_field('location') ?>
+                                        </div>
+                                    </div>
+                                <?php endif ?>
+
+                            <?php endif ?>
+                        </div>
+                        <div class="col-xs-12 col-md-8 col-center wow animated fadeIn">
+                            <div style="background-image: url(<?php echo($image) ?>); background-repeat:no-repeat; padding: 20px 0 40px;">
+                                <h2 class="page-section-title wow animated fadeIn"><?php echo $titre_section; ?></h2>
+                                <div class="section-content wow animated fadeIn"><?php echo $contenu_section; ?></div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 

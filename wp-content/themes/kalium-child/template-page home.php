@@ -38,7 +38,7 @@ get_header();
                         $excerpt = get_field('excerpt') 
                         ?>
 
-                        <div class="slide" style="background-image: url(<?php the_post_thumbnail_url('full') ?>)">
+                        <div class="slide" style="background-image: url(<?php the_post_thumbnail_url('large') ?>)">
                             <div class="container">
                                 <div class="slide-content">
                                     <div class="post-info">
@@ -69,7 +69,7 @@ get_header();
             <?php endif; ?>
             
 
-        <section class="text-center">
+        <section class="section-byline text-center">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
@@ -151,7 +151,7 @@ get_header();
                         <?php $i = 1 ?>
                         <!-- the loop -->
                         <?php while ( $home_example_slider_query->have_posts() ) : $home_example_slider_query->the_post(); ?>
-                                <div class="example-item wow animated fadeIn" data-wow-delay="<?php echo $i * 0.12 . 's' ?>">
+                                <div class="example-item wow animated fadeInUp">
                                     <div class="panel-heading" role="tab" id="heading-<?php echo $i ?>">
                                         <a class="example-link" role="button" data-toggle="collapse" href="#example-detail-<?php echo $i ?>" aria-expanded="false" aria-controls="example-detail-<?php echo $i ?>">
                                           <h4><?php the_title() ?></h4>
@@ -162,40 +162,9 @@ get_header();
                                     <div class="collapse example-detail" id="example-detail-<?php echo $i ?>" aria-expanded="false" style="height: 0px;">
                                         <div class="detail-content">
                                             <div class="row">
-                                                <div class="col-xs-12 col-sm-4">
-                                                    <?php if (get_field('industrie')): ?>   
-                                                        <div class="example-industry">
-                                                            <h4>Industry</h4>
-                                                            <p><?php the_field('industrie') ?></p>
-                                                        </div>
-                                                        <div class="divider"></div>
-                                                    <?php endif ?>
 
-                                                    <?php if( have_rows('business_issues') ): ?>
-                                                        <h4>Business issues</h4>
-                                                        <ul class="business-issues">
-                                                        <?php while( have_rows('business_issues') ): the_row(); 
-                                                            $business_issue = get_sub_field('business_issue');
-                                                            ?>
-                                                            <li class="business-issue">
-                                                                <?php echo $business_issue ?>
-                                                            </li>
-                                                        <?php endwhile; ?>
-                                                        </ul>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <?php if (get_field('our_impact')): ?>
-                                                    <div class="col-xs-12 col-sm-4">
-                                                        <h4>Our impact</h4>
-                                                        <?php the_field('our_impact') ?>
-                                                    </div>
-                                                <?php endif ?>
-                                                <?php if (get_field('our_approach')): ?>
-                                                    <div class="col-xs-12 col-sm-4">
-                                                        <h4>Our approach</h4>
-                                                        <?php the_field('our_approach') ?>
-                                                    </div>
-                                                <?php endif ?>
+                                                <?php get_template_part('element-example') ?>
+                                                
                                             </div>
                                         </div>
                                     </div>

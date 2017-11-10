@@ -29,6 +29,7 @@
 		padding: 3px 5px;
 		background: #fff;
 		margin-bottom: 2px;
+		max-width: 170px;
 	}
 
 	.menu a:after {

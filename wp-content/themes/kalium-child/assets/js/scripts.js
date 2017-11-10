@@ -52,13 +52,17 @@ $(function() {
 		postInfoHeight = postInfo.outerHeight()
 		if (window.matchMedia("(min-width:992px)").matches) {
 			sliderSectionHeight = ($(window).outerHeight() - $('.site-header').outerHeight() - adminBarHeight );
-		} else if (window.matchMedia("(max-width:991px)").matches) {
+			sliderSection.css({
+				'height': sliderSectionHeight,
+				'min-height': postInfoHeight
+			})
+		} else {
 			sliderSectionHeight = $(window).outerWidth() / 3 * 2
+			sliderSection.css({
+				'height': sliderSectionHeight,
+				'min-height': postInfoHeight
+			})
 		}
-		sliderSection.css({
-			'height': sliderSectionHeight,
-			'min-height': postInfoHeight
-		})
 	})
 
 
@@ -74,7 +78,7 @@ $(function() {
 	  autoplayTimeout: time,
 	  animateOut: 'fadeOut',
 	  animateIn: 'fadeIn',
-	  autoplay: true,
+	  autoplay: false,
 	  nav: true,
 	  navContainer: '#home-slider-nav>.container',
 	  dotsContainer: '#home-slider-dots',
@@ -241,10 +245,26 @@ $(window).resize(function(){
 	if (window.matchMedia("(max-width:991px)").matches) {
 		$('.benefit-cycle').addClass('owl-carousel')
 		$('.benefit-cycle').owlCarousel({
-			items: 1
+			items: 1,
+			dots: true,
+			autoHeight:true
 		})
+		i = 1
+		$('.benefit-cycle .owl-dot').each(function(){
+			$(this).html(i)
+			i++
+		})
+
 	} else {
-		$('.benefit-cycle').owlCarousel('destroy').removeClass('owl-carousel')
+		$('.benefit-cycle').owlCarousel('destroy')
+		$('.benefit-cycle').removeClass('owl-carousel')
+		$('.benefit-step').each(function(){
+			shadow = $(this).find('.benefit-step-shadow')
+			graphic = $(this).find('.benefit-step-graphic')
+			description = $(this).find('.benefit-step-description-container')
+			shadow.css('height', graphic.outerHeight() + description.outerHeight())
+			description.css('top', graphic.outerHeight())
+		})
 	}
 
 })

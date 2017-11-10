@@ -121,7 +121,7 @@ if ( have_posts() ) :
 								</aside>
 								<?php endif ?>
 								<aside class="widget">
-									<a href="http://polygraph.fr/rams/contact-us/" class="btn btn-primary">Contact us</a>
+									<a href="contact-us" class="btn btn-primary">Contact us</a>
 								</aside>
 							</div>
 						</div>

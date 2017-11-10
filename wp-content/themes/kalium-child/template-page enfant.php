@@ -93,7 +93,7 @@
                     <?php endif ?>
                     <div class="container">
                         <div class="row">
-                            <div class="col-xs-12 col-md-10 wow animated fadeIn">
+                            <div class="col-xs-12 col-md-9 col-center wow animated fadeIn">
                                 <?php if ($titre_section): ?>
                                     <h2 class="page-section-title wow animated fadeIn"><?php echo $titre_section; ?></h2>
                                 <?php endif ?>
@@ -111,6 +111,10 @@
                         
                         <?php if (get_the_ID() == 29 && $i == 2): ?>
                             <?php get_template_part('element-industries') ?>
+                        <?php endif ?>
+                        
+                        <?php if (get_the_ID() == 23 && $i == 3): ?>
+                            <?php get_template_part('element-growth-strategies') ?>
                         <?php endif ?>
 
                         </div>

@@ -35,8 +35,11 @@
 						    	<?php echo $description;; ?>
 						    </div>
 						</div>
+						<!-- <div class="benefit-step-shadow"></div> -->
 
 					</div>
+
+					<div class="benefit-step-number"><?php echo $i; ?></div>
 
 				</div>
 			</div>
